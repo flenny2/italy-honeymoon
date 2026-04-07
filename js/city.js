@@ -145,6 +145,7 @@ function filterCityMood(mood, citySlug) {
 function initCityMap(slug, cityName, cityPlaces) {
   var container = document.getElementById('city-map-' + slug);
   if (!container) return;
+  if (typeof L === 'undefined') { container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--warm-gray);font-size:13px;">Map loads after first online visit</div>'; return; }
 
   // Remove existing map
   if (cityMaps[slug]) {
@@ -163,9 +164,7 @@ function initCityMap(slug, cityName, cityPlaces) {
     wheelPxPerZoomLevel: 80
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18
-  }).addTo(map);
+  addTileLayer(map);
 
   // Add hotel marker first (so it's always visible)
   var hotel = HOTELS[cityName];
@@ -188,7 +187,7 @@ function initCityMap(slug, cityName, cityPlaces) {
 
   // Add place markers
   cityPlaces.forEach(function(p) {
-    if (p.category === 'transit' || p.category === 'pharmacy' || p.category === 'restroom') return;
+    if (!isVisiblePlace(p)) return;
     var color = CAT_COLORS[p.category] || '#999';
     var v = p.verdict && VERDICTS[p.verdict] ? VERDICTS[p.verdict] : null;
     var ringStyle = '';

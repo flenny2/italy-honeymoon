@@ -6,7 +6,13 @@
 <title>Italy Honeymoon 🇮🇹</title>
 <meta name="description" content="Dylan & partner's Italy honeymoon companion — June 2026">
 <meta name="theme-color" content="#CE2B37">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Italy 🇮🇹">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="img/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
 
 <!-- Fonts (self-hosted for offline) -->
 <link rel="stylesheet" href="fonts/fonts.css">
@@ -145,7 +151,7 @@
   <div id="full-map"></div>
 
   <!-- Filter Modal -->
-  <div id="map-filter-modal" class="map-filter-modal">
+  <div id="map-filter-modal" class="map-filter-modal" role="dialog" aria-modal="true" aria-label="Map filters">
     <div class="map-filter-sheet">
       <div class="mfm-header">
         <h3>🗺️ Map Filters</h3>
@@ -234,7 +240,7 @@
 <!-- ═══════════════════════════════════ -->
 <!-- SURPRISE ME MODAL                   -->
 <!-- ═══════════════════════════════════ -->
-<div id="surprise-modal" class="modal-overlay">
+<div id="surprise-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Details">
   <div id="surprise-content" class="modal-card"></div>
 </div>
 
@@ -246,25 +252,25 @@
 <!-- ═══════════════════════════════════ -->
 <!-- BOTTOM TAB BAR                      -->
 <!-- ═══════════════════════════════════ -->
-<nav id="tab-bar">
-  <button class="tab-btn active" data-tab="today" onclick="Router.navigate('#today')">
-    <span class="tab-icon">🌞</span>
+<nav id="tab-bar" role="tablist" aria-label="Main navigation">
+  <button class="tab-btn active" data-tab="today" onclick="Router.navigate('#today')" role="tab" aria-label="Today">
+    <span class="tab-icon" aria-hidden="true">🌞</span>
     <span class="tab-label">Today</span>
   </button>
-  <button class="tab-btn" data-tab="map" onclick="Router.navigate('#map')">
-    <span class="tab-icon">🗺️</span>
+  <button class="tab-btn" data-tab="map" onclick="Router.navigate('#map')" role="tab" aria-label="Map">
+    <span class="tab-icon" aria-hidden="true">🗺️</span>
     <span class="tab-label">Map</span>
   </button>
-  <button class="tab-btn" data-tab="explore" onclick="Router.navigate('#explore')">
-    <span class="tab-icon">🔍</span>
+  <button class="tab-btn" data-tab="explore" onclick="Router.navigate('#explore')" role="tab" aria-label="Explore cities">
+    <span class="tab-icon" aria-hidden="true">🔍</span>
     <span class="tab-label">Explore</span>
   </button>
-  <button class="tab-btn" data-tab="phrases" onclick="Router.navigate('#phrasebook')">
-    <span class="tab-icon">🇮🇹</span>
+  <button class="tab-btn" data-tab="phrases" onclick="Router.navigate('#phrasebook')" role="tab" aria-label="Italian phrasebook">
+    <span class="tab-icon" aria-hidden="true">🇮🇹</span>
     <span class="tab-label">Phrases</span>
   </button>
-  <button class="tab-btn" data-tab="more" onclick="Router.navigate('#more')">
-    <span class="tab-icon">✨</span>
+  <button class="tab-btn" data-tab="more" onclick="Router.navigate('#more')" role="tab" aria-label="More features">
+    <span class="tab-icon" aria-hidden="true">✨</span>
     <span class="tab-label">More</span>
   </button>
 </nav>
@@ -279,6 +285,7 @@
 <script src="js/data-trip.js"></script>
 <script src="js/data-achievements.js"></script>
 <script src="js/storage.js"></script>
+<script src="js/helpers.js"></script>
 <script src="js/router.js"></script>
 <script src="js/animations.js"></script>
 <script src="js/today.js"></script>

@@ -210,3 +210,45 @@ h3 { font-size: 18px; }
   from { transform: scale(0.8) translateY(30px); opacity: 0; }
   to { transform: scale(1) translateY(0); opacity: 1; }
 }
+
+/* ── Accessibility ── */
+
+/* Focus states for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid var(--rosso);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.tab-btn:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Remove outline for mouse/touch clicks */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .route-marker-current {
+    animation: none !important;
+  }
+}
+
+/* Improve contrast on tip/meta text */
+.pb-tip, .booking-tip {
+  color: #6B5A10;
+}
+
+/* Ensure minimum touch target size */
+button, [onclick] {
+  min-height: 44px;
+  min-width: 44px;
+}

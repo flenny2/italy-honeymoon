@@ -65,8 +65,7 @@ function renderAchievements() {
       var rarity = RARITY[a.rarity] || RARITY['common'];
       var unlockedDate = '';
       if (unlocked && state[a.id].unlockedAt) {
-        var d = new Date(state[a.id].unlockedAt);
-        unlockedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        unlockedDate = formatDateShort(state[a.id].unlockedAt);
       }
 
       listHTML += '<div class="ach-card ' + (unlocked ? 'ach-unlocked' : 'ach-locked') + '" onclick="' + (unlocked ? '' : 'showAchievementDetail(\'' + a.id + '\')') + '">' +
@@ -124,6 +123,9 @@ function doUnlock(id) {
   closeModal('surprise-modal');
 
   var a = ACHIEVEMENTS.find(function(x) { return x.id === id; });
+
+  // Celebration!
+  fireConfetti();
   showToast('🎉 ' + (a ? a.title : 'Achievement') + ' unlocked!');
 
   renderAchievements();

@@ -196,13 +196,13 @@ const DEFAULT_PLACES = [
     description:"The most famous pizzeria in the world, open since 1870. Only serves two pizzas: Margherita and Marinara. Featured in Eat Pray Love. Naples is the birthplace of pizza and this is its temple. Stop here on the way to or from Pompeii.",
     notes:"NAPLES STOP on Pompeii day trip. Train passes through Naples — grab pizza on the way. Cash only. Expect a line but it moves fast.", source:"Trip planning", verdict:"essential",honest_summary:"The most famous pizzeria on Earth, open since 1870, and it only serves two pizzas: Margherita and Marinara. That is confidence. The pizza is perfect - simple, blistered, and cheap. Cash only. The line looks intimidating but moves fast. Naples is the birthplace of pizza and this is its temple. Stop here on the Pompeii day trip - the train passes right through.",best_for:"Everyone on the Pompeii day trip. Stop in Naples, eat the best Margherita of your life, get back on the train.",visited:false },
   // ── VERONA STOPOVER ──
-  { id:"ver1", name:"Verona Arena", city:"Venice", category:"landmark", lat:45.4391, lng:10.9946,
+  { id:"ver1", name:"Verona Arena", city:"Verona", category:"landmark", lat:45.4391, lng:10.9946,
     description:"Remarkably well-preserved Roman amphitheater from the 1st century AD — older than the Colosseum. Seats 15,000 and still hosts opera performances in summer. Third largest arena in Italy.",
     notes:"VERONA STOPOVER June 24 on the way from Como to Venice. Luggage storage at Verona Porta Nuova station (~€5). 3-4 hours in the city is enough.", source:"Trip planning", verdict:"worth-it",honest_summary:"Older than the Colosseum and remarkably well-preserved. It still hosts opera performances in summer, which is incredible. The arena itself takes 30-45 minutes to explore. Verona is a natural stopover between Como and Venice, and 3-4 hours in the city is plenty. Store luggage at the train station for about 5 euros.",best_for:"A worthwhile stopover on the Como-to-Venice travel day. See the arena, grab lunch, continue to Venice.",visited:false },
-  { id:"ver2", name:"Juliet's Balcony (Casa di Giulietta)", city:"Venice", category:"landmark", lat:45.4421, lng:10.9988,
+  { id:"ver2", name:"Juliet's Balcony (Casa di Giulietta)", city:"Verona", category:"landmark", lat:45.4421, lng:10.9988,
     description:"The legendary balcony from Shakespeare's Romeo and Juliet. Whether or not the story is real, the 14th-century courtyard and balcony are a must-see romantic stop — perfect for the honeymoon.",
     notes:"VERONA STOPOVER. Free to see the courtyard and balcony from below. Small fee to go inside and stand on the balcony.", source:"Trip planning", verdict:"nice",honest_summary:"Is it the real balcony from Romeo and Juliet? No - Shakespeare never visited Verona and the story is fictional. Is it still a fun, romantic stop? Absolutely. The 14th-century courtyard is free to see from below, small fee to stand on the balcony. It is cheesy in the best way. On a honeymoon, you lean into it.",best_for:"Honeymooners who want a cheesy romantic photo. Takes 15 minutes. Free from the courtyard below.",visited:false },
-  { id:"ver3", name:"Piazza delle Erbe", city:"Venice", category:"activity", lat:45.4430, lng:10.9975,
+  { id:"ver3", name:"Piazza delle Erbe", city:"Verona", category:"activity", lat:45.4430, lng:10.9975,
     description:"Verona's most picturesque square, built on the site of the ancient Roman forum. Surrounded by medieval and Renaissance buildings, frescoed facades, and the Torre dei Lamberti. Great spot for a lunch stop.",
     notes:"VERONA STOPOVER. Good lunch spot — grab a table and people-watch.", source:"Trip planning", verdict:"worth-it",honest_summary:"Verona's most beautiful square, built on the ancient Roman forum. Surrounded by frescoed medieval buildings and the Torre dei Lamberti. Great spot for a lunch stop during the Verona layover. Grab a table, order a glass of Amarone, and people-watch. This is the natural center of a Verona visit.",best_for:"Lunch stop during the Verona layover. The square is beautiful and centrally located between the Arena and Juliet's Balcony.",visited:false },
   // ── TRANSIT STATIONS ──
@@ -292,13 +292,13 @@ function distanceKm(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function walkMinutes(km) { return Math.round(km / 0.07); }
+function walkMinutes(km) { return Math.round(km / (CONFIG.WALKING_SPEED_M_PER_MIN / 1000)); }
 
 function getNearbyPairings(place, maxKm) {
-  maxKm = maxKm || 0.6;
+  maxKm = maxKm || CONFIG.NEARBY_PAIRING_MAX_KM;
   const allPlaces = Storage.getPlaces();
   return allPlaces
-    .filter(function(p) { return p.id !== place.id && p.category !== 'transit' && p.category !== 'pharmacy' && p.category !== 'restroom'; })
+    .filter(function(p) { return p.id !== place.id && isVisiblePlace(p); })
     .map(function(p) { return Object.assign({}, p, { dist: distanceKm(place.lat, place.lng, p.lat, p.lng) }); })
     .filter(function(p) { return p.dist < maxKm; })
     .sort(function(a, b) { return a.dist - b.dist; })

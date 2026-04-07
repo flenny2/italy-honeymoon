@@ -130,6 +130,7 @@ var mapCurrentFilter = 'all';
 function renderFullMap() {
   var container = document.getElementById('full-map');
   if (!container) return;
+  if (typeof L === 'undefined') { container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--warm-gray);padding:24px;text-align:center;">Map requires an internet connection on first load.</div>'; return; }
 
   if (fullMap) {
     setTimeout(function() { fullMap.invalidateSize(); }, 100);
@@ -150,10 +151,7 @@ function renderFullMap() {
 
   L.control.zoom({ position: 'topright' }).addTo(fullMap);
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18,
-    attribution: '© OpenStreetMap · CARTO'
-  }).addTo(fullMap);
+  addTileLayer(fullMap);
 
   // Darken everything except Italy
   addItalyMask(fullMap);
@@ -175,48 +173,32 @@ function renderFullMap() {
 function drawTravelRoute() {
   if (!fullMap) return;
 
-  // Main route: Rome → Florence → Lake Como → Venice
-  var mainRoute = [
-    [41.8975, 12.4800],  // Rome
-    [43.7710, 11.2540],  // Florence
-    [45.8100, 9.0800],   // Lake Como
-    [45.4400, 12.3350]   // Venice
-  ];
-
-  var mainLine = L.polyline(mainRoute, {
+  // Main route from shared coordinates
+  var mainCoords = ROUTE_COORDS.main.map(function(r) { return [r.lat, r.lng]; });
+  var mainLine = L.polyline(mainCoords, {
     color: '#CE2B37', weight: 3, opacity: 0.5, dashArray: '10 8'
   }).addTo(fullMap);
   mapRouteLines.push(mainLine);
 
   // Day trip routes (thinner, gold)
-  var dayTrips = [
-    [[41.8975, 12.4800], [40.6880, 14.4849]],           // Rome → Amalfi/Pompeii
-    [[43.7710, 11.2540], [43.55, 11.25]],                // Florence → Tuscany
-    [[45.8100, 9.0800], [45.4391, 10.9946], [45.4400, 12.3350]]  // Como → Verona → Venice
+  var dayTripLines = [
+    [[41.8975, 12.4800], [40.6880, 14.4849]],
+    [[43.7710, 11.2540], [43.55, 11.25]],
+    [[45.8100, 9.0800], [45.4391, 10.9946], [45.4400, 12.3350]]
   ];
-
-  dayTrips.forEach(function(coords) {
+  dayTripLines.forEach(function(coords) {
     var line = L.polyline(coords, {
       color: '#E8B931', weight: 2, opacity: 0.4, dashArray: '6 6'
     }).addTo(fullMap);
     mapRouteLines.push(line);
   });
 
-  // Day trip point markers
-  var dtPoints = [
-    { label: 'Tuscany',  lat: 43.55,   lng: 11.25,   emoji: '🍷' },
-    { label: 'Verona',   lat: 45.4391, lng: 10.9946, emoji: '💌' },
-    { label: 'Amalfi',   lat: 40.6280, lng: 14.4850, emoji: '🏖️' },
-    { label: 'Pompeii',  lat: 40.7484, lng: 14.4848, emoji: '🌋' }
-  ];
-
-  dtPoints.forEach(function(dt) {
+  // Day trip point markers from shared coordinates
+  ROUTE_COORDS.dayTrips.forEach(function(dt) {
     var icon = L.divIcon({
       className: '',
-      html: '<div class="map-dt-marker">' + dt.emoji + '</div>' +
-        '<div class="map-dt-label">' + dt.label + '</div>',
-      iconSize: [28, 40],
-      iconAnchor: [14, 14]
+      html: '<div class="map-dt-marker">' + dt.emoji + '</div><div class="map-dt-label">' + dt.label + '</div>',
+      iconSize: [28, 40], iconAnchor: [14, 14]
     });
     L.marker([dt.lat, dt.lng], { icon: icon, interactive: false }).addTo(fullMap);
   });
@@ -260,7 +242,7 @@ function addPlaceMarkers() {
   var places = Storage.getPlaces();
 
   places.forEach(function(p) {
-    if (p.category === 'transit' || p.category === 'pharmacy' || p.category === 'restroom') return;
+    if (!isVisiblePlace(p)) return;
 
     var color = CAT_COLORS[p.category] || '#999';
     var v = p.verdict && VERDICTS[p.verdict] ? VERDICTS[p.verdict] : null;
@@ -349,9 +331,8 @@ function showWalkingRadius(city) {
   if (!fullMap || !HOTELS[city]) return;
   var h = HOTELS[city];
 
-  // ~15 min walk at 4.2 km/h = ~1050m, ~8 min = ~560m
   var radius15 = L.circle([h.lat, h.lng], {
-    radius: 1050,
+    radius: CONFIG.WALKING_RADIUS_15MIN_M,
     color: '#CE2B37',
     fillColor: '#CE2B37',
     fillOpacity: 0.04,
@@ -362,7 +343,7 @@ function showWalkingRadius(city) {
   }).addTo(fullMap);
 
   var radius8 = L.circle([h.lat, h.lng], {
-    radius: 560,
+    radius: CONFIG.WALKING_RADIUS_8MIN_M,
     color: '#008C45',
     fillColor: '#008C45',
     fillOpacity: 0.05,
@@ -426,32 +407,29 @@ function applyMapFilter(filter, label) {
   if (labelEl) labelEl.textContent = label;
   if (btn) btn.classList.toggle('has-filter', filter !== 'all');
 
-  // Apply filter to markers
+  // Filter strategies — each returns true if place should show
+  var filters = {
+    'all':        function() { return true; },
+    'essential':  function(p) { return p.verdict === 'essential'; },
+    'hidden-gem': function(p) { return p.verdict === 'hidden-gem'; },
+    'worth-it':   function(p) { return p.verdict === 'worth-it'; },
+    'nathan':     function(p) { return p.source && p.source.toLowerCase().indexOf('nathan') !== -1; },
+    'hotel':      function(p) { return p.source && p.source.toLowerCase().indexOf('splendid') !== -1; },
+    'goop':       function(p) { return p.source && p.source.toLowerCase().indexOf('goop') !== -1; },
+    'dining':     function(p) { return p.category === 'dining'; },
+    'landmark':   function(p) { return p.category === 'landmark'; },
+    'activity':   function(p) { return p.category === 'activity'; },
+    'viewpoint':  function(p) { return p.category === 'viewpoint'; },
+    'romantic':   function(p) { return autoTag(p).indexOf('romantic') !== -1; },
+    'evening':    function(p) { return autoTag(p).indexOf('evening') !== -1; },
+    'budget':     function(p) { return autoTag(p).indexOf('budget') !== -1; },
+    'foodie':     function(p) { return autoTag(p).indexOf('foodie') !== -1; }
+  };
+
+  var filterFn = filters[filter] || filters['all'];
+
   mapPlaceMarkers.forEach(function(m) {
-    var show = false;
-    var p = m.place;
-
-    switch (filter) {
-      case 'all':        show = true; break;
-      case 'essential':  show = p.verdict === 'essential'; break;
-      case 'hidden-gem': show = p.verdict === 'hidden-gem'; break;
-      case 'worth-it':   show = p.verdict === 'worth-it'; break;
-      case 'nathan':     show = p.source && p.source.toLowerCase().indexOf('nathan') !== -1; break;
-      case 'hotel':      show = p.source && (p.source.toLowerCase().indexOf('oltrarno') !== -1 || p.source.toLowerCase().indexOf('splendid') !== -1); break;
-      case 'goop':       show = p.source && p.source.toLowerCase().indexOf('goop') !== -1; break;
-      case 'dining':     show = p.category === 'dining'; break;
-      case 'landmark':   show = p.category === 'landmark'; break;
-      case 'activity':   show = p.category === 'activity'; break;
-      case 'viewpoint':  show = p.category === 'viewpoint'; break;
-      // Moods
-      case 'romantic':   show = autoTag(p).indexOf('romantic') !== -1; break;
-      case 'evening':    show = autoTag(p).indexOf('evening') !== -1; break;
-      case 'budget':     show = autoTag(p).indexOf('budget') !== -1; break;
-      case 'foodie':     show = autoTag(p).indexOf('foodie') !== -1; break;
-      default:           show = true;
-    }
-
-    if (show) {
+    if (filterFn(m.place)) {
       fullMap.addLayer(m.marker);
     } else {
       fullMap.removeLayer(m.marker);

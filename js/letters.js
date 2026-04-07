@@ -47,8 +47,7 @@ function renderLetters() {
     listHTML += '<div class="section-header" style="margin-top:16px;">Your Letters</div>';
     letters.forEach(function(letter) {
       var unlocked = Storage.isLetterUnlocked(letter);
-      var date = new Date(letter.unlockDate);
-      var dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      var dateStr = formatDateFull(letter.unlockDate);
 
       listHTML += '<div class="letter-card" onclick="' + (unlocked ? 'openLetter(\'' + letter.id + '\')' : '') + '">' +
         '<div class="letter-icon">' + (unlocked ? '💌' : '🔒') + '</div>' +

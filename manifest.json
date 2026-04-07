@@ -2,7 +2,7 @@
   "name": "Italy Honeymoon",
   "short_name": "Italy 🇮🇹",
   "description": "Your personal Italy honeymoon companion",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#FEFCF8",
   "theme_color": "#CE2B37",

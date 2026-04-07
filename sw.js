@@ -40,6 +40,7 @@ var APP_FILES = [
   '/js/data-achievements.js',
   // JS core
   '/js/storage.js',
+  '/js/helpers.js',
   '/js/router.js',
   '/js/animations.js',
   '/js/today.js',

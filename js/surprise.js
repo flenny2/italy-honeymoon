@@ -4,9 +4,7 @@
 
 function openSurprise(city) {
   var places = Storage.getPlaces();
-  var candidates = places.filter(function(p) {
-    return p.category !== 'transit' && p.category !== 'pharmacy' && p.category !== 'restroom';
-  });
+  var candidates = places.filter(isVisiblePlace);
 
   if (city && city !== 'all') {
     candidates = candidates.filter(function(p) { return p.city === city; });

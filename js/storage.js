@@ -146,7 +146,7 @@ var Storage = (function() {
   function sealCapsule(data) {
     var capsule = Object.assign({}, data, {
       locked: true,
-      lockUntil: '2027-06-27',
+      lockUntil: (typeof CONFIG !== 'undefined' ? CONFIG.ANNIVERSARY_DATE : '2027-06-27'),
       sealedAt: Date.now(),
       snapshot: {
         journal: getJournal(),

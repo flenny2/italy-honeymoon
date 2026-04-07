@@ -10,9 +10,7 @@ function renderJournal() {
   var journal = Storage.getJournal();
 
   // Pick today's prompt (rotate through list using day of year)
-  var today = new Date();
-  var dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-  var promptIndex = dayOfYear % JOURNAL_PROMPTS.length;
+  var promptIndex = getDayOfYear() % JOURNAL_PROMPTS.length;
   var todayPrompt = JOURNAL_PROMPTS[promptIndex];
 
   var headerHTML = '<div class="page-header">' +
@@ -39,8 +37,7 @@ function renderJournal() {
     // Sort newest first
     var sorted = journal.slice().sort(function(a, b) { return b.timestamp - a.timestamp; });
     sorted.forEach(function(entry) {
-      var date = new Date(entry.timestamp);
-      var dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      var dateStr = formatDateLong(entry.timestamp);
       entriesHTML += '<div class="journal-entry">' +
         '<div class="journal-entry-date">' + dateStr + (entry.city ? ' · ' + entry.city : '') + (entry.day ? ' · Day ' + entry.day : '') + '</div>' +
         '<div class="journal-entry-prompt">' + (entry.prompt || '') + '</div>' +
@@ -61,12 +58,10 @@ function saveJournalFromInput() {
   }
 
   var phase = getTripPhase();
-  var today = new Date();
-  var dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-  var promptIndex = dayOfYear % JOURNAL_PROMPTS.length;
+  var promptIndex = getDayOfYear() % JOURNAL_PROMPTS.length;
 
   Storage.saveJournalEntry({
-    date: today.toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0],
     city: phase.phase === 'during' ? phase.city : '',
     day: phase.phase === 'during' ? phase.day : null,
     prompt: JOURNAL_PROMPTS[promptIndex],
