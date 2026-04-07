@@ -117,32 +117,108 @@
 <!-- PAGE: MAP (dedicated tab)           -->
 <!-- ═══════════════════════════════════ -->
 <div id="page-map" class="page">
-  <!-- City jump bar (floats over map) -->
+  <!-- City bar (compact, always all visible) -->
   <div id="map-city-bar" class="map-city-bar">
-    <button class="map-city-chip active" data-city="all" onclick="mapJumpTo('all')">🇮🇹 All</button>
-    <button class="map-city-chip" data-city="Rome" onclick="mapJumpTo('Rome')">🏛️ Rome</button>
-    <button class="map-city-chip" data-city="Florence" onclick="mapJumpTo('Florence')">🌻 Florence</button>
-    <button class="map-city-chip" data-city="Lake Como" onclick="mapJumpTo('Lake Como')">⛰️ Como</button>
-    <button class="map-city-chip" data-city="Venice" onclick="mapJumpTo('Venice')">🚣 Venice</button>
+    <button class="map-city-chip active" data-city="all" onclick="mapJumpTo('all')">
+      <span class="mcc-emoji">🇮🇹</span><span class="mcc-label">All</span>
+    </button>
+    <button class="map-city-chip" data-city="Rome" onclick="mapJumpTo('Rome')">
+      <span class="mcc-emoji">🏛️</span><span class="mcc-label">Rome</span>
+    </button>
+    <button class="map-city-chip" data-city="Florence" onclick="mapJumpTo('Florence')">
+      <span class="mcc-emoji">🌻</span><span class="mcc-label">Florence</span>
+    </button>
+    <button class="map-city-chip" data-city="Lake Como" onclick="mapJumpTo('Lake Como')">
+      <span class="mcc-emoji">⛰️</span><span class="mcc-label">Como</span>
+    </button>
+    <button class="map-city-chip" data-city="Venice" onclick="mapJumpTo('Venice')">
+      <span class="mcc-emoji">🚣</span><span class="mcc-label">Venice</span>
+    </button>
   </div>
-  <!-- Filter button (floats over map) -->
-  <div id="map-filter-bar" class="map-filter-bar">
-    <button class="map-filter-chip active" data-filter="all" onclick="mapFilter('all')">All</button>
-    <button class="map-filter-chip" data-filter="essential" onclick="mapFilter('essential')">🟢 Essential</button>
-    <button class="map-filter-chip" data-filter="nathan" onclick="mapFilter('nathan')">👨‍🍳 Nathan</button>
-    <button class="map-filter-chip" data-filter="dining" onclick="mapFilter('dining')">🍝 Dining</button>
-    <button class="map-filter-chip" data-filter="landmark" onclick="mapFilter('landmark')">🏛️ Sights</button>
-    <button class="map-filter-chip" data-filter="hidden-gem" onclick="mapFilter('hidden-gem')">💎 Hidden Gems</button>
+  <!-- Filter button (opens modal) + active filter indicator -->
+  <div class="map-controls">
+    <button id="map-filter-btn" class="map-filter-btn" onclick="openMapFilters()">
+      <span>⚙️</span> <span id="map-filter-label">All Places</span> <span class="map-filter-arrow">▾</span>
+    </button>
   </div>
   <!-- Map container -->
   <div id="full-map"></div>
-  <!-- Legend (bottom of map) -->
-  <div id="map-legend" class="map-legend">
-    <span class="map-legend-item"><span class="map-legend-dot" style="background:var(--rosso)"></span>Dining</span>
-    <span class="map-legend-item"><span class="map-legend-dot" style="background:var(--verde)"></span>Landmark</span>
-    <span class="map-legend-item"><span class="map-legend-dot" style="background:var(--verde-dark)"></span>Activity</span>
-    <span class="map-legend-item"><span class="map-legend-dot" style="background:#8B5CF6"></span>Viewpoint</span>
-    <span class="map-legend-item"><span class="map-legend-dot map-legend-hotel"></span>Hotel</span>
+
+  <!-- Filter Modal -->
+  <div id="map-filter-modal" class="map-filter-modal">
+    <div class="map-filter-sheet">
+      <div class="mfm-header">
+        <h3>🗺️ Map Filters</h3>
+        <button class="mfm-close" onclick="closeMapFilters()">✕</button>
+      </div>
+      <div class="mfm-body">
+        <div class="mfm-section">
+          <div class="mfm-section-title">By Verdict</div>
+          <div class="mfm-grid">
+            <button class="mfm-option" data-filter="essential" onclick="applyMapFilter('essential','🟢 Essential')">
+              <span class="mfm-icon" style="background:#E8F5EC;color:#008C45;">🟢</span>Essential
+            </button>
+            <button class="mfm-option" data-filter="hidden-gem" onclick="applyMapFilter('hidden-gem','💎 Hidden Gems')">
+              <span class="mfm-icon" style="background:#EDE9FE;color:#8B5CF6;">💎</span>Hidden Gems
+            </button>
+            <button class="mfm-option" data-filter="worth-it" onclick="applyMapFilter('worth-it','🔵 Worth It')">
+              <span class="mfm-icon" style="background:#DBEAFE;color:#3B82F6;">🔵</span>Worth It
+            </button>
+          </div>
+        </div>
+        <div class="mfm-section">
+          <div class="mfm-section-title">By Source</div>
+          <div class="mfm-grid">
+            <button class="mfm-option" data-filter="nathan" onclick="applyMapFilter('nathan','👨‍🍳 Nathan Recs')">
+              <span class="mfm-icon" style="background:#FFF8E1;color:#C9A028;">👨‍🍳</span>Nathan Recs
+            </button>
+            <button class="mfm-option" data-filter="hotel" onclick="applyMapFilter('hotel','🏨 Hotel Recs')">
+              <span class="mfm-icon" style="background:#FFF0F1;color:#CE2B37;">🏨</span>Hotel Recs
+            </button>
+            <button class="mfm-option" data-filter="goop" onclick="applyMapFilter('goop','📖 Goop Guide')">
+              <span class="mfm-icon" style="background:#FCE7F3;color:#EC4899;">📖</span>Goop Guide
+            </button>
+          </div>
+        </div>
+        <div class="mfm-section">
+          <div class="mfm-section-title">By Type</div>
+          <div class="mfm-grid">
+            <button class="mfm-option" data-filter="dining" onclick="applyMapFilter('dining','🍝 Dining')">
+              <span class="mfm-icon" style="background:#FFEAEC;color:#CE2B37;">🍝</span>Dining
+            </button>
+            <button class="mfm-option" data-filter="landmark" onclick="applyMapFilter('landmark','🏛️ Sights')">
+              <span class="mfm-icon" style="background:#E8F5EC;color:#008C45;">🏛️</span>Sights
+            </button>
+            <button class="mfm-option" data-filter="activity" onclick="applyMapFilter('activity','🎯 Activities')">
+              <span class="mfm-icon" style="background:#FFF7ED;color:#F97316;">🎯</span>Activities
+            </button>
+            <button class="mfm-option" data-filter="viewpoint" onclick="applyMapFilter('viewpoint','👁️ Viewpoints')">
+              <span class="mfm-icon" style="background:#EDE9FE;color:#8B5CF6;">👁️</span>Viewpoints
+            </button>
+          </div>
+        </div>
+        <div class="mfm-section">
+          <div class="mfm-section-title">By Mood</div>
+          <div class="mfm-grid">
+            <button class="mfm-option" data-filter="romantic" onclick="applyMapFilter('romantic','💑 Romantic')">
+              <span class="mfm-icon" style="background:#FCE7F3;color:#EC4899;">💑</span>Romantic
+            </button>
+            <button class="mfm-option" data-filter="evening" onclick="applyMapFilter('evening','🌙 Evening')">
+              <span class="mfm-icon" style="background:#EDE9FE;color:#8B5CF6;">🌙</span>Evening
+            </button>
+            <button class="mfm-option" data-filter="budget" onclick="applyMapFilter('budget','💰 Budget')">
+              <span class="mfm-icon" style="background:#E8F5EC;color:#008C45;">💰</span>Budget
+            </button>
+            <button class="mfm-option" data-filter="foodie" onclick="applyMapFilter('foodie','🍽️ Foodie')">
+              <span class="mfm-icon" style="background:#FFF8E1;color:#C9A028;">🍽️</span>Foodie
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mfm-footer">
+        <button class="btn btn-ghost btn-full" onclick="applyMapFilter('all','All Places')">Show All — Reset</button>
+      </div>
+    </div>
   </div>
 </div>
 

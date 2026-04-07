@@ -157,20 +157,47 @@ function initCityMap(slug, cityName, cityPlaces) {
     center: view.center,
     zoom: view.zoom,
     zoomControl: false,
-    attributionControl: false
+    attributionControl: false,
+    zoomSnap: 0.5,
+    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 80
   });
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 18
   }).addTo(map);
 
-  // Add markers
+  // Add hotel marker first (so it's always visible)
+  var hotel = HOTELS[cityName];
+  if (hotel) {
+    var hotelIcon = L.divIcon({
+      className: '',
+      html: '<div class="map-hotel-marker" style="width:32px;height:32px;">' +
+        '<span class="map-hotel-icon" style="font-size:16px;">🏠</span></div>',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+    var hotelMarker = L.marker([hotel.lat, hotel.lng], { icon: hotelIcon, zIndexOffset: 1000 }).addTo(map);
+    hotelMarker.bindPopup(
+      '<div class="popup-inner">' +
+      '<div class="popup-name">🏠 ' + hotel.name + '</div>' +
+      '<div class="popup-meta">' + hotel.dates + '</div>' +
+      '</div>'
+    );
+  }
+
+  // Add place markers
   cityPlaces.forEach(function(p) {
     if (p.category === 'transit' || p.category === 'pharmacy' || p.category === 'restroom') return;
     var color = CAT_COLORS[p.category] || '#999';
+    var v = p.verdict && VERDICTS[p.verdict] ? VERDICTS[p.verdict] : null;
+    var ringStyle = '';
+    if (p.verdict === 'essential') ringStyle = 'box-shadow:0 0 0 2px rgba(0,140,69,0.4), 0 2px 6px rgba(0,0,0,0.2);';
+    else if (p.verdict === 'hidden-gem') ringStyle = 'box-shadow:0 0 0 2px rgba(139,92,246,0.4), 0 2px 6px rgba(0,0,0,0.2);';
+
     var icon = L.divIcon({
       className: '',
-      html: '<div class="custom-marker" style="background:' + color + ';width:24px;height:24px;">' +
+      html: '<div class="custom-marker" style="background:' + color + ';width:24px;height:24px;' + ringStyle + '">' +
         (CAT_ICONS[p.category] || '📍') + '</div>',
       iconSize: [24, 24],
       iconAnchor: [12, 12]

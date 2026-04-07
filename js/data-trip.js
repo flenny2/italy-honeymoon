@@ -53,7 +53,7 @@ const CITY_VIEWS = {
 // Category colors & icons
 const CAT_COLORS = {
   dining: '#CE2B37', landmark: '#008C45', hotel: '#E8B931',
-  activity: '#006B35', viewpoint: '#8B5CF6', transit: '#3B82F6',
+  activity: '#F97316', viewpoint: '#8B5CF6', transit: '#3B82F6',
   pharmacy: '#EC4899', restroom: '#6B7280'
 };
 

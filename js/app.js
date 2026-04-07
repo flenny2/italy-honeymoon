@@ -132,7 +132,6 @@ function renderFullMap() {
   if (!container) return;
 
   if (fullMap) {
-    // Already initialized — just resize
     setTimeout(function() { fullMap.invalidateSize(); }, 100);
     return;
   }
@@ -140,10 +139,15 @@ function renderFullMap() {
   fullMap = L.map(container, {
     center: [42.5, 12.5],
     zoom: 6,
-    zoomControl: false
+    zoomControl: false,
+    // Smoother, faster zooming
+    zoomSnap: 0.5,
+    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 80,
+    wheelDebounceTime: 40,
+    zoomAnimationThreshold: 6
   });
 
-  // Zoom control in top-right
   L.control.zoom({ position: 'topright' }).addTo(fullMap);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -397,42 +401,54 @@ function clearRadiusCircles() {
   mapRadiusCircles = [];
 }
 
-// ── Filter ──
-function mapFilter(filter) {
+// ── Filter Modal ──
+function openMapFilters() {
+  var modal = document.getElementById('map-filter-modal');
+  modal.classList.add('open');
+
+  // Highlight current active filter
+  var options = modal.querySelectorAll('.mfm-option');
+  for (var i = 0; i < options.length; i++) {
+    options[i].classList.toggle('active', options[i].dataset.filter === mapCurrentFilter);
+  }
+}
+
+function closeMapFilters() {
+  document.getElementById('map-filter-modal').classList.remove('open');
+}
+
+function applyMapFilter(filter, label) {
   mapCurrentFilter = filter;
 
-  // Update chip UI
-  var chips = document.querySelectorAll('.map-filter-chip');
-  for (var i = 0; i < chips.length; i++) {
-    chips[i].classList.toggle('active', chips[i].dataset.filter === filter);
-  }
+  // Update button label
+  var btn = document.getElementById('map-filter-btn');
+  var labelEl = document.getElementById('map-filter-label');
+  if (labelEl) labelEl.textContent = label;
+  if (btn) btn.classList.toggle('has-filter', filter !== 'all');
 
-  // Show/hide markers based on filter
+  // Apply filter to markers
   mapPlaceMarkers.forEach(function(m) {
     var show = false;
     var p = m.place;
 
     switch (filter) {
-      case 'all':
-        show = true;
-        break;
-      case 'essential':
-        show = p.verdict === 'essential';
-        break;
-      case 'hidden-gem':
-        show = p.verdict === 'hidden-gem';
-        break;
-      case 'nathan':
-        show = p.source && p.source.toLowerCase().indexOf('nathan') !== -1;
-        break;
-      case 'dining':
-        show = p.category === 'dining';
-        break;
-      case 'landmark':
-        show = p.category === 'landmark' || p.category === 'activity' || p.category === 'viewpoint';
-        break;
-      default:
-        show = true;
+      case 'all':        show = true; break;
+      case 'essential':  show = p.verdict === 'essential'; break;
+      case 'hidden-gem': show = p.verdict === 'hidden-gem'; break;
+      case 'worth-it':   show = p.verdict === 'worth-it'; break;
+      case 'nathan':     show = p.source && p.source.toLowerCase().indexOf('nathan') !== -1; break;
+      case 'hotel':      show = p.source && (p.source.toLowerCase().indexOf('oltrarno') !== -1 || p.source.toLowerCase().indexOf('splendid') !== -1); break;
+      case 'goop':       show = p.source && p.source.toLowerCase().indexOf('goop') !== -1; break;
+      case 'dining':     show = p.category === 'dining'; break;
+      case 'landmark':   show = p.category === 'landmark'; break;
+      case 'activity':   show = p.category === 'activity'; break;
+      case 'viewpoint':  show = p.category === 'viewpoint'; break;
+      // Moods
+      case 'romantic':   show = autoTag(p).indexOf('romantic') !== -1; break;
+      case 'evening':    show = autoTag(p).indexOf('evening') !== -1; break;
+      case 'budget':     show = autoTag(p).indexOf('budget') !== -1; break;
+      case 'foodie':     show = autoTag(p).indexOf('foodie') !== -1; break;
+      default:           show = true;
     }
 
     if (show) {
@@ -441,6 +457,8 @@ function mapFilter(filter) {
       fullMap.removeLayer(m.marker);
     }
   });
+
+  closeMapFilters();
 }
 
 // ── Initialize ──
