@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════ */
+/* CIAO BELLA — Theme Variables           */
+/* Playful, colorful, celebratory!        */
+/* ═══════════════════════════════════════ */
+
+:root {
+  /* Italian flag — BOLD, not muted */
+  --rosso: #CE2B37;
+  --rosso-dark: #A8222C;
+  --rosso-light: #FFF0F1;
+  --rosso-bg: #FFEAEC;
+  --verde: #008C45;
+  --verde-dark: #006B35;
+  --verde-light: #E8F5EC;
+  --verde-bg: #D4F0DD;
+  --giallo: #E8B931;
+  --giallo-dark: #C9A028;
+  --giallo-light: #FFF8E1;
+  --giallo-bg: #FFF3CC;
+
+  /* Neutrals */
+  --espresso: #2D2926;
+  --cream: #FEFCF8;
+  --bianco: #FFFFFF;
+  --warm-gray: #6B5E5A;
+  --light-gray: #E8E6E2;
+  --faint-gray: #F5F3EF;
+
+  /* Accent colors */
+  --purple: #8B5CF6;
+  --purple-light: #EDE9FE;
+  --blue: #3B82F6;
+  --blue-light: #DBEAFE;
+  --pink: #EC4899;
+  --pink-light: #FCE7F3;
+  --orange: #F97316;
+  --orange-light: #FFF7ED;
+
+  /* Confetti palette */
+  --confetti-1: #CE2B37;
+  --confetti-2: #008C45;
+  --confetti-3: #E8B931;
+  --confetti-4: #8B5CF6;
+  --confetti-5: #EC4899;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Radii — rounded and playful */
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-pill: 50px;
+  --radius-circle: 50%;
+
+  /* Shadows — warm tinted */
+  --shadow-sm: 0 2px 8px rgba(45, 41, 38, 0.08);
+  --shadow-md: 0 4px 20px rgba(45, 41, 38, 0.12);
+  --shadow-lg: 0 8px 40px rgba(45, 41, 38, 0.16);
+  --shadow-glow-rosso: 0 4px 20px rgba(206, 43, 55, 0.25);
+  --shadow-glow-verde: 0 4px 20px rgba(0, 140, 69, 0.25);
+  --shadow-glow-giallo: 0 4px 20px rgba(232, 185, 49, 0.25);
+
+  /* Animations */
+  --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 0.15s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.5s;
+
+  /* Layout */
+  --tab-bar-height: 64px;
+  --max-width: 600px;
+}

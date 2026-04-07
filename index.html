@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Italy Honeymoon 🇮🇹</title>
+<meta name="description" content="Dylan & partner's Italy honeymoon companion — June 2026">
+<meta name="theme-color" content="#CE2B37">
+<link rel="manifest" href="manifest.json">
+
+<!-- Fonts (self-hosted for offline) -->
+<link rel="stylesheet" href="fonts/fonts.css">
+
+<!-- Leaflet (self-hosted for offline) -->
+<link rel="stylesheet" href="lib/leaflet.css">
+<script src="lib/leaflet.js"></script>
+
+<!-- App CSS -->
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: TODAY                         -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-today" class="page active">
+  <div class="page-scroll">
+    <div id="today-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: EXPLORE (city selector)       -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-explore" class="page">
+  <div class="page-scroll">
+    <div id="explore-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: CITY                          -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-city" class="page">
+  <div class="page-scroll">
+    <div id="city-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: PLACE DETAIL                  -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-place" class="page">
+  <div class="page-scroll">
+    <div id="place-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: PHRASEBOOK                    -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-phrasebook" class="page">
+  <div class="page-scroll">
+    <div id="phrasebook-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: JOURNAL                       -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-journal" class="page">
+  <div class="page-scroll">
+    <div id="journal-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: LETTERS                       -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-letters" class="page">
+  <div class="page-scroll">
+    <div id="letters-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: ACHIEVEMENTS                  -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-achievements" class="page">
+  <div class="page-scroll">
+    <div id="achievements-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: BOOKINGS                      -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-bookings" class="page">
+  <div class="page-scroll">
+    <div id="bookings-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: TIME CAPSULE                  -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-capsule" class="page">
+  <div class="page-scroll">
+    <div id="capsule-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: MAP (dedicated tab)           -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-map" class="page">
+  <!-- City jump bar (floats over map) -->
+  <div id="map-city-bar" class="map-city-bar">
+    <button class="map-city-chip active" data-city="all" onclick="mapJumpTo('all')">🇮🇹 All</button>
+    <button class="map-city-chip" data-city="Rome" onclick="mapJumpTo('Rome')">🏛️ Rome</button>
+    <button class="map-city-chip" data-city="Florence" onclick="mapJumpTo('Florence')">🌻 Florence</button>
+    <button class="map-city-chip" data-city="Lake Como" onclick="mapJumpTo('Lake Como')">⛰️ Como</button>
+    <button class="map-city-chip" data-city="Venice" onclick="mapJumpTo('Venice')">🚣 Venice</button>
+  </div>
+  <!-- Filter button (floats over map) -->
+  <div id="map-filter-bar" class="map-filter-bar">
+    <button class="map-filter-chip active" data-filter="all" onclick="mapFilter('all')">All</button>
+    <button class="map-filter-chip" data-filter="essential" onclick="mapFilter('essential')">🟢 Essential</button>
+    <button class="map-filter-chip" data-filter="nathan" onclick="mapFilter('nathan')">👨‍🍳 Nathan</button>
+    <button class="map-filter-chip" data-filter="dining" onclick="mapFilter('dining')">🍝 Dining</button>
+    <button class="map-filter-chip" data-filter="landmark" onclick="mapFilter('landmark')">🏛️ Sights</button>
+    <button class="map-filter-chip" data-filter="hidden-gem" onclick="mapFilter('hidden-gem')">💎 Hidden Gems</button>
+  </div>
+  <!-- Map container -->
+  <div id="full-map"></div>
+  <!-- Legend (bottom of map) -->
+  <div id="map-legend" class="map-legend">
+    <span class="map-legend-item"><span class="map-legend-dot" style="background:var(--rosso)"></span>Dining</span>
+    <span class="map-legend-item"><span class="map-legend-dot" style="background:var(--verde)"></span>Landmark</span>
+    <span class="map-legend-item"><span class="map-legend-dot" style="background:var(--verde-dark)"></span>Activity</span>
+    <span class="map-legend-item"><span class="map-legend-dot" style="background:#8B5CF6"></span>Viewpoint</span>
+    <span class="map-legend-item"><span class="map-legend-dot map-legend-hotel"></span>Hotel</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PAGE: MORE                          -->
+<!-- ═══════════════════════════════════ -->
+<div id="page-more" class="page">
+  <div class="page-scroll">
+    <div id="more-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- SURPRISE ME MODAL                   -->
+<!-- ═══════════════════════════════════ -->
+<div id="surprise-modal" class="modal-overlay">
+  <div id="surprise-content" class="modal-card"></div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- TOAST                               -->
+<!-- ═══════════════════════════════════ -->
+<div id="toast" class="toast"></div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- BOTTOM TAB BAR                      -->
+<!-- ═══════════════════════════════════ -->
+<nav id="tab-bar">
+  <button class="tab-btn active" data-tab="today" onclick="Router.navigate('#today')">
+    <span class="tab-icon">🌞</span>
+    <span class="tab-label">Today</span>
+  </button>
+  <button class="tab-btn" data-tab="map" onclick="Router.navigate('#map')">
+    <span class="tab-icon">🗺️</span>
+    <span class="tab-label">Map</span>
+  </button>
+  <button class="tab-btn" data-tab="explore" onclick="Router.navigate('#explore')">
+    <span class="tab-icon">🔍</span>
+    <span class="tab-label">Explore</span>
+  </button>
+  <button class="tab-btn" data-tab="phrases" onclick="Router.navigate('#phrasebook')">
+    <span class="tab-icon">🇮🇹</span>
+    <span class="tab-label">Phrases</span>
+  </button>
+  <button class="tab-btn" data-tab="more" onclick="Router.navigate('#more')">
+    <span class="tab-icon">✨</span>
+    <span class="tab-label">More</span>
+  </button>
+</nav>
+
+<!-- ═══════════════════════════════════ -->
+<!-- SCRIPTS (order matters!)            -->
+<!-- ═══════════════════════════════════ -->
+<script src="js/italy-border.js"></script>
+<script src="js/data-places.js"></script>
+<script src="js/data-phrases.js"></script>
+<script src="js/data-hotels.js"></script>
+<script src="js/data-trip.js"></script>
+<script src="js/data-achievements.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/router.js"></script>
+<script src="js/animations.js"></script>
+<script src="js/today.js"></script>
+<script src="js/city.js"></script>
+<script src="js/detail.js"></script>
+<script src="js/phrasebook.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/letters.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/surprise.js"></script>
+<script src="js/bookings.js"></script>
+<script src="js/suggestions.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

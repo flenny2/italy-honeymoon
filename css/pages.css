@@ -1,0 +1,635 @@
+/* ═══════════════════════════════════════ */
+/* PAGE-SPECIFIC STYLES                   */
+/* ═══════════════════════════════════════ */
+
+/* ── Today Page ── */
+.today-hero {
+  padding: var(--space-lg) var(--space-md) var(--space-md);
+  text-align: center;
+}
+
+.today-hero h1 {
+  font-size: 24px;
+  margin-bottom: var(--space-xs);
+}
+
+.today-section {
+  padding: 0 var(--space-md);
+  margin-bottom: var(--space-md);
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Today Route Map ── */
+.today-map-wrap {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.today-mini-map {
+  height: 260px;
+  background: var(--faint-gray);
+}
+
+.route-marker {
+  background: var(--bianco);
+  border-radius: var(--radius-circle);
+  border: 3px solid var(--rosso);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.15s var(--bounce);
+}
+
+.route-marker:hover { transform: scale(1.1); }
+
+.route-marker-current {
+  border-color: var(--verde);
+  box-shadow: 0 0 0 4px rgba(0, 140, 69, 0.2), 0 2px 10px rgba(0, 0, 0, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(0, 140, 69, 0.2), 0 2px 10px rgba(0, 0, 0, 0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 140, 69, 0.1), 0 2px 10px rgba(0, 0, 0, 0.2); }
+}
+
+.route-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--espresso);
+  white-space: nowrap;
+  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.95), -1px -1px 3px rgba(255, 255, 255, 0.95);
+  margin-top: 2px;
+  pointer-events: none;
+}
+
+.route-dates {
+  font-weight: 500;
+  font-size: 9px;
+  color: var(--warm-gray);
+}
+
+.route-marker-mini {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-circle);
+  background: var(--giallo-light);
+  border: 2px solid var(--giallo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.route-label-mini {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--warm-gray);
+  white-space: nowrap;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.95), -1px -1px 2px rgba(255, 255, 255, 0.95);
+  pointer-events: none;
+}
+
+.hotel-card {
+  background: var(--bianco);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--rosso);
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.hotel-emoji { font-size: 32px; }
+
+.hotel-info { flex: 1; }
+.hotel-name { font-weight: 700; font-size: 15px; }
+.hotel-dates { font-size: 12px; color: var(--warm-gray); }
+.hotel-address { font-size: 12px; color: var(--warm-gray); margin-top: 2px; }
+
+.phrase-of-day {
+  background: var(--verde-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  text-align: center;
+}
+
+.phrase-of-day-italian {
+  font-size: 20px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--verde-dark);
+  margin-bottom: 2px;
+}
+
+.phrase-of-day-pronounce {
+  font-size: 12px;
+  color: var(--verde);
+  margin-bottom: 4px;
+}
+
+.phrase-of-day-english {
+  font-size: 13px;
+  color: var(--warm-gray);
+}
+
+.phrase-of-day-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--verde);
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+/* ── Explore Page ── */
+.explore-header {
+  text-align: center;
+  padding: var(--space-xl) var(--space-md) var(--space-md);
+}
+
+.explore-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+  padding: 0 var(--space-md);
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.explore-city-card {
+  background: var(--bianco);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-md);
+  text-align: center;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--bounce), box-shadow var(--duration-fast);
+  box-shadow: var(--shadow-sm);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.explore-city-card:active { transform: scale(0.95); }
+.explore-city-card:hover { box-shadow: var(--shadow-md); }
+.explore-city-emoji { font-size: 40px; margin-bottom: var(--space-sm); }
+.explore-city-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.explore-city-count { font-size: 12px; color: var(--warm-gray); margin-top: 2px; }
+
+/* ── City Page ── */
+.city-header {
+  padding: var(--space-md);
+  text-align: center;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.city-header h1 {
+  font-size: 28px;
+  margin-bottom: var(--space-xs);
+}
+
+.city-mini-map {
+  height: 200px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin: 0 var(--space-md) var(--space-md);
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.city-places {
+  padding: 0 var(--space-md);
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.city-mood-bar {
+  padding: 0 var(--space-md);
+  max-width: var(--max-width);
+  margin: 0 auto var(--space-sm);
+}
+
+/* ── Place Detail Page ── */
+.detail-content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-md) var(--space-lg);
+}
+
+.detail-name {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.detail-city {
+  font-size: 14px;
+  color: var(--warm-gray);
+  margin-bottom: var(--space-md);
+}
+
+.detail-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--espresso);
+  margin-bottom: var(--space-md);
+}
+
+.detail-category-badge {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+}
+
+.detail-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+/* ── Journal Page ── */
+.journal-prompt-card {
+  background: var(--bianco);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-md);
+}
+
+.journal-prompt-text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  color: var(--espresso);
+}
+
+.journal-textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--light-gray);
+  font-family: var(--font-body);
+  font-size: 14px;
+  min-height: 100px;
+  resize: vertical;
+  color: var(--espresso);
+  background: var(--cream);
+}
+
+.journal-textarea:focus {
+  outline: none;
+  border-color: var(--rosso);
+}
+
+.journal-entry {
+  background: var(--bianco);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.journal-entry-date {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--warm-gray);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.journal-entry-prompt {
+  font-size: 12px;
+  color: var(--rosso);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.journal-entry-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--espresso);
+}
+
+/* ── Letters Page ── */
+.letter-card {
+  background: var(--bianco);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--bounce);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.letter-card:active { transform: scale(0.97); }
+
+.letter-icon { font-size: 32px; }
+.letter-info { flex: 1; }
+.letter-recipient { font-weight: 700; font-size: 15px; }
+.letter-date { font-size: 12px; color: var(--warm-gray); }
+.letter-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+.letter-locked { background: var(--light-gray); color: var(--warm-gray); }
+.letter-unlocked { background: var(--verde-light); color: var(--verde-dark); }
+
+/* ── Map Tab ── */
+#page-map {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  bottom: var(--tab-bar-height);
+}
+
+#full-map {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
+}
+
+/* City jump bar (floats over map) */
+.map-city-bar {
+  position: absolute;
+  top: 10px; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  padding: 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-city-bar::-webkit-scrollbar { display: none; }
+
+.map-city-chip {
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--bianco);
+  color: var(--espresso);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all var(--duration-fast) var(--bounce);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.map-city-chip:active { transform: scale(0.93); }
+
+.map-city-chip.active {
+  background: var(--rosso);
+  color: #fff;
+}
+
+/* Filter bar (below city bar) */
+.map-filter-bar {
+  position: absolute;
+  top: 50px; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  gap: 4px;
+  padding: 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-filter-bar::-webkit-scrollbar { display: none; }
+
+.map-filter-chip {
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  color: var(--warm-gray);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: all var(--duration-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.map-filter-chip:active { transform: scale(0.93); }
+
+.map-filter-chip.active {
+  background: var(--espresso);
+  color: #fff;
+}
+
+/* Legend (bottom of map) */
+.map-legend {
+  position: absolute;
+  bottom: 8px; left: 8px;
+  z-index: 10;
+  display: flex;
+  gap: 10px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--warm-gray);
+}
+
+.map-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.map-legend-hotel {
+  background: var(--giallo);
+  border: 2px solid var(--espresso);
+  width: 10px;
+  height: 10px;
+}
+
+/* Hotel markers on map */
+.map-hotel-marker {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--giallo);
+  border: 3px solid var(--espresso);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.map-hotel-icon { font-size: 18px; }
+
+.map-hotel-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--espresso);
+  white-space: nowrap;
+  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.95), -1px -1px 3px rgba(255, 255, 255, 0.95);
+  margin-top: 2px;
+  pointer-events: none;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Gift ribbon on pins */
+.map-gift-pin { position: relative; }
+.map-gift-ribbon {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 10px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+/* Day trip markers */
+.map-dt-marker {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--giallo-light);
+  border: 2px solid var(--giallo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.map-dt-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--warm-gray);
+  white-space: nowrap;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.95), -1px -1px 2px rgba(255, 255, 255, 0.95);
+  pointer-events: none;
+}
+
+/* Walking radius labels */
+.map-radius-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--rosso);
+  text-align: center;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 1px 6px;
+  border-radius: 6px;
+  opacity: 0.7;
+}
+
+.map-radius-label-inner {
+  color: var(--verde);
+}
+
+/* ── Leaflet popup override ── */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 180px;
+}
+
+.leaflet-popup-close-button {
+  font-size: 20px !important;
+  color: var(--warm-gray) !important;
+  top: 8px !important;
+  right: 10px !important;
+}
+
+/* Map markers */
+.custom-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-circle);
+  border: 2.5px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  transition: transform var(--duration-fast);
+}
+
+.custom-marker:hover { transform: scale(1.2); }
+
+.popup-inner { padding: 14px; }
+.popup-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.popup-meta { font-size: 11px; color: var(--warm-gray); }
+.popup-btn {
+  margin-top: var(--space-sm);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--rosso);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ── Responsive ── */
+@media (min-width: 769px) {
+  .explore-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .achievement-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

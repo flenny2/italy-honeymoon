@@ -1,0 +1,18 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Old app (keep for reference but don't deploy)
+italy-planner.html
+places-data-raw.js
+APP-ARCHITECTURE.md
+
+# Temp files
+/tmp/

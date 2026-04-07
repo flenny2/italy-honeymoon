@@ -1,0 +1,143 @@
+// ═══════════════════════════════════════
+// PHRASEBOOK DATA
+// ═══════════════════════════════════════
+
+const PHRASES = [
+  { cat: 'Greetings & Basics', icon: '👋', color: '#008C45', phrases: [
+    { it: 'Buongiorno', pr: 'bwon-JOHR-noh', en: 'Good morning / Good day (formal)' },
+    { it: 'Buonasera', pr: 'bwon-ah-SEH-rah', en: 'Good evening' },
+    { it: 'Ciao', pr: 'CHOW', en: 'Hi / Bye (informal)' },
+    { it: 'Per favore', pr: 'pair fah-VOH-reh', en: 'Please' },
+    { it: 'Grazie', pr: 'GRAH-tsee-eh', en: 'Thank you' },
+    { it: 'Grazie mille', pr: 'GRAH-tsee-eh MEEL-leh', en: 'Thank you so much' },
+    { it: 'Prego', pr: 'PREH-goh', en: "You're welcome / Go ahead" },
+    { it: 'Mi scusi', pr: 'mee SKOO-zee', en: 'Excuse me (formal)' },
+    { it: 'Mi dispiace', pr: 'mee dees-PYAH-cheh', en: "I'm sorry" },
+    { it: 'Sì / No', pr: 'see / noh', en: 'Yes / No' },
+    { it: 'Parla inglese?', pr: 'PAR-lah een-GLEH-zeh', en: 'Do you speak English?' },
+    { it: 'Non parlo italiano', pr: 'non PAR-loh ee-tahl-YAH-noh', en: "I don't speak Italian" },
+    { it: 'Sono americano/a', pr: 'SOH-noh ah-meh-ree-KAH-noh/nah', en: "I'm American" },
+    { it: 'Siamo in luna di miele', pr: 'see-AH-moh een LOO-nah dee mee-EH-leh', en: "We're on our honeymoon" },
+  ], tip: "Use \"buongiorno\" until about 4-5pm, then switch to \"buonasera.\" Italians notice and appreciate the effort." },
+
+  { cat: 'Ordering Food & Drinks', icon: '🍝', color: '#CE2B37', phrases: [
+    { it: 'Un tavolo per due, per favore', pr: 'oon TAH-voh-loh pair DOO-eh, pair fah-VOH-reh', en: 'A table for two, please' },
+    { it: 'Vorrei...', pr: 'vohr-RAY', en: 'I would like...' },
+    { it: 'Prendo il/la...', pr: 'PREN-doh eel/lah', en: "I'll have the..." },
+    { it: 'Cosa consiglia?', pr: 'KOH-zah kohn-SEEL-yah', en: 'What do you recommend?' },
+    { it: 'Il menù, per favore', pr: 'eel meh-NOO, pair fah-VOH-reh', en: 'The menu, please' },
+    { it: 'Il conto, per favore', pr: 'eel KOHN-toh, pair fah-VOH-reh', en: 'The check, please' },
+    { it: "Un'acqua naturale/frizzante", pr: "oon-AHK-wah nah-too-RAH-leh/free-TSAHN-teh", en: 'Still/sparkling water' },
+    { it: 'Un caffè', pr: 'oon kah-FEH', en: 'An espresso (the default coffee)' },
+    { it: 'Un cappuccino', pr: 'oon kah-poo-CHEE-noh', en: 'A cappuccino (morning only!)' },
+    { it: 'Due bicchieri di vino rosso/bianco', pr: 'DOO-eh beek-KYEH-ree dee VEE-noh ROHS-soh/BYAHN-koh', en: 'Two glasses of red/white wine' },
+    { it: 'Un Aperol Spritz', pr: 'oon AH-peh-rohl spreets', en: 'An Aperol Spritz' },
+    { it: 'Posso avere...?', pr: 'POHS-soh ah-VEH-reh', en: 'Can I have...?' },
+    { it: 'Buonissimo!', pr: 'bwoh-NEES-see-moh', en: 'Delicious!' },
+    { it: 'Basta così, grazie', pr: 'BAH-stah koh-ZEE, GRAH-tsee-eh', en: "That's enough, thanks" },
+    { it: 'Siamo pronti per ordinare', pr: 'see-AH-moh PROHN-tee pair ohr-dee-NAH-reh', en: "We're ready to order" },
+  ], tip: "Never order cappuccino after 11am — Italians consider it a breakfast drink. After lunch, it's just \"un caffè\" (espresso). Also: coperto (cover charge) on the bill is normal, not a scam." },
+
+  { cat: 'Dining Vocabulary', icon: '🧑‍🍳', color: '#A8222C', phrases: [
+    { it: 'Antipasto', pr: 'ahn-tee-PAH-stoh', en: 'Starter / appetizer' },
+    { it: 'Primo', pr: 'PREE-moh', en: 'First course (pasta, risotto, soup)' },
+    { it: 'Secondo', pr: 'seh-KOHN-doh', en: 'Main course (meat or fish)' },
+    { it: 'Contorno', pr: 'kohn-TOHR-noh', en: 'Side dish (ordered separately)' },
+    { it: 'Dolce', pr: 'DOHL-cheh', en: 'Dessert' },
+    { it: 'Coperto', pr: 'koh-PAIR-toh', en: 'Cover charge (normal, not a tourist scam)' },
+    { it: 'Cacio e pepe', pr: 'KAH-choh eh PEH-peh', en: 'Cheese and pepper pasta (Roman classic)' },
+    { it: 'Carbonara', pr: 'kar-boh-NAH-rah', en: 'Egg, guanciale, pecorino pasta (never cream!)' },
+    { it: 'Amatriciana', pr: 'ah-mah-tree-CHAH-nah', en: 'Tomato, guanciale, pecorino pasta' },
+    { it: 'Bistecca alla fiorentina', pr: 'bee-STEHK-kah AHL-lah fyoh-ren-TEE-nah', en: 'Florentine T-bone steak' },
+    { it: 'Cicchetti', pr: 'chee-KET-tee', en: 'Venetian small bites / tapas' },
+    { it: 'Lampredotto', pr: 'lahm-preh-DOHT-toh', en: 'Tripe sandwich (Florentine street food)' },
+    { it: 'Osso buco', pr: 'OHS-soh BOO-koh', en: 'Braised veal shank (Lombardian classic)' },
+    { it: 'Gelato artigianale', pr: 'jeh-LAH-toh ahr-tee-jah-NAH-leh', en: 'Artisan gelato (the good stuff)' },
+    { it: 'Pizza al taglio', pr: 'PEET-tsah ahl TAHL-yoh', en: 'Pizza by the slice (sold by weight)' },
+  ], tip: "Italian meals follow a strict order: antipasto → primo → secondo + contorno → dolce. You don't have to order every course — just a primo is perfectly fine. Side dishes (contorni) come separately, not with your main." },
+
+  { cat: 'Getting Around', icon: '🗺', color: '#3B82F6', phrases: [
+    { it: "Dov'è...?", pr: 'doh-VEH', en: 'Where is...?' },
+    { it: 'A destra / A sinistra', pr: 'ah DEH-strah / ah see-NEE-strah', en: 'To the right / To the left' },
+    { it: 'Sempre dritto', pr: 'SEM-preh DREET-toh', en: 'Straight ahead' },
+    { it: 'Quanto è lontano?', pr: 'KWAHN-toh eh lohn-TAH-noh', en: 'How far is it?' },
+    { it: 'Un biglietto per...', pr: 'oon beel-YET-toh pair', en: 'A ticket to...' },
+    { it: 'A che ora parte il treno?', pr: 'ah keh OH-rah PAR-teh eel TREH-noh', en: 'What time does the train leave?' },
+    { it: 'Quale binario?', pr: 'KWAH-leh bee-NAH-ryoh', en: 'Which platform?' },
+    { it: 'La fermata del vaporetto', pr: 'lah fair-MAH-tah del vah-poh-RET-toh', en: 'The vaporetto (water bus) stop' },
+    { it: 'Mi sono perso/a', pr: 'mee SOH-noh PAIR-soh/sah', en: "I'm lost" },
+    { it: 'Può indicarmi sulla mappa?', pr: 'pwoh een-dee-KAR-mee SOO-lah MAHP-pah', en: 'Can you show me on the map?' },
+  ], tip: "Validate your train ticket before boarding (machines on the platform) or you risk a fine. In Venice, buy a vaporetto pass — single rides are €9.50 each." },
+
+  { cat: 'Shopping & Haggling', icon: '🛍', color: '#E8B931', phrases: [
+    { it: 'Quanto costa?', pr: 'KWAHN-toh KOH-stah', en: 'How much does it cost?' },
+    { it: 'È troppo caro', pr: 'eh TROHP-poh KAH-roh', en: "It's too expensive" },
+    { it: "Può farmi uno sconto?", pr: 'pwoh FAR-mee OO-noh SKOHN-toh', en: 'Can you give me a discount?' },
+    { it: 'Posso pagare con carta?', pr: 'POHS-soh pah-GAH-reh kohn KAR-tah', en: 'Can I pay by card?' },
+    { it: 'Solo contanti', pr: 'SOH-loh kohn-TAHN-tee', en: 'Cash only' },
+    { it: 'Posso vedere quello?', pr: 'POHS-soh veh-DEH-reh KWEL-loh', en: 'Can I see that one?' },
+    { it: 'Sto solo guardando', pr: 'stoh SOH-loh gwar-DAHN-doh', en: "I'm just looking" },
+    { it: 'È fatto a mano?', pr: 'eh FAHT-toh ah MAH-noh', en: 'Is it handmade?' },
+    { it: 'Lo prendo', pr: 'loh PREN-doh', en: "I'll take it" },
+  ], tip: "Haggling is expected at outdoor markets (like San Lorenzo in Florence) but never in shops or restaurants. Start at about 60-70% of asking price and meet in the middle. Always be friendly about it." },
+
+  { cat: 'Romance & Compliments', icon: '💑', color: '#EC4899', phrases: [
+    { it: 'Ti amo', pr: 'tee AH-moh', en: 'I love you' },
+    { it: 'Sei bellissima/o', pr: 'say bel-LEES-see-mah/moh', en: 'You are beautiful/handsome' },
+    { it: 'Che bello!', pr: 'keh BEL-loh', en: 'How beautiful!' },
+    { it: 'Che romantico!', pr: 'keh roh-MAHN-tee-koh', en: 'How romantic!' },
+    { it: 'Alla nostra!', pr: 'AHL-lah NOH-strah', en: 'To us! (toast)' },
+    { it: 'Per sempre', pr: 'pair SEM-preh', en: 'Forever' },
+    { it: 'Cin cin!', pr: 'cheen cheen', en: 'Cheers! (clinking glasses)' },
+    { it: 'Auguri!', pr: 'ow-GOO-ree', en: 'Best wishes! / Congratulations!' },
+    { it: 'Amore mio', pr: 'ah-MOH-reh MEE-oh', en: 'My love' },
+  ], tip: "Italians genuinely love honeymooners. Tell people \"siamo in luna di miele\" and watch the congratulations, free limoncello, and extra desserts appear. They mean it." },
+
+  { cat: 'Emergencies & Help', icon: '🆘', color: '#DC2626', phrases: [
+    { it: 'Aiuto!', pr: 'ah-YOO-toh', en: 'Help!' },
+    { it: 'Ho bisogno di un medico', pr: 'oh bee-ZOHN-yoh dee oon MEH-dee-koh', en: 'I need a doctor' },
+    { it: "Dov'è la farmacia?", pr: 'doh-VEH lah far-mah-CHEE-ah', en: 'Where is the pharmacy?' },
+    { it: "Dov'è l'ospedale?", pr: "doh-VEH lohs-peh-DAH-leh", en: 'Where is the hospital?' },
+    { it: 'Chiamate la polizia', pr: 'kyah-MAH-teh lah poh-lee-TSEE-ah', en: 'Call the police' },
+    { it: 'Ho perso il passaporto', pr: 'oh PAIR-soh eel pahs-sah-POHR-toh', en: 'I lost my passport' },
+    { it: 'Sono allergico/a a...', pr: 'SOH-noh ah-LAIR-jee-koh/kah ah', en: "I'm allergic to..." },
+    { it: 'Non mi sento bene', pr: 'nohn mee SEN-toh BEH-neh', en: "I don't feel well" },
+  ], tip: "Emergency number in Italy: 112 (works for police, ambulance, fire). Pharmacies (farmacie) can handle many minor issues — pharmacists are well trained and often speak some English. Look for the green cross sign." },
+
+  { cat: 'Hotel & Accommodation', icon: '🏨', color: '#6B5CF6', phrases: [
+    { it: 'Ho una prenotazione', pr: 'oh OO-nah preh-noh-tah-TSYOH-neh', en: 'I have a reservation' },
+    { it: 'A che ora è il check-out?', pr: 'ah keh OH-rah eh eel check-out', en: 'What time is check-out?' },
+    { it: 'La colazione è inclusa?', pr: 'lah koh-lah-TSYOH-neh eh een-KLOO-zah', en: 'Is breakfast included?' },
+    { it: "C'è il Wi-Fi?", pr: 'cheh eel wee-fee', en: 'Is there Wi-Fi?' },
+    { it: 'Il codice del Wi-Fi?', pr: 'eel KOH-dee-cheh del wee-fee', en: 'The Wi-Fi password?' },
+    { it: 'Posso lasciare i bagagli?', pr: 'POHS-soh lah-SHAH-reh ee bah-GAHL-yee', en: 'Can I leave my luggage?' },
+    { it: 'Una camera matrimoniale', pr: 'OO-nah KAH-meh-rah mah-tree-moh-NYAH-leh', en: 'A double room (one big bed)' },
+  ], tip: "Italian hotels often charge a city tax (tassa di soggiorno) per person per night — usually €3-7 in major cities. It is collected at check-out, often cash only. This is a real tax, not a scam." },
+
+  { cat: 'Useful Numbers & Time', icon: '🕐', color: '#5A9E6F', phrases: [
+    { it: 'Uno, due, tre, quattro, cinque', pr: 'OO-noh, DOO-eh, treh, KWAT-troh, CHEEN-kweh', en: '1, 2, 3, 4, 5' },
+    { it: 'Sei, sette, otto, nove, dieci', pr: 'say, SET-teh, OHT-toh, NOH-veh, DYEH-chee', en: '6, 7, 8, 9, 10' },
+    { it: 'Venti, trenta, cinquanta, cento', pr: 'VEN-tee, TREN-tah, cheen-KWAHN-tah, CHEN-toh', en: '20, 30, 50, 100' },
+    { it: 'Che ora è?', pr: 'keh OH-rah eh', en: 'What time is it?' },
+    { it: 'Oggi / Domani / Ieri', pr: 'OHJ-jee / doh-MAH-nee / YEH-ree', en: 'Today / Tomorrow / Yesterday' },
+    { it: 'Lunedì, Martedì, Mercoledì...', pr: 'loo-neh-DEE, mar-teh-DEE, mair-koh-leh-DEE', en: 'Monday, Tuesday, Wednesday...' },
+  ], tip: "Italy uses 24-hour time in schedules and tickets. So 15:00 = 3pm, 20:30 = 8:30pm. Shops often close 13:00-15:30 for lunch. Restaurants open for dinner around 19:30 — showing up at 18:00 marks you as a tourist." },
+];
+
+// Journal prompts (used for daily journal feature)
+const JOURNAL_PROMPTS = [
+  'What surprised you most today?',
+  'Best thing we ate today',
+  'A moment I want to remember',
+  'Something that made us laugh',
+  'A smell, sound, or feeling from today',
+  'What would we do differently?',
+  'Best photo we took today — describe it',
+  'One word for today',
+  'Something we learned about each other',
+  'A local we met or interacted with',
+  'What are you most excited for tomorrow?',
+  'Rate today 1-10 and why',
+  'If we lived here, we would...',
+  'The most beautiful thing we saw',
+];
