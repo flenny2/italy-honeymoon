@@ -27,7 +27,7 @@ Multi-file PWA with hash-based routing. ~300 lines HTML, ~780 lines CSS (4 files
 ### File map
 
 ```
-index.html              Entry point — page shells, tab bar, map filter modal
+index.html              Entry point — page shells, tab bar (map filter modal is top-level, not inside page-map)
 manifest.json           PWA manifest
 sw.js                   Service worker — caches all assets + map tiles
 
@@ -38,7 +38,7 @@ css/
   pages.css             Page-specific styles (today, city, detail, phrasebook, etc.)
 
 js/
-  data-places.js        DEFAULT_PLACES (57 entries), autoTag(), distanceKm(), getNearbyPairings()
+  data-places.js        DEFAULT_PLACES (83 entries), autoTag(), distanceKm(), getNearbyPairings()
   data-trip.js          TRIP schedule, CITIES, CITY_EMOJI, CITY_VIEWS, CAT_COLORS/ICONS, MOODS, VERDICTS, GIFTED_EXPERIENCES, getTripPhase()
   data-hotels.js        HOTELS object keyed by city name
   data-phrases.js       Italian phrasebook data
@@ -72,15 +72,15 @@ Bottom tab bar with 5 tabs. Router in `js/router.js` maps `location.hash` to ren
 | Tab | Page | Hash | Render function |
 |-----|------|------|-----------------|
 | Today | Home screen | `#today` | `renderToday()` |
+| Journal | Daily journal | `#journal` | `renderJournal()` |
 | Map | Full-screen map | `#map` | `renderFullMap()` |
-| Explore | City grid | `#explore` | `renderExplore()` |
-| Explore | City detail | `#city/{slug}` | `renderCity()` |
-| Explore | Place detail | `#place/{id}` | `renderDetail()` |
-| Phrases | Phrasebook | `#phrasebook` | `renderPhrasebook()` |
+| Letters | Love letters | `#letters` | `renderLetters()` |
 | More | Feature hub | `#more` | `renderMore()` |
+| More | Explore cities | `#explore` | `renderExplore()` |
+| More | City detail | `#city/{slug}` | `renderCity()` |
+| More | Place detail | `#place/{id}` | `renderDetail()` |
+| More | Phrasebook | `#phrasebook` | `renderPhrasebook()` |
 | More | Bookings | `#bookings` | `renderBookings()` |
-| More | Journal | `#journal` | `renderJournal()` |
-| More | Letters | `#letters` | `renderLetters()` |
 | More | Achievements | `#achievements` | `renderAchievements()` |
 | More | Time Capsule | `#capsule` | `renderCapsule()` |
 
@@ -103,9 +103,17 @@ User interaction → Storage.savePlaces() / Storage.saveJournalEntry() / etc.
 - **`getNearbyPairings(place, maxKm)`** (`data-places.js`) — finds places within 600m with walk times
 - **`getTripPhase()`** (`data-trip.js`) — returns `{phase: 'before'|'during'|'after', ...}` to drive contextual UI
 - **Verdict badges**: essential, worth-it, nice, overrated, hidden-gem — defined in `VERDICTS` (`data-trip.js`)
-- **Map filters**: filter modal in `index.html`, logic in `app.js` — by verdict, source, type, or mood
+- **Achievements**: 32 achievements with 5 rarity tiers (common, uncommon, rare, legendary, platinum). Platinum ("Amore Infinito") auto-unlocks when all others are complete — logic in `doUnlock()` in `achievements.js`
+- **Map filter modal** is a top-level element (not inside `#page-map`) to escape its stacking context and render above the tab bar. Uses multi-select toggle with OR logic (`mapActiveFilters[]`, `toggleMapFilter()`, `applyActiveFilters()`)
 - **Walking radius**: hotel-centered 8min/15min circles shown on city zoom (`app.js`)
 - **Hidden categories**: transit, pharmacy, restroom are filtered from UI via `isVisiblePlace()` in `helpers.js`
+
+## Gotchas
+
+- **Stacking context**: `#page-map` creates a stacking context (`position: fixed; z-index: 1`). Modals inside it cannot render above `#tab-bar` (`z-index: 100`). The map filter modal was moved outside `#page-map` for this reason. Any new modals on the map page must also be top-level.
+- **Safe area insets**: Map city bar and filter button use `env(safe-area-inset-top)`. Tab bar uses `env(safe-area-inset-bottom)`. Any fixed-position UI near screen edges must account for these.
+- **innerHTML pattern**: The entire app uses innerHTML for rendering. A security hook will warn about XSS — this is expected for a personal offline app with no external input.
+- **Place card verdict styling**: `buildPlaceCard()` in `today.js` adds `place-card-{verdict}` class. CSS in `components.css` transforms the card appearance based on verdict.
 
 ## Place Object Schema
 
