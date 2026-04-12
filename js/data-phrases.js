@@ -18,6 +18,7 @@ const PHRASES = [
     { it: 'Non parlo italiano', pr: 'non PAR-loh ee-tahl-YAH-noh', en: "I don't speak Italian" },
     { it: 'Sono americano/a', pr: 'SOH-noh ah-meh-ree-KAH-noh/nah', en: "I'm American" },
     { it: 'Siamo in luna di miele', pr: 'see-AH-moh een LOO-nah dee mee-EH-leh', en: "We're on our honeymoon" },
+    { it: 'Può farci una foto, per favore?', pr: 'pwoh FAR-chee OO-nah FOH-toh, pair fah-VOH-reh', en: 'Can you take our photo, please?' },
   ], tip: "Use \"buongiorno\" until about 4-5pm, then switch to \"buonasera.\" Italians notice and appreciate the effort." },
 
   { cat: 'Ordering Food & Drinks', icon: '🍝', color: '#CE2B37', phrases: [

@@ -1,6 +1,8 @@
 // ═══════════════════════════════════════
-// JOURNAL — Daily prompts & entries
+// JOURNAL — Daily prompts, text & photos
 // ═══════════════════════════════════════
+
+var _pendingPhoto = null;
 
 function renderJournal() {
   var content = document.getElementById('journal-content');
@@ -8,6 +10,7 @@ function renderJournal() {
 
   var phase = getTripPhase();
   var journal = Storage.getJournal();
+  _pendingPhoto = null;
 
   // Pick today's prompt (rotate through list using day of year)
   var promptIndex = getDayOfYear() % JOURNAL_PROMPTS.length;
@@ -19,12 +22,15 @@ function renderJournal() {
     '<div class="subtitle">Capture your memories</div>' +
     '</div>';
 
-  // Today's prompt
+  // Today's prompt + form
   var promptHTML = '<div class="content-wrap">' +
     '<div class="journal-prompt-card">' +
     '<div class="journal-prompt-text">' + todayPrompt + '</div>' +
     '<textarea class="journal-textarea" id="journal-input" placeholder="Write your thoughts..."></textarea>' +
-    '<div style="margin-top:8px;display:flex;gap:8px;">' +
+    '<div id="journal-photo-preview" class="journal-photo-preview"></div>' +
+    '<input type="file" id="journal-photo-input" accept="image/*" style="display:none;" onchange="handleJournalPhoto(this)">' +
+    '<div class="journal-actions">' +
+    '<button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'journal-photo-input\').click()">📷 Add Photo</button>' +
     '<button class="btn btn-primary btn-full" onclick="saveJournalFromInput()">Save Entry ✨</button>' +
     '</div>' +
     '</div>' +
@@ -41,6 +47,7 @@ function renderJournal() {
       entriesHTML += '<div class="journal-entry">' +
         '<div class="journal-entry-date">' + dateStr + (entry.city ? ' · ' + entry.city : '') + (entry.day ? ' · Day ' + entry.day : '') + '</div>' +
         '<div class="journal-entry-prompt">' + (entry.prompt || '') + '</div>' +
+        (entry.photo ? '<div class="journal-entry-photo"><img src="' + entry.photo + '" alt="Journal photo" onclick="openJournalPhoto(this.src)"></div>' : '') +
         '<div class="journal-entry-text">' + entry.text + '</div>' +
         '</div>';
     });
@@ -50,24 +57,86 @@ function renderJournal() {
   content.innerHTML = headerHTML + promptHTML + entriesHTML;
 }
 
+function handleJournalPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      // Resize to max 800px on longest side
+      var maxSize = 800;
+      var w = img.width;
+      var h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      _pendingPhoto = canvas.toDataURL('image/jpeg', 0.7);
+
+      // Show preview
+      var preview = document.getElementById('journal-photo-preview');
+      if (preview) {
+        preview.innerHTML = '<div class="journal-photo-thumb">' +
+          '<img src="' + _pendingPhoto + '" alt="Photo preview">' +
+          '<button class="journal-photo-remove" onclick="removeJournalPhoto()">✕</button>' +
+          '</div>';
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeJournalPhoto() {
+  _pendingPhoto = null;
+  var preview = document.getElementById('journal-photo-preview');
+  if (preview) preview.innerHTML = '';
+  var input = document.getElementById('journal-photo-input');
+  if (input) input.value = '';
+}
+
+function openJournalPhoto(src) {
+  var overlay = document.createElement('div');
+  overlay.className = 'journal-photo-overlay';
+  overlay.onclick = function() { document.body.removeChild(overlay); };
+  overlay.innerHTML = '<img src="' + src + '" alt="Journal photo">';
+  document.body.appendChild(overlay);
+}
+
 function saveJournalFromInput() {
   var input = document.getElementById('journal-input');
-  if (!input || !input.value.trim()) {
-    showToast('Write something first!');
+  var hasText = input && input.value.trim();
+  var hasPhoto = !!_pendingPhoto;
+
+  if (!hasText && !hasPhoto) {
+    showToast('Write something or add a photo!');
     return;
   }
 
   var phase = getTripPhase();
   var promptIndex = getDayOfYear() % JOURNAL_PROMPTS.length;
 
-  Storage.saveJournalEntry({
+  var entry = {
     date: new Date().toISOString().split('T')[0],
     city: phase.phase === 'during' ? phase.city : '',
     day: phase.phase === 'during' ? phase.day : null,
     prompt: JOURNAL_PROMPTS[promptIndex],
-    text: input.value.trim()
-  });
+    text: (input && input.value.trim()) || ''
+  };
 
+  if (_pendingPhoto) {
+    entry.photo = _pendingPhoto;
+  }
+
+  Storage.saveJournalEntry(entry);
+  _pendingPhoto = null;
   showToast('Journal entry saved! 📝');
   renderJournal();
 }

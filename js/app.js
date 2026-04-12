@@ -72,7 +72,7 @@ function buildMoreLink(href, icon, title, desc) {
     '</a>';
 }
 
-// ── Time Capsule (placeholder) ──
+// ── Time Capsule ──
 function renderCapsule() {
   var content = document.getElementById('capsule-content');
   if (!content) return;
@@ -84,36 +84,134 @@ function renderCapsule() {
     '<h1>🔮 Time Capsule</h1>' +
     '</div>';
 
-  var bodyHTML = '<div class="content-wrap" style="text-align:center;">';
+  var bodyHTML = '<div class="content-wrap">';
 
   if (!capsule.locked) {
-    bodyHTML += '<div style="font-size:64px;margin-bottom:16px;">🔮</div>' +
-      '<h2>Your Anniversary Time Capsule</h2>' +
-      '<div style="font-size:14px;color:var(--warm-gray);margin:12px 0 24px;line-height:1.6;">' +
-      'On your last night in Italy, seal this capsule. It will lock away your journal entries, ' +
-      'favorite moments, a letter to your future selves, and your achievement stats — ' +
-      'all revealed on your first anniversary, June 27, 2027.' +
+    // ── UNSEALED — form to fill out ──
+    bodyHTML += '<div style="text-align:center;margin-bottom:24px;">' +
+      '<div style="font-size:64px;margin-bottom:12px;">🔮</div>' +
+      '<h2 style="font-family:var(--font-display);">Your Anniversary Time Capsule</h2>' +
+      '<div style="font-size:14px;color:var(--warm-gray);margin:12px 0;line-height:1.6;">' +
+      'On your last night in Italy, fill this out together. It seals away your memories ' +
+      'until your first anniversary — June 27, 2027.' +
       '</div>' +
-      '<div style="font-size:13px;color:var(--warm-gray);">This feature will be ready for your trip! ✨</div>';
+      '</div>' +
+      '<div class="capsule-form">' +
+      '<div class="capsule-field">' +
+      '<label class="capsule-label">💌 A letter to your future selves</label>' +
+      '<textarea id="capsule-letter" class="journal-textarea" style="min-height:120px;" placeholder="Dear future us..."></textarea>' +
+      '</div>' +
+      '<div class="capsule-field">' +
+      '<label class="capsule-label">📍 Favorite place from the trip</label>' +
+      '<input id="capsule-place" class="capsule-input" type="text" placeholder="The place that meant the most...">' +
+      '</div>' +
+      '<div class="capsule-field">' +
+      '<label class="capsule-label">🍝 Best meal we had</label>' +
+      '<input id="capsule-meal" class="capsule-input" type="text" placeholder="The dish, the restaurant, the moment...">' +
+      '</div>' +
+      '<div class="capsule-field">' +
+      '<label class="capsule-label">✨ A moment to remember</label>' +
+      '<textarea id="capsule-moment" class="journal-textarea" style="min-height:80px;" placeholder="Something that made this trip ours..."></textarea>' +
+      '</div>' +
+      '<button class="btn btn-primary btn-full" style="margin-top:16px;" onclick="sealTimeCapsule()">🔒 Seal the Capsule</button>' +
+      '</div>';
+
   } else if (!Storage.isCapsuleUnlocked()) {
+    // ── SEALED — countdown to anniversary ──
     var unlock = new Date(capsule.lockUntil);
     var now = new Date();
     var daysLeft = Math.ceil((unlock - now) / (1000 * 60 * 60 * 24));
-    bodyHTML += '<div style="font-size:64px;margin-bottom:16px;">🔒</div>' +
-      '<h2>Capsule Sealed!</h2>' +
-      '<div class="countdown-banner after" style="margin:16px 0;">' +
+    bodyHTML += '<div style="text-align:center;">' +
+      '<div style="font-size:64px;margin-bottom:16px;">🔒</div>' +
+      '<h2 style="font-family:var(--font-display);">Capsule Sealed</h2>' +
+      '<div class="countdown-banner after" style="margin:20px 0;">' +
       '<div class="countdown-number">' + daysLeft + '</div>' +
       '<div class="countdown-label">days until your anniversary reveal</div>' +
+      '</div>' +
+      '<div style="font-size:14px;color:var(--warm-gray);line-height:1.6;">' +
+      'Sealed on ' + formatDateFull(capsule.sealedAt) + '.<br>' +
+      'Opens June 27, 2027 💕' +
+      '</div>' +
       '</div>';
+
   } else {
-    bodyHTML += '<div style="font-size:64px;margin-bottom:16px;">🎉</div>' +
-      '<h2>Happy Anniversary!</h2>' +
-      '<div style="font-size:14px;color:var(--warm-gray);margin:12px 0;">Your capsule is ready to open!</div>';
+    // ── UNLOCKED — happy anniversary reveal ──
+    bodyHTML += '<div style="text-align:center;margin-bottom:24px;">' +
+      '<div style="font-size:64px;margin-bottom:12px;">🎉</div>' +
+      '<h2 style="font-family:var(--font-display);">Happy Anniversary!</h2>' +
+      '<div style="font-size:14px;color:var(--warm-gray);margin:8px 0;">Sealed ' + formatDateFull(capsule.sealedAt) + ' in Italy</div>' +
+      '</div>';
+
+    if (capsule.letter) {
+      bodyHTML += '<div class="capsule-reveal-section">' +
+        '<div class="capsule-reveal-label">💌 Your letter to each other</div>' +
+        '<div class="capsule-reveal-text">' + capsule.letter.replace(/\n/g, '<br>') + '</div>' +
+        '</div>';
+    }
+    if (capsule.favoritePlace) {
+      bodyHTML += '<div class="capsule-reveal-section">' +
+        '<div class="capsule-reveal-label">📍 Favorite place</div>' +
+        '<div class="capsule-reveal-text">' + capsule.favoritePlace + '</div>' +
+        '</div>';
+    }
+    if (capsule.bestMeal) {
+      bodyHTML += '<div class="capsule-reveal-section">' +
+        '<div class="capsule-reveal-label">🍝 Best meal</div>' +
+        '<div class="capsule-reveal-text">' + capsule.bestMeal + '</div>' +
+        '</div>';
+    }
+    if (capsule.bestMoment) {
+      bodyHTML += '<div class="capsule-reveal-section">' +
+        '<div class="capsule-reveal-label">✨ A moment to remember</div>' +
+        '<div class="capsule-reveal-text">' + capsule.bestMoment.replace(/\n/g, '<br>') + '</div>' +
+        '</div>';
+    }
+    if (capsule.snapshot) {
+      var journalCount = capsule.snapshot.journal ? capsule.snapshot.journal.length : 0;
+      var achievementCount = 0;
+      if (capsule.snapshot.achievements) {
+        for (var k in capsule.snapshot.achievements) {
+          if (capsule.snapshot.achievements[k] && capsule.snapshot.achievements[k].unlocked) achievementCount++;
+        }
+      }
+      bodyHTML += '<div class="capsule-reveal-section" style="text-align:center;">' +
+        '<div class="capsule-reveal-label">📊 Trip snapshot</div>' +
+        '<div style="display:flex;gap:16px;justify-content:center;margin-top:8px;">' +
+        '<div><div style="font-size:28px;font-weight:700;color:var(--rosso);">' + journalCount + '</div><div style="font-size:12px;color:var(--warm-gray);">journal entries</div></div>' +
+        '<div><div style="font-size:28px;font-weight:700;color:var(--verde);">' + achievementCount + '</div><div style="font-size:12px;color:var(--warm-gray);">achievements</div></div>' +
+        '</div>' +
+        '</div>';
+    }
   }
 
   bodyHTML += '</div>';
-
   content.innerHTML = headerHTML + bodyHTML;
+}
+
+function sealTimeCapsule() {
+  var letter = document.getElementById('capsule-letter');
+  var place = document.getElementById('capsule-place');
+  var meal = document.getElementById('capsule-meal');
+  var moment = document.getElementById('capsule-moment');
+
+  if (!letter || !letter.value.trim()) {
+    showToast('Write a letter to your future selves first!');
+    return;
+  }
+
+  if (!confirm('Seal the capsule? It won\'t open until your anniversary — June 27, 2027.')) {
+    return;
+  }
+
+  Storage.sealCapsule({
+    letter: letter.value.trim(),
+    favoritePlace: place ? place.value.trim() : '',
+    bestMeal: meal ? meal.value.trim() : '',
+    bestMoment: moment ? moment.value.trim() : ''
+  });
+
+  showToast('Time capsule sealed! 🔮');
+  renderCapsule();
 }
 
 // ═══════════════════════════════════════

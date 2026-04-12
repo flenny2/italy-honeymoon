@@ -118,6 +118,14 @@ var BOOKINGS = [
     tip: 'Book ahead — limited spots on this specific tour.',
     url: '' },
 
+  { id: 'bk-antinori', placeId: 't3', urgency: 'soon',
+    title: 'Antinori Winery Tasting + Lunch',
+    city: 'Tuscany', when: 'June 21',
+    what: 'Wine tasting reservation + lunch at Rinuccio 1180',
+    why: 'The best winery near Florence. Book the tasting and lunch together for the full experience.',
+    tip: 'Book lunch at Rinuccio 1180 too — vineyard views and excellent food. Worth combining.',
+    url: '' },
+
   // 🟢 NO BOOKING NEEDED — walk-in friendly
   // (not shown in checklist, but noted for reference)
 ];

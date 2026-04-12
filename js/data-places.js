@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════
-// PLACES DATA — 57 curated places
+// PLACES DATA — 83 curated places
 // Extracted from italy-planner.html
 // ═══════════════════════════════════════
 
@@ -143,6 +143,17 @@ const DEFAULT_PLACES = [
   { id:"l19", name:"Varenna Old Town", city:"Lake Como", category:"activity", lat:46.0105, lng:9.2835,
     description:"A colorful, quieter fishing village on Como's eastern shore. Walk the romantic Passeggiata degli Innamorati (Lovers' Walk) along the waterfront. Less touristy than Bellagio.",
     notes:"Easy to reach by train. Ferry to Bellagio takes 15 min.", source:"Must-see", verdict:"worth-it",honest_summary:"Quieter, more authentic, and less touristy than Bellagio. The Passeggiata degli Innamorati (Lovers Walk) along the waterfront is genuinely romantic. The colorful buildings cascading to the water are beautiful. Easy to reach by train, and the ferry to Bellagio is 15 minutes. A perfect half-day side trip.",best_for:"Couples who want a quieter alternative to Bellagio. The Lovers Walk is peak honeymoon. Take the ferry back.",visited:false },
+  // ── LAKE COMO ACTIVITIES ──
+  { id:"lc1", name:"Como-Brunate Funicular", city:"Lake Como", category:"activity", lat:45.8108, lng:9.0869,
+    description:"A 7-minute funicular ride from Como town up to the hilltop village of Brunate at 715 meters. Panoramic views over the lake, the Alps, and the Po Valley. Operating since 1894. A handful of restaurants and bars at the top.",
+    source:"Trip planning", duration_min:"60–90", cost:"€6 round trip", booking:"No booking needed — runs every 15-30 min", best_time:"Late afternoon for golden light, or sunset", transport:"Funicular station is a 10 min walk east from the Hilton along the lakefront", verdict:"essential",
+    honest_summary:"The best panoramic view of Lake Como for almost no effort. A 7-minute funicular ride takes you from the lakefront up to Brunate at 715 meters, where the views are staggering — the entire lake, the Alps, and on clear days the Po Valley stretching to Milan. It has been running since 1894 and costs 6 euros round trip. Have a drink at one of the bars at the top, take it all in, ride back down. This is the easiest big payoff on your entire trip.",
+    best_for:"Your first evening in Como. Walk from the hotel, ride up for sunset, have a drink at the top. Effortless and unforgettable.", visited:false },
+  { id:"lc2", name:"Villa Olmo Lakefront Walk", city:"Lake Como", category:"activity", lat:45.7990, lng:9.0660,
+    description:"A flat 1.5 km promenade along the Como lakefront from the center to the neoclassical Villa Olmo. Gardens, lake views, and benches the whole way. The villa grounds have a lakeside cafe and free gardens to explore.",
+    source:"Trip planning", duration_min:"45–60", cost:"Free", booking:"No booking needed", best_time:"Morning or evening", transport:"Start from Piazza Cavour (Como center), walk west along the lake", verdict:"worth-it",
+    honest_summary:"A gentle lakefront stroll that is pure Lake Como romance. The 1.5 km promenade from Como center to Villa Olmo is flat, scenic, and lined with old trees and benches overlooking the water. Villa Olmo at the end has free gardens and a lakeside cafe. No tickets, no reservations, no crowds — just a walk along the lake. Perfect for your arrival afternoon or a morning stroll before heading to Bellagio.",
+    best_for:"An easy, romantic walk on your arrival day. No planning required — just walk along the water from the hotel.", visited:false },
   // ── FLORENCE RESTAURANTS (Goop guide) ──
   { id:"g3", name:"Trattoria 13 Gobbi", city:"Florence", category:"dining", lat:43.7725, lng:11.2487,
     description:"A Florentine institution near Santa Maria Novella. Rustic courtyard dining, beam ceilings, mismatched chairs, cured meats hanging everywhere. Famous for their rigatoni in ceramic tureen and bistecca alla fiorentina served medium-rare at room temperature — the proper Florentine way.",
@@ -185,6 +196,21 @@ const DEFAULT_PLACES = [
   { id:"t2", name:"San Gimignano", city:"Tuscany", category:"landmark", lat:43.4677, lng:11.0437,
     description:"Medieval hilltop town famous for its 14 surviving tower houses — the 'Manhattan of the Middle Ages.' UNESCO World Heritage Site. Great local Vernaccia white wine and gelato.",
     notes:"Possible day trip or near the Tuscany overnight stay.", source:"Must-see", verdict:"worth-it",honest_summary:"The 14 medieval towers make it look like a tiny Manhattan, and the hilltop setting is dramatic. UNESCO World Heritage for good reason. The local Vernaccia white wine is excellent. Gelateria Dondoli has award-winning gelato. Can get very crowded midday with tour buses - go early or late. Works as a half-day trip from the Chianti agriturismo.",best_for:"A half-day side trip from Chianti or Siena. The towers, wine, and gelato make it worth the detour.",visited:false },
+  { id:"t3", name:"Antinori nel Chianti Classico", city:"Tuscany", category:"activity", lat:43.5870, lng:11.1870,
+    description:"26 generations of winemaking meets stunning modern architecture. The winery is built into a Chianti hillside with a glass-walled tasting room overlooking vineyards. Tours, tastings, and an excellent restaurant (Rinuccio 1180). About 30 minutes south of Florence.",
+    source:"Trip planning", duration_min:"90–120", cost:"€25–40 for tasting, €50+ for lunch", booking:"Book tasting and lunch online in advance", best_time:"Late morning", transport:"30 min drive from Florence — need car or driver", verdict:"essential",
+    honest_summary:"The most impressive winery you will visit in Tuscany. The Antinori family has been making wine for 26 generations and their modern facility is architectural art — built into a hillside with vineyards on the roof. The tasting room has panoramic views of the Chianti valley. Book the tasting in advance. The on-site restaurant Rinuccio 1180 is excellent for lunch with a view. This is not a quaint farmhouse winery — it is a world-class experience.",
+    best_for:"Your anchor activity for the Tuscany day trip. Book a late-morning tasting, stay for lunch at Rinuccio 1180, then explore nearby towns.", visited:false },
+  { id:"t4", name:"Greve in Chianti", city:"Tuscany", category:"activity", lat:43.5836, lng:11.3178,
+    description:"The unofficial capital of Chianti. The central Piazza Matteotti is a charming porticoed market square. Home to Antica Macelleria Falorni — a legendary butcher shop since 1729 with a wine bar inside. Several wine shops for tasting and buying.",
+    source:"Trip planning", duration_min:"60–90", cost:"Free to explore, wine tastings €10–20", booking:"No booking needed", best_time:"Morning or afternoon", transport:"20 min drive from Antinori, 40 min from Florence", verdict:"worth-it",
+    honest_summary:"A charming Chianti market town and a natural stop on a Tuscany day trip. The central piazza is lined with porticoed buildings and has a relaxed, authentic feel. Antica Macelleria Falorni is the star — a butcher shop since 1729 that now has a wine bar inside where you can taste local wines with cured meats. Several other wine shops line the square. Not a place to spend half a day, but a satisfying hour of wandering, tasting, and soaking in the Chianti atmosphere.",
+    best_for:"A quick stop between winery visits. Browse Falorni, taste some wine, walk the square. Pairs perfectly with Antinori or Montefioralle.", visited:false },
+  { id:"t5", name:"Montefioralle", city:"Tuscany", category:"activity", lat:43.5760, lng:11.3120,
+    description:"Tiny medieval hilltop village a 10-minute walk uphill from Greve. Circular stone walls, narrow cobblestone lanes, and panoramic Chianti valley views. One of Italy's most beautiful small villages. Ancestral home of Amerigo Vespucci's family.",
+    source:"Trip planning", duration_min:"30–45", cost:"Free", booking:"No booking needed", best_time:"Afternoon golden light", transport:"10 min walk uphill from Greve in Chianti", verdict:"hidden-gem",
+    honest_summary:"A 10-minute walk uphill from Greve and a world away from everything. Montefioralle is a tiny circular medieval village — stone walls, cobblestone lanes barely wide enough for two people, and views over the Chianti valley that make you want to never leave. Almost no tourists. No shops or restaurants to speak of. You come here for the walk, the quiet, and the views. The Vespucci family connection is a fun footnote. This is the romantic detour you did not know you needed.",
+    best_for:"The most romantic 30 minutes of your Tuscany day trip. Walk up from Greve, circle the village, take in the views. Bring the camera.", visited:false },
   // ── AMALFI / DAY TRIP ──
   { id:"a1", name:"Amalfi Coast / Positano (Day Trip)", city:"Rome", category:"activity", lat:40.6280, lng:14.4850,
     description:"Dramatic cliffside villages, turquoise water, lemon groves. Positano is the most famous and photogenic town. Can be done as a day trip from Rome via guided tour (~€100-150/person) or train to Salerno + ferry.",
@@ -205,6 +231,16 @@ const DEFAULT_PLACES = [
   { id:"ver3", name:"Piazza delle Erbe", city:"Verona", category:"activity", lat:45.4430, lng:10.9975,
     description:"Verona's most picturesque square, built on the site of the ancient Roman forum. Surrounded by medieval and Renaissance buildings, frescoed facades, and the Torre dei Lamberti. Great spot for a lunch stop.",
     notes:"VERONA STOPOVER. Good lunch spot — grab a table and people-watch.", source:"Trip planning", verdict:"worth-it",honest_summary:"Verona's most beautiful square, built on the ancient Roman forum. Surrounded by frescoed medieval buildings and the Torre dei Lamberti. Great spot for a lunch stop during the Verona layover. Grab a table, order a glass of Amarone, and people-watch. This is the natural center of a Verona visit.",best_for:"Lunch stop during the Verona layover. The square is beautiful and centrally located between the Arena and Juliet's Balcony.",visited:false },
+  { id:"ver4", name:"Osteria del Bugiardo", city:"Verona", category:"dining", lat:45.4430, lng:10.9935,
+    description:"Lively wine bar on Corso Porta Borsari, one of Verona's best streets. Excellent local wines by the glass, cicchetti-style small plates, and a buzzy atmosphere. Perfect for a quick lunch during the Verona stopover.",
+    source:"Trip planning", duration_min:"45–60", cost:"€15–25/person", booking:"Walk in", best_time:"Lunch", transport:"5 min walk from the Arena", verdict:"worth-it",
+    honest_summary:"The ideal lunch stop during a Verona layover. A lively wine bar with an excellent selection of Valpolicella and Amarone by the glass, small plates to share, and a location right on one of Verona's most atmospheric streets. Not a sit-down restaurant — more of a stand-at-the-bar-and-graze situation, which is perfect when you only have 3-4 hours in town. Order a glass of Amarone, some crostini, and soak in the Veronese atmosphere.",
+    best_for:"Your lunch stop on the Verona layover. Grab a glass of local wine and some small plates between the Arena and Juliet's Balcony.", visited:false },
+  { id:"ver5", name:"Castel San Pietro Viewpoint", city:"Verona", category:"viewpoint", lat:45.4478, lng:11.0024,
+    description:"Hilltop viewpoint across the Adige river with panoramic views over Verona's rooftops, the Arena, and the surrounding hills. Walk over Ponte Pietra (a Roman stone bridge) and climb the staircase. Free and romantic.",
+    source:"Trip planning", duration_min:"30–45", cost:"Free", booking:"No booking needed", best_time:"Golden hour", transport:"Walk over Ponte Pietra from the center, then climb the staircase (5 min)", verdict:"hidden-gem",
+    honest_summary:"The best view in Verona and completely free. Walk over Ponte Pietra — a gorgeous Roman stone bridge — and climb the staircase up to the Castel San Pietro terrace. The panoramic view over Verona's terracotta rooftops, church domes, and the Arena in the distance is stunning. Almost no tourists come up here despite it being a 5-minute climb. On a honeymoon, this is where you steal a kiss with all of Verona below you.",
+    best_for:"Your romantic moment in Verona. Cross the Roman bridge, climb the hill, see the whole city. Takes 30 minutes round trip and is absolutely worth it.", visited:false },
   // ── TRANSIT STATIONS ──
   { id:"tr1", name:"Roma Termini Station", city:"Rome", category:"transit", lat:41.9013, lng:12.5017,
     description:"Rome's main train station and central transport hub. Departure point for all intercity trains. Metro Lines A & B intersect here. Shops, cafes, and luggage storage inside.",

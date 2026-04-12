@@ -331,6 +331,132 @@
   color: var(--espresso);
 }
 
+.journal-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.journal-photo-preview {
+  margin-top: 8px;
+}
+
+.journal-photo-thumb {
+  position: relative;
+  display: inline-block;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.journal-photo-thumb img {
+  display: block;
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--radius-sm);
+}
+
+.journal-photo-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-circle);
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.journal-entry-photo {
+  margin: 8px 0;
+}
+
+.journal-entry-photo img {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.journal-photo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.journal-photo-overlay img {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+}
+
+/* ── Time Capsule ── */
+.capsule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.capsule-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.capsule-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--espresso);
+}
+
+.capsule-input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--light-gray);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--espresso);
+  background: var(--cream);
+}
+
+.capsule-input:focus {
+  outline: none;
+  border-color: var(--rosso);
+}
+
+.capsule-reveal-section {
+  background: var(--bianco);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.capsule-reveal-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rosso);
+  margin-bottom: 8px;
+}
+
+.capsule-reveal-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--espresso);
+}
+
 /* ── Letters Page ── */
 .letter-card {
   background: var(--bianco);
