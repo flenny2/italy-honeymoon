@@ -209,7 +209,8 @@ function initTodayMap() {
 function buildPlaceCard(p) {
   var v = p.verdict && VERDICTS[p.verdict] ? VERDICTS[p.verdict] : null;
   var booked = isPlaceBooked(p.id);
-  return '<div class="place-card" onclick="Router.navigate(\'#place/' + p.id + '\')">' +
+  var verdictClass = p.verdict ? ' place-card-' + p.verdict : '';
+  return '<div class="place-card' + verdictClass + '" onclick="Router.navigate(\'#place/' + p.id + '\')">' +
     '<div class="place-card-dot" style="background:' + (CAT_COLORS[p.category] || '#999') + '"></div>' +
     '<div class="place-card-info">' +
     '<div class="place-card-name">' + (CAT_ICONS[p.category] || '') + ' ' + p.name + '</div>' +

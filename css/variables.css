@@ -18,13 +18,23 @@
   --giallo-light: #FFF8E1;
   --giallo-bg: #FFF3CC;
 
-  /* Neutrals */
+  /* Neutrals — tuned for readability */
   --espresso: #2D2926;
-  --cream: #FEFCF8;
+  --cream: #F5F1EB;
   --bianco: #FFFFFF;
-  --warm-gray: #6B5E5A;
-  --light-gray: #E8E6E2;
-  --faint-gray: #F5F3EF;
+  --warm-gray: #564B47;
+  --light-gray: #D8D3CC;
+  --faint-gray: #EDEAE4;
+
+  /* Warm romantic tones */
+  --terracotta: #C4724D;
+  --terracotta-light: #FDF0EB;
+  --blush: #D4918E;
+  --blush-light: #FBF0EF;
+  --warm-gold: #C9A028;
+  --warm-gold-light: #FFF9E8;
+  --sage: #8BA888;
+  --sage-light: #F0F5EF;
 
   /* Accent colors */
   --purple: #8B5CF6;
@@ -62,10 +72,10 @@
   --radius-pill: 50px;
   --radius-circle: 50%;
 
-  /* Shadows — warm tinted */
-  --shadow-sm: 0 2px 8px rgba(45, 41, 38, 0.08);
-  --shadow-md: 0 4px 20px rgba(45, 41, 38, 0.12);
-  --shadow-lg: 0 8px 40px rgba(45, 41, 38, 0.16);
+  /* Shadows — warm tinted, visible */
+  --shadow-sm: 0 2px 8px rgba(45, 41, 38, 0.14);
+  --shadow-md: 0 4px 20px rgba(45, 41, 38, 0.18);
+  --shadow-lg: 0 8px 40px rgba(45, 41, 38, 0.22);
   --shadow-glow-rosso: 0 4px 20px rgba(206, 43, 55, 0.25);
   --shadow-glow-verde: 0 4px 20px rgba(0, 140, 69, 0.25);
   --shadow-glow-giallo: 0 4px 20px rgba(232, 185, 49, 0.25);

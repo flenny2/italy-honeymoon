@@ -68,7 +68,7 @@ const PHRASES = [
     { it: 'La fermata del vaporetto', pr: 'lah fair-MAH-tah del vah-poh-RET-toh', en: 'The vaporetto (water bus) stop' },
     { it: 'Mi sono perso/a', pr: 'mee SOH-noh PAIR-soh/sah', en: "I'm lost" },
     { it: 'Può indicarmi sulla mappa?', pr: 'pwoh een-dee-KAR-mee SOO-lah MAHP-pah', en: 'Can you show me on the map?' },
-  ], tip: "Validate your train ticket before boarding (machines on the platform) or you risk a fine. In Venice, buy a vaporetto pass — single rides are €9.50 each." },
+  ], tip: "If you have a paper ticket, validate it at the machine on the platform before boarding or you risk a fine. E-tickets from the Trenitalia/Italo app do NOT need validation. In Venice, buy a vaporetto pass — single rides are €9.50 each." },
 
   { cat: 'Shopping & Haggling', icon: '🛍', color: '#E8B931', phrases: [
     { it: 'Quanto costa?', pr: 'KWAHN-toh KOH-stah', en: 'How much does it cost?' },

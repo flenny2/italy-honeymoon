@@ -7,6 +7,7 @@ function renderPhrasebook() {
   if (!content) return;
 
   var headerHTML = '<div class="page-header">' +
+    '<button class="back-btn" onclick="Router.navigate(\'#more\')">← More</button>' +
     '<h1>🇮🇹 Phrasebook</h1>' +
     '<div class="subtitle">' + countTotalPhrases() + ' essential phrases</div>' +
     '</div>';

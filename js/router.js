@@ -10,12 +10,12 @@ var Router = (function() {
   // Uses string names so functions don't need to exist yet at load time
   var routes = {
     'today':       { render: 'renderToday',       tab: 'today' },
-    'explore':     { render: 'renderExplore',     tab: 'explore' },
-    'city':        { render: 'renderCity',        tab: 'explore' },
-    'place':       { render: 'renderDetail',      tab: 'explore' },
-    'phrasebook':  { render: 'renderPhrasebook',  tab: 'phrases' },
-    'journal':     { render: 'renderJournal',     tab: 'more' },
-    'letters':     { render: 'renderLetters',     tab: 'more' },
+    'explore':     { render: 'renderExplore',     tab: 'more' },
+    'city':        { render: 'renderCity',        tab: 'more' },
+    'place':       { render: 'renderDetail',      tab: 'more' },
+    'phrasebook':  { render: 'renderPhrasebook',  tab: 'more' },
+    'journal':     { render: 'renderJournal',     tab: 'journal' },
+    'letters':     { render: 'renderLetters',     tab: 'letters' },
     'achievements':{ render: 'renderAchievements',tab: 'more' },
     'bookings':    { render: 'renderBookings',    tab: 'more' },
     'capsule':     { render: 'renderCapsule',     tab: 'more' },

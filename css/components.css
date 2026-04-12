@@ -9,6 +9,7 @@
   border-radius: var(--radius-md);
   padding: var(--space-md);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-gray);
   transition: transform var(--duration-fast) var(--bounce), box-shadow var(--duration-fast);
 }
 
@@ -49,11 +50,32 @@
   cursor: pointer;
   transition: transform var(--duration-fast) var(--bounce), box-shadow var(--duration-fast);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-gray);
   margin-bottom: var(--space-sm);
 }
 
 .place-card:active {
   transform: scale(0.97);
+}
+
+/* Verdict transforms the card */
+.place-card-essential {
+  border-left: 4px solid var(--verde);
+  background: linear-gradient(135deg, var(--bianco), var(--verde-light));
+}
+
+.place-card-hidden-gem {
+  border-left: 4px solid var(--purple);
+  background: linear-gradient(135deg, var(--bianco), var(--purple-light));
+}
+
+.place-card-worth-it {
+  border-left: 4px solid var(--blue);
+}
+
+.place-card-overrated {
+  opacity: 0.7;
+  border-left: 4px solid var(--light-gray);
 }
 
 .place-card-dot {
@@ -300,12 +322,14 @@
 
 /* ── Section Headers ── */
 .section-header {
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: var(--warm-gray);
+  color: var(--espresso);
   font-weight: 700;
   padding: var(--space-md) 0 var(--space-sm);
+  border-bottom: 2px solid var(--light-gray);
+  margin-bottom: var(--space-sm);
 }
 
 /* ── Visit Info Card ── */
@@ -510,6 +534,7 @@
   border-radius: var(--radius-md);
   margin-bottom: var(--space-sm);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-gray);
   cursor: pointer;
   transition: transform var(--duration-fast) var(--bounce);
   -webkit-tap-highlight-color: transparent;
@@ -586,6 +611,75 @@
   color: var(--verde);
 }
 
+/* Per-category progress bar */
+.ach-category-progress {
+  height: 4px;
+  background: var(--light-gray);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+}
+
+.ach-category-progress-fill {
+  height: 100%;
+  background: var(--verde);
+  border-radius: 2px;
+  transition: width 0.6s var(--bounce);
+}
+
+/* Rarity tier styling on unlocked cards */
+.ach-unlocked.ach-rarity-tier-rare {
+  border-left-color: var(--blue);
+  background: linear-gradient(135deg, var(--bianco), var(--blue-light));
+}
+
+.ach-unlocked.ach-rarity-tier-legendary {
+  border-left-color: var(--giallo);
+  background: linear-gradient(135deg, var(--bianco), var(--giallo-light));
+}
+
+/* Platinum card */
+.ach-platinum-card {
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  margin-bottom: var(--space-md);
+  box-shadow: var(--shadow-md);
+}
+
+.ach-platinum-locked {
+  background: linear-gradient(135deg, #2D2926, #3D3532);
+  color: #fff;
+  border: 2px dashed rgba(139, 92, 246, 0.3);
+}
+
+.ach-platinum-locked .ach-card-title { color: #fff; }
+.ach-platinum-locked .ach-card-challenge { color: rgba(255,255,255,0.6); }
+
+.ach-platinum-unlocked {
+  background: linear-gradient(135deg, #EDE9FE, #FCE7F3, #FFF8E1);
+  border: 2px solid var(--purple);
+  animation: platinumShimmer 3s ease-in-out infinite;
+}
+
+@keyframes platinumShimmer {
+  0%, 100% { box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2); }
+  50% { box-shadow: 0 4px 30px rgba(139, 92, 246, 0.4); }
+}
+
+.ach-platinum-icon-wrap {
+  background: linear-gradient(135deg, var(--purple-light), var(--pink-light)) !important;
+  border-radius: var(--radius-sm);
+}
+
+.ach-rarity-platinum {
+  background: linear-gradient(135deg, var(--purple-light), var(--pink-light));
+  color: var(--purple);
+  font-weight: 700;
+}
+
 .ach-tap-hint {
   font-size: 11px;
   color: var(--warm-gray);
@@ -627,15 +721,15 @@
 }
 
 .countdown-banner.before {
-  background: linear-gradient(135deg, var(--rosso-light), var(--giallo-light));
+  background: linear-gradient(135deg, var(--blush-light), var(--warm-gold-light), var(--terracotta-light));
 }
 
 .countdown-banner.during {
-  background: linear-gradient(135deg, var(--verde-light), var(--giallo-light));
+  background: linear-gradient(135deg, var(--sage-light), var(--warm-gold-light));
 }
 
 .countdown-banner.after {
-  background: linear-gradient(135deg, var(--purple-light), var(--rosso-light));
+  background: linear-gradient(135deg, var(--blush-light), var(--purple-light));
 }
 
 .countdown-number {
@@ -740,6 +834,7 @@
   cursor: pointer;
   transition: transform var(--duration-fast) var(--bounce);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-gray);
   margin-bottom: var(--space-sm);
   text-decoration: none;
   color: var(--espresso);
@@ -846,6 +941,7 @@
   border-radius: var(--radius-md);
   margin-bottom: var(--space-sm);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-gray);
   transition: opacity var(--duration-fast);
 }
 

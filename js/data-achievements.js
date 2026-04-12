@@ -84,9 +84,9 @@ var ACHIEVEMENTS = [
     rarity: 'uncommon' },
 
   { id: 'trastevere-wander',title: 'Night Owls',           icon: '🌙', category: 'experience',
-    challenge: 'Wander Trastevere after 9pm',
-    howTo: 'Cross the Tiber into Trastevere after dinner. Walk the cobblestone streets when the ivy-covered buildings are lit up and the neighborhood comes alive. No destination needed — just wander until you feel like stopping.',
-    rarity: 'common' },
+    challenge: 'Stay out past 2am in Italy',
+    howTo: 'You\'re on your honeymoon — stay out stupidly late at least once. A bar in Trastevere, a piazza in Florence, a canal-side bench in Venice. It doesn\'t matter where. What matters is that you\'re still out when the city goes quiet and it feels like it belongs to just the two of you.',
+    rarity: 'uncommon' },
 
   // ── CULTURE ──
   { id: 'italian-phrase',   title: 'Linguista',            icon: '🗣️', category: 'culture',
@@ -102,7 +102,7 @@ var ACHIEVEMENTS = [
   // ── TRAVEL ──
   { id: 'first-train',      title: 'All Aboard!',          icon: '🚂', category: 'travel',
     challenge: 'Take your first Italian train',
-    howTo: 'Find your platform (binario) at the station, validate your ticket at the yellow machine, board, and enjoy the view. Pro tip: the countryside between Rome and Florence is gorgeous.',
+    howTo: 'Find your platform (binario) at the station, validate your paper ticket at the machine on the platform (e-tickets don\'t need it), board, and enjoy the view. Pro tip: the countryside between Rome and Florence is gorgeous.',
     rarity: 'common' },
 
   { id: 'vaporetto',        title: 'Water Taxi',           icon: '⛴️', category: 'travel',
@@ -116,6 +116,11 @@ var ACHIEVEMENTS = [
     rarity: 'legendary' },
 
   // ── SECRET / BONUS ──
+  { id: 'first-photo',      title: 'Snapshot',             icon: '📸', category: 'experience',
+    challenge: 'Add your first photo to the journal',
+    howTo: 'Open the Journal tab, tap "Add Photo," and capture a moment. The first photo on Italian soil hits different.',
+    rarity: 'common' },
+
   { id: 'sunrise',          title: 'Early Bird',           icon: '🌅', category: 'experience',
     challenge: 'Catch a sunrise in Italy',
     howTo: 'Set an alarm, drag yourselves out of bed, and find a spot with a view. The Colosseum at dawn, the Arno riverbank, or your hotel rooftop all work. Coffee in hand is encouraged.',
@@ -125,14 +130,36 @@ var ACHIEVEMENTS = [
     challenge: 'Share a kiss at a famous romantic spot',
     howTo: 'Juliet\'s balcony in Verona, the Ponte Vecchio at sunset, a gondola in Venice, or Punta Spartivento on Lake Como. Pick your moment, and make it count.',
     rarity: 'common' },
+
+  { id: 'seal-capsule',     title: 'Time Travelers',       icon: '🔮', category: 'experience',
+    challenge: 'Seal the Time Capsule on your last night',
+    howTo: 'Go to More → Time Capsule. Write a letter to your future selves, pick your favorites, and seal it. It opens on your first anniversary. This is the last achievement you should unlock.',
+    rarity: 'rare' },
+
+  { id: 'chianti-toast',    title: 'Under the Tuscan Sun',  icon: '🍷', category: 'food',
+    challenge: 'Toast with Chianti wine in the Chianti region',
+    howTo: 'You\'re in the actual Chianti hills where this wine is made. Order a glass of Chianti Classico at a winery or trattoria, clink glasses, and say "alla nostra!" This one only counts in Tuscany.',
+    rarity: 'uncommon' },
+
+  { id: 'funicular',        title: 'Peak Experience',       icon: '🚡', category: 'travel',
+    challenge: 'Ride the Como-Brunate funicular',
+    howTo: 'Walk to the funicular station from the hotel, ride 7 minutes to 715 meters, and look out over the entire lake. The view is staggering. Have a drink at the top.',
+    rarity: 'uncommon' },
+
+  // ── PLATINUM ──
+  { id: 'platinum',          title: 'Amore Infinito',       icon: '💎', category: 'platinum',
+    challenge: 'Unlock every other achievement',
+    howTo: 'You did it. Every gelato eaten, every sunset watched, every coin thrown, every kiss stolen. This trip was everything. You are officially Italy completionists. Congratulations — now go home and plan the next adventure.',
+    rarity: 'platinum' },
 ];
 
 // Rarity colors and labels for the game-style UI
 var RARITY = {
-  'common':    { label: 'Common',    color: '#6B7280', bg: '#F3F4F6' },
-  'uncommon':  { label: 'Uncommon',  color: '#008C45', bg: '#E8F5EC' },
-  'rare':      { label: 'Rare',      color: '#3B82F6', bg: '#DBEAFE' },
-  'legendary': { label: 'Legendary', color: '#E8B931', bg: '#FFF8E1' }
+  'common':    { label: 'Common',    color: '#6B7280', bg: '#F3F4F6', icon: '' },
+  'uncommon':  { label: 'Uncommon',  color: '#008C45', bg: '#E8F5EC', icon: '' },
+  'rare':      { label: 'Rare',      color: '#3B82F6', bg: '#DBEAFE', icon: '✦' },
+  'legendary': { label: 'Legendary', color: '#E8B931', bg: '#FFF8E1', icon: '★' },
+  'platinum':  { label: 'Platinum',  color: '#8B5CF6', bg: 'linear-gradient(135deg, #EDE9FE, #FCE7F3)', icon: '💎' }
 };
 
 // Category labels
@@ -141,5 +168,6 @@ var ACHIEVEMENT_CATEGORIES = {
   'landmark':   { label: 'Landmarks',    icon: '🏛️' },
   'experience': { label: 'Experiences',  icon: '✨' },
   'culture':    { label: 'Culture',      icon: '🇮🇹' },
-  'travel':     { label: 'Travel',       icon: '🚂' }
+  'travel':     { label: 'Travel',       icon: '🚂' },
+  'platinum':   { label: 'Platinum',     icon: '💎' }
 };

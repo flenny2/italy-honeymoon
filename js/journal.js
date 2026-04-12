@@ -17,7 +17,6 @@ function renderJournal() {
   var todayPrompt = JOURNAL_PROMPTS[promptIndex];
 
   var headerHTML = '<div class="page-header">' +
-    '<button class="back-btn" onclick="Router.navigate(\'#more\')">← More</button>' +
     '<h1>📝 Journal</h1>' +
     '<div class="subtitle">Capture your memories</div>' +
     '</div>';

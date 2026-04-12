@@ -9,7 +9,6 @@ function renderLetters() {
   var letters = Storage.getLetters();
 
   var headerHTML = '<div class="page-header">' +
-    '<button class="back-btn" onclick="Router.navigate(\'#more\')">← More</button>' +
     '<h1>💌 Letters</h1>' +
     '<div class="subtitle">Sealed notes for each other</div>' +
     '</div>';

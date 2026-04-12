@@ -10,6 +10,7 @@ function renderExplore() {
   var places = Storage.getPlaces();
 
   var headerHTML = '<div class="explore-header">' +
+    '<button class="back-btn" onclick="Router.navigate(\'#more\')">← More</button>' +
     '<h1>🗺️ Explore Italy</h1>' +
     '<div class="subtitle">Your curated travel guide</div>' +
     '</div>';
@@ -35,8 +36,6 @@ function renderMore() {
   if (!content) return;
 
   var counts = Storage.getAchievementCount();
-  var journal = Storage.getJournal();
-  var letters = Storage.getLetters();
 
   var headerHTML = '<div class="page-header">' +
     '<h1>✨ More</h1>' +
@@ -48,9 +47,9 @@ function renderMore() {
     : '✅ All booked!';
 
   var linksHTML = '<div class="content-wrap stagger">' +
+    buildMoreLink('#explore', '🔍', 'Explore Cities', CITIES.length + ' cities to discover', '') +
+    buildMoreLink('#phrasebook', '🇮🇹', 'Italian Phrases', 'Essential phrases & tips', '') +
     buildMoreLink('#bookings', '📋', 'Booking Checklist', bookingDesc, '') +
-    buildMoreLink('#journal', '📝', 'Journal', journal.length + ' entries', '') +
-    buildMoreLink('#letters', '💌', 'Letters', letters.length + ' sealed', '') +
     buildMoreLink('#achievements', '🏆', 'Achievements', counts.unlocked + ' / ' + counts.total + ' unlocked', '') +
     buildMoreLink('#capsule', '🔮', 'Time Capsule', 'Anniversary surprise', '') +
     '<div style="margin-top:24px;">' +
@@ -223,7 +222,7 @@ var mapRouteLines = [];     // route polylines
 var mapHotelMarkers = [];   // hotel markers
 var mapRadiusCircles = [];  // walking radius circles
 var mapCurrentCity = 'all';
-var mapCurrentFilter = 'all';
+var mapActiveFilters = [];
 
 function renderFullMap() {
   var container = document.getElementById('full-map');
@@ -480,61 +479,92 @@ function clearRadiusCircles() {
   mapRadiusCircles = [];
 }
 
-// ── Filter Modal ──
+// ── Filter Modal (multi-select) ──
+var FILTER_TESTS = {
+  'essential':  function(p) { return p.verdict === 'essential'; },
+  'hidden-gem': function(p) { return p.verdict === 'hidden-gem'; },
+  'worth-it':   function(p) { return p.verdict === 'worth-it'; },
+  'nathan':     function(p) { return p.source && p.source.toLowerCase().indexOf('nathan') !== -1; },
+  'goop':       function(p) { return p.source && p.source.toLowerCase().indexOf('goop') !== -1; },
+  'dining':     function(p) { return p.category === 'dining'; },
+  'landmark':   function(p) { return p.category === 'landmark'; },
+  'activity':   function(p) { return p.category === 'activity'; },
+  'viewpoint':  function(p) { return p.category === 'viewpoint'; },
+  'romantic':   function(p) { return autoTag(p).indexOf('romantic') !== -1; },
+  'evening':    function(p) { return autoTag(p).indexOf('evening') !== -1; },
+  'budget':     function(p) { return autoTag(p).indexOf('budget') !== -1; },
+  'foodie':     function(p) { return autoTag(p).indexOf('foodie') !== -1; }
+};
+
 function openMapFilters() {
   var modal = document.getElementById('map-filter-modal');
   modal.classList.add('open');
-
-  // Highlight current active filter
-  var options = modal.querySelectorAll('.mfm-option');
-  for (var i = 0; i < options.length; i++) {
-    options[i].classList.toggle('active', options[i].dataset.filter === mapCurrentFilter);
-  }
+  syncFilterUI();
 }
 
 function closeMapFilters() {
   document.getElementById('map-filter-modal').classList.remove('open');
 }
 
-function applyMapFilter(filter, label) {
-  mapCurrentFilter = filter;
+function syncFilterUI() {
+  // Highlight all active filters in the modal
+  var options = document.querySelectorAll('.mfm-option');
+  for (var i = 0; i < options.length; i++) {
+    options[i].classList.toggle('active', mapActiveFilters.indexOf(options[i].dataset.filter) !== -1);
+  }
+}
 
-  // Update button label
+function toggleMapFilter(filter) {
+  var idx = mapActiveFilters.indexOf(filter);
+  if (idx === -1) {
+    mapActiveFilters.push(filter);
+  } else {
+    mapActiveFilters.splice(idx, 1);
+  }
+  syncFilterUI();
+  applyActiveFilters();
+}
+
+function resetMapFilters() {
+  mapActiveFilters = [];
+  syncFilterUI();
+  applyActiveFilters();
+}
+
+function applyActiveFilters() {
+  // Update the filter button label
   var btn = document.getElementById('map-filter-btn');
   var labelEl = document.getElementById('map-filter-label');
-  if (labelEl) labelEl.textContent = label;
-  if (btn) btn.classList.toggle('has-filter', filter !== 'all');
+  if (mapActiveFilters.length === 0) {
+    if (labelEl) labelEl.textContent = 'All Places';
+    if (btn) btn.classList.remove('has-filter');
+  } else if (mapActiveFilters.length === 1) {
+    // Show the single filter name from the button text
+    var opt = document.querySelector('.mfm-option[data-filter="' + mapActiveFilters[0] + '"]');
+    var name = opt ? opt.textContent.trim() : mapActiveFilters[0];
+    if (labelEl) labelEl.textContent = name;
+    if (btn) btn.classList.add('has-filter');
+  } else {
+    if (labelEl) labelEl.textContent = mapActiveFilters.length + ' filters';
+    if (btn) btn.classList.add('has-filter');
+  }
 
-  // Filter strategies — each returns true if place should show
-  var filters = {
-    'all':        function() { return true; },
-    'essential':  function(p) { return p.verdict === 'essential'; },
-    'hidden-gem': function(p) { return p.verdict === 'hidden-gem'; },
-    'worth-it':   function(p) { return p.verdict === 'worth-it'; },
-    'nathan':     function(p) { return p.source && p.source.toLowerCase().indexOf('nathan') !== -1; },
-    'hotel':      function(p) { return p.source && p.source.toLowerCase().indexOf('splendid') !== -1; },
-    'goop':       function(p) { return p.source && p.source.toLowerCase().indexOf('goop') !== -1; },
-    'dining':     function(p) { return p.category === 'dining'; },
-    'landmark':   function(p) { return p.category === 'landmark'; },
-    'activity':   function(p) { return p.category === 'activity'; },
-    'viewpoint':  function(p) { return p.category === 'viewpoint'; },
-    'romantic':   function(p) { return autoTag(p).indexOf('romantic') !== -1; },
-    'evening':    function(p) { return autoTag(p).indexOf('evening') !== -1; },
-    'budget':     function(p) { return autoTag(p).indexOf('budget') !== -1; },
-    'foodie':     function(p) { return autoTag(p).indexOf('foodie') !== -1; }
-  };
-
-  var filterFn = filters[filter] || filters['all'];
-
+  // Show/hide markers — place shows if it matches ANY active filter (OR logic)
   mapPlaceMarkers.forEach(function(m) {
-    if (filterFn(m.place)) {
+    if (mapActiveFilters.length === 0) {
+      fullMap.addLayer(m.marker);
+      return;
+    }
+    var show = mapActiveFilters.some(function(f) {
+      var test = FILTER_TESTS[f];
+      return test && test(m.place);
+    });
+    if (show) {
       fullMap.addLayer(m.marker);
     } else {
       fullMap.removeLayer(m.marker);
     }
   });
-
-  closeMapFilters();
 }
 
 // ── Initialize ──

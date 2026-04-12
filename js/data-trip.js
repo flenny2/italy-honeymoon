@@ -45,7 +45,7 @@ const CITY_VIEWS = {
   'Rome':      { center: [41.8975, 12.4800], zoom: 13 },
   'Florence':  { center: [43.7710, 11.2540], zoom: 14 },
   'Tuscany':   { center: [43.5100, 11.1500], zoom: 10 },
-  'Lake Como': { center: [45.9870, 9.2600], zoom: 13 },
+  'Lake Como': { center: [45.8700, 9.1500], zoom: 11 },
   'Verona':    { center: [45.4410, 10.9970], zoom: 15 },
   'Venice':    { center: [45.4400, 12.3350], zoom: 14 },
   'all':       { center: [43.5, 12.5], zoom: 6 },

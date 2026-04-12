@@ -75,7 +75,7 @@ var BOOKINGS = [
     city: 'Florence', when: 'June 18–21 (dinner)',
     what: 'Dinner reservation',
     why: 'Fills up nightly. The rigatoni is legendary. Ask for courtyard seating.',
-    tip: 'Try the bistecca alla fiorentina served medium-rare at room temperature — the proper Florentine way.',
+    tip: 'Try the bistecca alla fiorentina — served rare to medium-rare, rested, the proper Florentine way.',
     url: '' },
 
   { id: 'bk-santobevitore', placeId: 'g4', urgency: 'soon',
