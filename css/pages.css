@@ -1298,6 +1298,64 @@
   flex-shrink: 0;
 }
 
+/* ═══════════════════════════════════════ */
+/* TODAY: Capsule Nudge (June 26–27, 2026) */
+/* ═══════════════════════════════════════ */
+
+.today-capsule-nudge {
+  background: linear-gradient(135deg, #EDE9FE 0%, #FCE7F3 100%);
+  border: 2px solid #8B5CF6;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(139,92,246,0.22);
+  animation: capsulePulse 2.8s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes capsulePulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(139,92,246,0.22); }
+  50%      { box-shadow: 0 6px 26px rgba(139,92,246,0.4); }
+}
+
+.today-capsule-icon {
+  font-size: 36px;
+  line-height: 1;
+  flex-shrink: 0;
+  animation: capsuleFloat 3.5s ease-in-out infinite;
+}
+
+@keyframes capsuleFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-3px) rotate(-4deg); }
+}
+
+.today-capsule-text {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--espresso);
+  line-height: 1.4;
+}
+
+.today-capsule-text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: #6D28D9;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.today-capsule-arrow {
+  color: #8B5CF6;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
 /* ── Responsive ── */
 @media (min-width: 769px) {
   .explore-grid {

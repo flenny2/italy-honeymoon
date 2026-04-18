@@ -13,6 +13,7 @@ function renderToday() {
   var sections = [
     renderTodayHero(),
     renderTodayLetter(),
+    renderTodayCapsuleNudge(),
     renderTodayCountdown(phase),
     renderTodayHotel(city),
     renderTodayMap(),
@@ -88,6 +89,37 @@ function renderTodayCounters(phase) {
   if (!phase || phase.phase !== 'during') return '';
   if (typeof renderCounterChips !== 'function') return '';
   return renderCounterChips();
+}
+
+// ── Capsule nudge on the last night + departure day, only if unsealed ──
+function renderTodayCapsuleNudge() {
+  if (typeof Storage.getCapsule !== 'function') return '';
+  var capsule = Storage.getCapsule();
+  if (capsule.locked) return '';
+
+  var todayISO = new Date().toISOString().split('T')[0];
+  // Last night in Venice (Jun 26) + departure day (Jun 27)
+  var isLastNight = (todayISO === '2026-06-26');
+  var isDepartureDay = (todayISO === '2026-06-27');
+  if (!isLastNight && !isDepartureDay) return '';
+
+  var headline, subtext;
+  if (isLastNight) {
+    headline = 'Tonight\'s the night';
+    subtext = 'Your last night in Italy — seal the time capsule together 💕';
+  } else {
+    headline = 'Last chance before you leave';
+    subtext = 'Seal the capsule before you board — opens June 27, 2027';
+  }
+
+  return '<div class="today-capsule-nudge" onclick="Router.navigate(\'#capsule\')">' +
+    '<div class="today-capsule-icon">🔮</div>' +
+    '<div class="today-capsule-text">' +
+    '<strong>' + headline + '</strong>' +
+    subtext +
+    '</div>' +
+    '<div class="today-capsule-arrow">→</div>' +
+    '</div>';
 }
 
 // ── Section renderers ──
