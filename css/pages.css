@@ -16,8 +16,15 @@
 /* ── Warm page header gradient ── */
 .page-header {
   background: linear-gradient(180deg, var(--blush-light) 0%, var(--cream) 100%);
+  padding-top: var(--space-md);
   padding-bottom: var(--space-md);
   margin-bottom: var(--space-sm);
+}
+
+/* Give pages with a floating back button room at the bottom so content
+   doesn't scroll under the pill. iOS 15.4+ supports :has(). */
+.page:has(.back-btn) .page-scroll {
+  padding-bottom: 80px;
 }
 
 /* ── Section dividers ── */
@@ -317,15 +324,18 @@
 
 .journal-textarea {
   width: 100%;
-  padding: var(--space-sm) var(--space-md);
+  padding: 12px var(--space-md);
   border-radius: var(--radius-sm);
   border: 2px solid var(--light-gray);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.5;
   min-height: 100px;
   resize: vertical;
   color: var(--espresso);
   background: var(--cream);
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .journal-textarea:focus {
@@ -455,13 +465,16 @@
 
 .capsule-input {
   width: 100%;
-  padding: var(--space-sm) var(--space-md);
+  padding: 12px var(--space-md);
+  min-height: 48px;
   border-radius: var(--radius-sm);
   border: 2px solid var(--light-gray);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 16px;
   color: var(--espresso);
   background: var(--cream);
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .capsule-input:focus {

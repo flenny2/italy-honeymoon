@@ -9,6 +9,9 @@ html, body {
   width: 100%;
   overflow: hidden;
   -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
 }
 
 body {
@@ -50,7 +53,9 @@ h3 { font-size: 18px; }
   height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding-bottom: var(--space-lg);
+  scroll-behavior: smooth;
 }
 
 /* Page header pattern */
@@ -84,11 +89,13 @@ h3 { font-size: 18px; }
   height: var(--tab-bar-height);
   background: var(--bianco);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-around;
   border-top: 1px solid var(--light-gray);
   z-index: 100;
+  padding-top: 8px;
   padding-bottom: env(safe-area-inset-bottom, 0);
+  box-shadow: 0 -6px 20px rgba(60, 30, 20, 0.09), 0 -1px 0 rgba(0, 0, 0, 0.03);
 }
 
 .tab-btn {
@@ -96,16 +103,17 @@ h3 { font-size: 18px; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 10px 0;
-  min-height: 60px;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 6px 0 10px;
+  min-height: 64px;
   background: none;
   border: none;
   cursor: pointer;
   color: var(--warm-gray);
   transition: color var(--duration-fast), transform var(--duration-fast);
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .tab-btn.active {
@@ -117,7 +125,7 @@ h3 { font-size: 18px; }
 }
 
 .tab-icon {
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1;
 }
 
@@ -127,7 +135,7 @@ h3 { font-size: 18px; }
   letter-spacing: 0.3px;
 }
 
-/* ── Back Button ── */
+/* ── Back Button — floats at bottom-left, thumb-reach ergonomics ── */
 .back-btn {
   display: inline-flex;
   align-items: center;
@@ -139,17 +147,22 @@ h3 { font-size: 18px; }
   font-weight: 700;
   color: var(--rosso);
   cursor: pointer;
-  padding: 10px 16px;
-  min-height: 44px;
+  padding: 10px 18px 10px 14px;
+  min-height: 48px;
   border-radius: var(--radius-pill);
-  margin: 12px var(--space-md) 0;
-  box-shadow: 0 2px 6px rgba(206,43,55,0.08);
+  box-shadow: 0 6px 18px rgba(206, 43, 55, 0.25), 0 2px 4px rgba(0, 0, 0, 0.05);
   -webkit-tap-highlight-color: transparent;
   transition: transform var(--duration-fast), background var(--duration-fast);
+  touch-action: manipulation;
+  /* Fixed at bottom-left, just above the tab bar */
+  position: fixed;
+  left: calc(var(--space-md) + env(safe-area-inset-left, 0));
+  bottom: calc(var(--tab-bar-height) + 14px);
+  z-index: 90;
 }
 
 .back-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
   background: var(--rosso-light);
 }
 
@@ -263,4 +276,16 @@ h3 { font-size: 18px; }
 button, [onclick] {
   min-height: 44px;
   min-width: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Kill text selection on interactive scaffolding (not on body text) */
+.tab-btn, .back-btn, .btn, .counter-chip, .mfm-option,
+.ach-card, .place-card, .letter-card, .hotel-card,
+.explore-city-card, .today-letter-alert, .today-capsule-nudge,
+.today-couple-photo, .stats-tile, .map-filter-btn, .mfm-close,
+.settings-photo-remove, .journal-photo-remove {
+  -webkit-user-select: none;
+  user-select: none;
 }

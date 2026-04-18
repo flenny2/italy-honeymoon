@@ -13,7 +13,7 @@ function renderPhrasebook() {
     '</div>';
 
   var searchHTML = '<div class="content-wrap">' +
-    '<input class="pb-search" type="text" placeholder="Search phrases..." ' +
+    '<input class="pb-search" type="search" inputmode="search" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Search phrases..." ' +
     'oninput="filterPhrasebook(this.value)" id="pb-search-input">' +
     '</div>';
 

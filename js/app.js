@@ -108,15 +108,15 @@ function renderCapsule() {
       '</div>' +
       '<div class="capsule-field">' +
       '<label class="capsule-label">📍 Favorite place from the trip</label>' +
-      '<input id="capsule-place" class="capsule-input" type="text" placeholder="The place that meant the most...">' +
+      '<input id="capsule-place" class="capsule-input" type="text" autocapitalize="sentences" placeholder="The place that meant the most...">' +
       '</div>' +
       '<div class="capsule-field">' +
       '<label class="capsule-label">🍝 Best meal we had</label>' +
-      '<input id="capsule-meal" class="capsule-input" type="text" placeholder="The dish, the restaurant, the moment...">' +
+      '<input id="capsule-meal" class="capsule-input" type="text" autocapitalize="sentences" placeholder="The dish, the restaurant, the moment...">' +
       '</div>' +
       '<div class="capsule-field">' +
       '<label class="capsule-label">✨ A moment to remember</label>' +
-      '<textarea id="capsule-moment" class="journal-textarea" style="min-height:80px;" placeholder="Something that made this trip ours..."></textarea>' +
+      '<textarea id="capsule-moment" class="journal-textarea" style="min-height:80px;" autocapitalize="sentences" placeholder="Something that made this trip ours..."></textarea>' +
       '</div>' +
       '<button class="btn btn-primary btn-full" style="margin-top:16px;" onclick="sealTimeCapsule()">🔒 Seal the Capsule</button>' +
       '</div>';
