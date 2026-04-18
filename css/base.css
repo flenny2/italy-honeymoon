@@ -96,8 +96,10 @@ h3 { font-size: 18px; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 0;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 0;
+  min-height: 60px;
   background: none;
   border: none;
   cursor: pointer;
@@ -111,17 +113,17 @@ h3 { font-size: 18px; }
 }
 
 .tab-btn:active {
-  transform: scale(0.9);
+  transform: scale(0.92);
 }
 
 .tab-icon {
-  font-size: 22px;
+  font-size: 30px;
   line-height: 1;
 }
 
 .tab-label {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0.3px;
 }
 
@@ -129,20 +131,26 @@ h3 { font-size: 18px; }
 .back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
+  gap: 6px;
+  background: var(--bianco);
+  border: 2px solid var(--rosso-light);
   font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--rosso);
   cursor: pointer;
-  padding: var(--space-md);
+  padding: 10px 16px;
+  min-height: 44px;
+  border-radius: var(--radius-pill);
+  margin: 12px var(--space-md) 0;
+  box-shadow: 0 2px 6px rgba(206,43,55,0.08);
   -webkit-tap-highlight-color: transparent;
+  transition: transform var(--duration-fast), background var(--duration-fast);
 }
 
 .back-btn:active {
-  opacity: 0.7;
+  transform: scale(0.96);
+  background: var(--rosso-light);
 }
 
 /* ── Scrollbar ── */
