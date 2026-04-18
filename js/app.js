@@ -54,7 +54,7 @@ function renderMore() {
     buildMoreLink('#bookings', '📋', 'Booking Checklist', bookingDesc, '') +
     buildMoreLink('#achievements', '🏆', 'Achievements', counts.unlocked + ' / ' + counts.total + ' unlocked', '') +
     buildMoreLink('#stats', '📊', 'Trip Stats', statsDesc, '') +
-    buildMoreLink('#capsule', '🔮', 'Time Capsule', 'Anniversary surprise', '') +
+    buildMoreLink('#capsule', '🔮', 'Time Capsule', 'Opens 1 year after Italy', '') +
     buildMoreLink('#settings', '⚙️', 'Settings', 'Names, wedding, photo', '') +
     '<div style="margin-top:24px;">' +
     '<button class="btn btn-ghost btn-full btn-sm" onclick="if(confirm(\'Reset all saved data? Places will be restored to defaults.\')){Storage.resetAll();showToast(\'Data reset!\');Router.navigate(\'#today\');}">Reset All Data</button>' +
@@ -95,10 +95,10 @@ function renderCapsule() {
     var salutation = s.petName ? 'Dear ' + s.petName + ', ' : 'Dear future us, ';
     bodyHTML += '<div style="text-align:center;margin-bottom:24px;">' +
       '<div style="font-size:64px;margin-bottom:12px;">🔮</div>' +
-      '<h2 style="font-family:var(--font-display);">Your Anniversary Time Capsule</h2>' +
+      '<h2 style="font-family:var(--font-display);">Your Italy Time Capsule</h2>' +
       '<div style="font-size:14px;color:var(--warm-gray);margin:12px 0;line-height:1.6;">' +
       'On your last night in Italy, fill this out together. It seals away your memories ' +
-      'until your first anniversary — June 27, 2027.' +
+      'and opens exactly one year later — June 27, 2027.' +
       '</div>' +
       '</div>' +
       '<div class="capsule-form">' +
@@ -122,7 +122,7 @@ function renderCapsule() {
       '</div>';
 
   } else if (!Storage.isCapsuleUnlocked()) {
-    // ── SEALED — countdown to anniversary ──
+    // ── SEALED — countdown to the reveal ──
     var unlock = new Date(capsule.lockUntil);
     var now = new Date();
     var daysLeft = Math.ceil((unlock - now) / (1000 * 60 * 60 * 24));
@@ -131,7 +131,7 @@ function renderCapsule() {
       '<h2 style="font-family:var(--font-display);">Capsule Sealed</h2>' +
       '<div class="countdown-banner after" style="margin:20px 0;">' +
       '<div class="countdown-number">' + daysLeft + '</div>' +
-      '<div class="countdown-label">days until your anniversary reveal</div>' +
+      '<div class="countdown-label">days until Italy opens again</div>' +
       '</div>' +
       '<div style="font-size:14px;color:var(--warm-gray);line-height:1.6;">' +
       'Sealed on ' + formatDateFull(capsule.sealedAt) + '.<br>' +
@@ -140,10 +140,10 @@ function renderCapsule() {
       '</div>';
 
   } else {
-    // ── UNLOCKED — happy anniversary reveal ──
+    // ── UNLOCKED — one year later reveal ──
     bodyHTML += '<div style="text-align:center;margin-bottom:24px;">' +
       '<div style="font-size:64px;margin-bottom:12px;">🎉</div>' +
-      '<h2 style="font-family:var(--font-display);">Happy Anniversary!</h2>' +
+      '<h2 style="font-family:var(--font-display);">One Year Since Italy</h2>' +
       '<div style="font-size:14px;color:var(--warm-gray);margin:8px 0;">Sealed ' + formatDateFull(capsule.sealedAt) + ' in Italy</div>' +
       '</div>';
 
@@ -204,7 +204,7 @@ function sealTimeCapsule() {
     return;
   }
 
-  if (!confirm('Seal the capsule? It won\'t open until your anniversary — June 27, 2027.')) {
+  if (!confirm('Seal the capsule? It won\'t open until June 27, 2027 — one year after your last night in Italy.')) {
     return;
   }
 

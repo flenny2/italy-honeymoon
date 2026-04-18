@@ -133,7 +133,7 @@ var ACHIEVEMENTS = [
 
   { id: 'seal-capsule',     title: 'Time Travelers',       icon: '🔮', category: 'experience',
     challenge: 'Seal the Time Capsule on your last night',
-    howTo: 'Go to More → Time Capsule. Write a letter to your future selves, pick your favorites, and seal it. It opens on your first anniversary. This is the last achievement you should unlock.',
+    howTo: 'Go to More → Time Capsule. Write a letter to your future selves, pick your favorites, and seal it. It opens one year later — June 27, 2027. This is the last achievement you should unlock.',
     rarity: 'rare' },
 
   { id: 'chianti-toast',    title: 'Under the Tuscan Sun',  icon: '🍷', category: 'food',
