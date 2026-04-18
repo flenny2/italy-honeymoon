@@ -146,6 +146,37 @@ var ACHIEVEMENTS = [
     howTo: 'Walk to the funicular station from the hotel, ride 7 minutes to 715 meters, and look out over the entire lake. The view is staggering. Have a drink at the top.',
     rarity: 'uncommon' },
 
+  // ── COUNTER-DRIVEN (auto-unlock from tap counters on Today) ──
+  { id: 'counter-gelato-10',     title: 'Gelato Champion',       icon: '🍨', category: 'food',
+    challenge: 'Eat 10 gelatos across the trip',
+    howTo: 'Tap the 🍨 counter on the Today screen every time you eat one. At 10 scoops total, you\'ve earned it. Yes, doubles count as one. No, breakfast gelato still counts.',
+    rarity: 'rare' },
+
+  { id: 'counter-pasta-10',      title: 'Pasta Perfezionato',    icon: '🍝', category: 'food',
+    challenge: 'Eat 10 pasta dishes in Italy',
+    howTo: 'Tap the 🍝 counter every pasta dish. Cacio e pepe, carbonara, pici, tagliatelle — they all count. Ten dishes means you ate pasta almost every day. Respect.',
+    rarity: 'rare' },
+
+  { id: 'counter-pizza-5',       title: 'Five Slices In',        icon: '🍕', category: 'food',
+    challenge: 'Eat 5 pizzas in Italy',
+    howTo: 'Tap the 🍕 counter each time. Whole pies, street slices, late-night al taglio — they all count. Five is the minimum for a proper honeymoon.',
+    rarity: 'common' },
+
+  { id: 'counter-espresso-14',   title: 'Espresso Every Day',    icon: '☕', category: 'food',
+    challenge: 'Order 14 espressos — one for every day of the trip',
+    howTo: 'Tap the ☕ counter after every "un caffè." One per day, standing at the bar like a local. Fourteen means you matched the Italians.',
+    rarity: 'legendary' },
+
+  { id: 'counter-cappuccino-7',  title: 'Cappuccino Club',       icon: '🥛', category: 'food',
+    challenge: 'Drink 7 cappuccinos before 11am',
+    howTo: 'Tap the 🥛 counter on lazy hotel breakfast mornings. Seven cappuccinos means you had a proper Italian slow morning most days.',
+    rarity: 'uncommon' },
+
+  { id: 'counter-wine-5',        title: 'In Vino Veritas',        icon: '🍷', category: 'food',
+    challenge: 'Share 5 glasses of Italian wine together',
+    howTo: 'Tap the 🍷 counter each time. House reds at trattorias, crisp whites on Lake Como, Prosecco at sunset. Five glasses between you means you\'ve toasted this trip properly.',
+    rarity: 'uncommon' },
+
   // ── PLATINUM ──
   { id: 'platinum',          title: 'Amore Infinito',       icon: '💎', category: 'platinum',
     challenge: 'Unlock every other achievement',
@@ -161,6 +192,30 @@ var RARITY = {
   'legendary': { label: 'Legendary', color: '#E8B931', bg: '#FFF8E1', icon: '★' },
   'platinum':  { label: 'Platinum',  color: '#8B5CF6', bg: 'linear-gradient(135deg, #EDE9FE, #FCE7F3)', icon: '💎' }
 };
+
+// Counter → achievements threshold rules.
+// Storage.incrementCounter() auto-unlocks these when the counter hits the threshold.
+var COUNTER_ACHIEVEMENTS = {
+  gelato: [
+    { id: 'first-gelato',       threshold: 1 },
+    { id: 'counter-gelato-10',  threshold: 10 }
+  ],
+  pasta:      [{ id: 'counter-pasta-10',     threshold: 10 }],
+  pizza:      [{ id: 'counter-pizza-5',      threshold: 5 }],
+  espresso:   [{ id: 'counter-espresso-14',  threshold: 14 }],
+  cappuccino: [{ id: 'counter-cappuccino-7', threshold: 7 }],
+  wine:       [{ id: 'counter-wine-5',       threshold: 5 }]
+};
+
+// Display metadata for counter chips / stats
+var COUNTER_TYPES = [
+  { key: 'gelato',     label: 'Gelato',     icon: '🍨', color: '#EC4899' },
+  { key: 'pasta',      label: 'Pasta',      icon: '🍝', color: '#CE2B37' },
+  { key: 'pizza',      label: 'Pizza',      icon: '🍕', color: '#F97316' },
+  { key: 'espresso',   label: 'Espresso',   icon: '☕', color: '#6B4423' },
+  { key: 'cappuccino', label: 'Cappuccino', icon: '🥛', color: '#C9A97E' },
+  { key: 'wine',       label: 'Wine',       icon: '🍷', color: '#7C2D3A' }
+];
 
 // Category labels
 var ACHIEVEMENT_CATEGORIES = {

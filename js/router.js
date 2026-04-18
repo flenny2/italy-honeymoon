@@ -21,6 +21,8 @@ var Router = (function() {
     'capsule':     { render: 'renderCapsule',     tab: 'more' },
     'map':         { render: 'renderFullMap',     tab: 'map' },
     'more':        { render: 'renderMore',        tab: 'more' },
+    'settings':    { render: 'renderSettings',    tab: 'more' },
+    'stats':       { render: 'renderStats',       tab: 'more' },
   };
 
   function navigate(hash) {

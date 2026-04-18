@@ -187,7 +187,11 @@ h3 { font-size: 18px; }
   display: none;
   align-items: center;
   justify-content: center;
-  padding: var(--space-md);
+  padding:
+    calc(var(--space-md) + env(safe-area-inset-top, 0))
+    calc(var(--space-md) + env(safe-area-inset-right, 0))
+    calc(var(--space-md) + env(safe-area-inset-bottom, 0))
+    calc(var(--space-md) + env(safe-area-inset-left, 0));
 }
 
 .modal-overlay.open {

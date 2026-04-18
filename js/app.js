@@ -46,12 +46,16 @@ function renderMore() {
     ? '⚠️ ' + bookingStats.remaining + ' still need booking'
     : '✅ All booked!';
 
+  var statsDesc = getStatsSummary();
+
   var linksHTML = '<div class="content-wrap stagger">' +
     buildMoreLink('#explore', '🔍', 'Explore Cities', CITIES.length + ' cities to discover', '') +
     buildMoreLink('#phrasebook', '🇮🇹', 'Italian Phrases', 'Essential phrases & tips', '') +
     buildMoreLink('#bookings', '📋', 'Booking Checklist', bookingDesc, '') +
     buildMoreLink('#achievements', '🏆', 'Achievements', counts.unlocked + ' / ' + counts.total + ' unlocked', '') +
+    buildMoreLink('#stats', '📊', 'Trip Stats', statsDesc, '') +
     buildMoreLink('#capsule', '🔮', 'Time Capsule', 'Anniversary surprise', '') +
+    buildMoreLink('#settings', '⚙️', 'Settings', 'Names, wedding, photo', '') +
     '<div style="margin-top:24px;">' +
     '<button class="btn btn-ghost btn-full btn-sm" onclick="if(confirm(\'Reset all saved data? Places will be restored to defaults.\')){Storage.resetAll();showToast(\'Data reset!\');Router.navigate(\'#today\');}">Reset All Data</button>' +
     '</div>' +
@@ -87,6 +91,8 @@ function renderCapsule() {
 
   if (!capsule.locked) {
     // ── UNSEALED — form to fill out ──
+    var s = Storage.getSettings();
+    var salutation = s.petName ? 'Dear ' + s.petName + ', ' : 'Dear future us, ';
     bodyHTML += '<div style="text-align:center;margin-bottom:24px;">' +
       '<div style="font-size:64px;margin-bottom:12px;">🔮</div>' +
       '<h2 style="font-family:var(--font-display);">Your Anniversary Time Capsule</h2>' +
@@ -98,7 +104,7 @@ function renderCapsule() {
       '<div class="capsule-form">' +
       '<div class="capsule-field">' +
       '<label class="capsule-label">💌 A letter to your future selves</label>' +
-      '<textarea id="capsule-letter" class="journal-textarea" style="min-height:120px;" placeholder="Dear future us..."></textarea>' +
+      '<textarea id="capsule-letter" class="journal-textarea" style="min-height:120px;" autocapitalize="sentences" placeholder="' + salutation + '"></textarea>' +
       '</div>' +
       '<div class="capsule-field">' +
       '<label class="capsule-label">📍 Favorite place from the trip</label>' +
@@ -567,8 +573,25 @@ function applyActiveFilters() {
   });
 }
 
+// ── First-run: seed Settings defaults (editable in ⚙️ Settings) ──
+// Only runs if the settings key has never been written — a reset clears
+// everything including this, at which point the seed runs again on reload.
+function seedSettingsIfEmpty() {
+  try {
+    if (localStorage.getItem('italy-settings-v1') !== null) return;
+  } catch (e) { return; }
+  Storage.saveSettings({
+    userName: 'Dylan',
+    partnerName: 'Hope',
+    weddingDate: '2026-06-06',
+    hometown: 'Brea, CA',
+    departureAirport: 'LAX'
+  });
+}
+
 // ── Initialize ──
 document.addEventListener('DOMContentLoaded', function() {
+  seedSettingsIfEmpty();
   Router.init();
 
   // Register Service Worker for offline support

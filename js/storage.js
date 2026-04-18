@@ -10,7 +10,24 @@ var Storage = (function() {
     letters:      'italy-letters-v1',
     achievements: 'italy-achievements-v1',
     capsule:      'italy-capsule-v1',
-    settings:     'italy-settings-v1'
+    settings:     'italy-settings-v1',
+    counters:     'italy-counters-v1'
+  };
+
+  // Default settings shape — fields all optional, stored only in localStorage
+  var DEFAULT_SETTINGS = {
+    userName: '',
+    partnerName: '',
+    petName: '',
+    weddingDate: '',
+    hometown: '',
+    departureAirport: '',
+    couplePhoto: ''
+  };
+
+  var DEFAULT_COUNTERS = {
+    gelato: 0, pasta: 0, pizza: 0, espresso: 0, cappuccino: 0, wine: 0,
+    history: []
   };
 
   // ── Helpers ──
@@ -168,11 +185,55 @@ var Storage = (function() {
 
   // ── Settings ──
   function getSettings() {
-    return read(KEYS.settings) || { partnerName: '' };
+    var saved = read(KEYS.settings) || {};
+    return Object.assign({}, DEFAULT_SETTINGS, saved);
   }
 
   function saveSettings(settings) {
-    write(KEYS.settings, settings);
+    var merged = Object.assign({}, getSettings(), settings);
+    write(KEYS.settings, merged);
+    return merged;
+  }
+
+  // ── Counters (gelato, pasta, pizza, espresso, cappuccino, wine) ──
+  function getCounters() {
+    var saved = read(KEYS.counters) || {};
+    return Object.assign({}, DEFAULT_COUNTERS, saved, {
+      history: (saved && saved.history) || []
+    });
+  }
+
+  function incrementCounter(type, city) {
+    var counters = getCounters();
+    if (typeof counters[type] !== 'number') return counters;
+    counters[type] = counters[type] + 1;
+    counters.history = counters.history.concat([{
+      type: type, ts: Date.now(), city: city || ''
+    }]);
+    write(KEYS.counters, counters);
+
+    // Auto-unlock achievements at thresholds (defined in data-achievements.js)
+    if (typeof COUNTER_ACHIEVEMENTS !== 'undefined' && COUNTER_ACHIEVEMENTS[type]) {
+      COUNTER_ACHIEVEMENTS[type].forEach(function(rule) {
+        if (counters[type] >= rule.threshold && !isAchievementUnlocked(rule.id)) {
+          unlockAchievement(rule.id);
+          // Defer visual celebration to next tick so callers can batch UI updates
+          if (typeof fireConfetti === 'function') setTimeout(fireConfetti, 50);
+          if (typeof showToast === 'function') {
+            var ach = (typeof ACHIEVEMENTS !== 'undefined') &&
+              ACHIEVEMENTS.find(function(a) { return a.id === rule.id; });
+            setTimeout(function() {
+              showToast('🎉 ' + (ach ? ach.title : 'Achievement') + ' unlocked!');
+            }, 100);
+          }
+        }
+      });
+    }
+    return counters;
+  }
+
+  function resetCounters() {
+    localStorage.removeItem(KEYS.counters);
   }
 
   // ── Reset All ──
@@ -208,6 +269,10 @@ var Storage = (function() {
 
     getSettings: getSettings,
     saveSettings: saveSettings,
+
+    getCounters: getCounters,
+    incrementCounter: incrementCounter,
+    resetCounters: resetCounters,
 
     resetAll: resetAll
   };

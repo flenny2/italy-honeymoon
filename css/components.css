@@ -115,6 +115,13 @@
   color: #ccc;
   transition: transform var(--duration-fast) var(--bounce);
   align-self: center;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  margin: -8px -8px -8px 0;
 }
 
 .place-card-star.saved { color: var(--giallo); }

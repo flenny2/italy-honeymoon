@@ -10,22 +10,28 @@ function renderJournal() {
 
   var phase = getTripPhase();
   var journal = Storage.getJournal();
+  var s = Storage.getSettings();
   _pendingPhoto = null;
 
   // Pick today's prompt (rotate through list using day of year)
   var promptIndex = getDayOfYear() % JOURNAL_PROMPTS.length;
   var todayPrompt = JOURNAL_PROMPTS[promptIndex];
 
+  var subtitle = 'Capture your memories';
+  if (s.userName && s.partnerName) {
+    subtitle = 'Memories from ' + s.userName + ' &amp; ' + s.partnerName;
+  }
+
   var headerHTML = '<div class="page-header">' +
     '<h1>📝 Journal</h1>' +
-    '<div class="subtitle">Capture your memories</div>' +
+    '<div class="subtitle">' + subtitle + '</div>' +
     '</div>';
 
   // Today's prompt + form
   var promptHTML = '<div class="content-wrap">' +
     '<div class="journal-prompt-card">' +
     '<div class="journal-prompt-text">' + todayPrompt + '</div>' +
-    '<textarea class="journal-textarea" id="journal-input" placeholder="Write your thoughts..."></textarea>' +
+    '<textarea class="journal-textarea" id="journal-input" autocapitalize="sentences" placeholder="Write your thoughts..."></textarea>' +
     '<div id="journal-photo-preview" class="journal-photo-preview"></div>' +
     '<input type="file" id="journal-photo-input" accept="image/*" style="display:none;" onchange="handleJournalPhoto(this)">' +
     '<div class="journal-actions">' +

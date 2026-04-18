@@ -11,12 +11,15 @@ function renderToday() {
   var city = getTodayCity();
 
   var sections = [
+    renderTodayHero(),
+    renderTodayLetter(),
     renderTodayCountdown(phase),
     renderTodayHotel(city),
     renderTodayMap(),
     renderTodayBooking(phase),
     renderTodayPhrase(),
     renderTodayGifts(city),
+    renderTodayCounters(phase),
     renderTodaySuggestion(city),
     renderTodayActions(city),
     renderTodayPicks(city)
@@ -30,13 +33,104 @@ function renderToday() {
   setTimeout(initTodayMap, 50);
 }
 
+function renderTodayHero() {
+  var s = Storage.getSettings();
+  if (!s.couplePhoto && !s.userName && !s.partnerName) return '';
+
+  var html = '';
+  if (s.couplePhoto) {
+    html += '<div class="today-couple-hero">' +
+      '<img src="' + s.couplePhoto + '" alt="Us" class="today-couple-photo">' +
+      '</div>';
+  }
+  if (s.userName || s.partnerName) {
+    var name1 = s.userName || '';
+    var name2 = s.partnerName || '';
+    if (name1 && name2) {
+      html += '<div class="today-couple-names">' + name1 +
+        '<span class="today-couple-amp">&amp;</span>' + name2 + '</div>';
+    } else {
+      html += '<div class="today-couple-names">' + (name1 || name2) + '</div>';
+    }
+  }
+  return html;
+}
+
+function renderTodayLetter() {
+  if (typeof Storage.getLetters !== 'function') return '';
+  var letters = Storage.getLetters();
+  if (!letters || letters.length === 0) return '';
+
+  var todayISO = new Date().toISOString().split('T')[0];
+  var ready = letters.filter(function(l) {
+    if (l.isRead) return false;
+    if (!l.unlockDate) return false;
+    return l.unlockDate <= todayISO;
+  });
+  if (ready.length === 0) return '';
+
+  ready.sort(function(a, b) { return (b.unlockDate || '').localeCompare(a.unlockDate || ''); });
+  var l = ready[0];
+  var fromLabel = l.from ? 'from ' + l.from : 'for you';
+  var suffix = ready.length > 1 ? ' (+' + (ready.length - 1) + ' more)' : '';
+
+  return '<div class="today-letter-alert" onclick="openLetter(\'' + l.id + '\')">' +
+    '<div class="today-letter-icon">💌</div>' +
+    '<div class="today-letter-text">' +
+    '<strong>A new letter is ready</strong>' +
+    fromLabel + suffix + ' — tap to open' +
+    '</div>' +
+    '<div class="today-letter-arrow">→</div>' +
+    '</div>';
+}
+
+function renderTodayCounters(phase) {
+  if (!phase || phase.phase !== 'during') return '';
+  if (typeof renderCounterChips !== 'function') return '';
+  return renderCounterChips();
+}
+
 // ── Section renderers ──
 
 function renderTodayCountdown(phase) {
   if (phase.phase === 'before') {
-    return '<div class="countdown-banner before anim-bounce-in">' +
+    var s = Storage.getSettings();
+    var italyBanner = '<div class="countdown-banner before anim-bounce-in">' +
       '<div class="countdown-number">' + phase.daysUntil + '</div>' +
       '<div class="countdown-label">days until Italy! 🇮🇹</div></div>';
+
+    // Dual countdown: show wedding countdown if we have a future wedding date
+    if (s.weddingDate) {
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      var wedding = new Date(s.weddingDate);
+      wedding.setHours(0, 0, 0, 0);
+      var daysToWedding = Math.ceil((wedding - today) / (1000 * 60 * 60 * 24));
+      if (daysToWedding > 0) {
+        return '<div class="dual-countdown">' +
+          '<div class="countdown-banner wedding anim-bounce-in">' +
+          '<div class="countdown-number">' + daysToWedding + '</div>' +
+          '<div class="countdown-label">days until the wedding 💍</div>' +
+          '</div>' +
+          '<div class="countdown-banner before anim-bounce-in">' +
+          '<div class="countdown-number">' + phase.daysUntil + '</div>' +
+          '<div class="countdown-label">days until Italy! 🇮🇹</div>' +
+          '</div>' +
+          '</div>';
+      } else if (daysToWedding === 0) {
+        return '<div class="dual-countdown">' +
+          '<div class="countdown-banner wedding anim-bounce-in">' +
+          '<div class="countdown-number">🎉</div>' +
+          '<div class="countdown-label">WEDDING DAY!</div>' +
+          '</div>' +
+          '<div class="countdown-banner before anim-bounce-in">' +
+          '<div class="countdown-number">' + phase.daysUntil + '</div>' +
+          '<div class="countdown-label">days until Italy!</div>' +
+          '</div>' +
+          '</div>';
+      }
+    }
+    return italyBanner;
   } else if (phase.phase === 'during') {
     var dt = phase.dayTrip;
     return '<div class="countdown-banner during anim-bounce-in">' +
