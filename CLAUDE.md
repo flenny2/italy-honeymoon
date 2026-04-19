@@ -124,6 +124,7 @@ User interaction → Storage.savePlaces() / Storage.saveJournalEntry() / etc.
 - **innerHTML pattern**: The entire app uses innerHTML for rendering. A security hook will intermittently **block** (not just warn about) Write/Edit calls containing `innerHTML` — retry the exact same operation and it usually succeeds on the second try. This is expected noise for a personal offline app with no external input.
 - **Time capsule unlock date**: `CONFIG.ANNIVERSARY_DATE = '2027-06-27'` is one year after the last night in Italy, **not** the wedding anniversary (which is 2027-06-06). Copy consistently uses "one year since Italy" — never "anniversary".
 - **Back buttons**: render with a bare `<button class="back-btn" onclick="Router.navigate('#parent')">← Parent</button>`. CSS pins it fixed bottom-left above the tab bar; `.page:has(.back-btn) .page-scroll` automatically adds 80px bottom padding. Don't wrap in custom containers.
+- **Input font size minimum**: every `<input>` and `<textarea>` uses `font-size: 16px` (and ~44–48px min-height). iOS Safari auto-zooms on focus when an input's font-size is <16px, which is jarring on a mobile-only PWA. Preserve this invariant when adding new forms.
 - **Place card verdict styling**: `buildPlaceCard()` in `today.js` adds `place-card-{verdict}` class. CSS in `components.css` transforms the card appearance based on verdict.
 
 ## Place Object Schema
