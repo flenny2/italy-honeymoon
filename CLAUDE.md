@@ -18,7 +18,13 @@ Editorial companion app to Wanderlog for a June 2026 Italy honeymoon. Wanderlog 
 
 **localStorage keys** (all managed by `Storage` module in `js/storage.js`):
 - `italy-places-v3` — places with saved/starred status
-- `italy-journal-v1`, `italy-letters-v1`, `italy-achievements-v1`, `italy-capsule-v1`, `italy-settings-v1`
+- `italy-journal-v1`, `italy-letters-v1`, `italy-achievements-v1`, `italy-capsule-v1`, `italy-settings-v1`, `italy-counters-v1`
+
+**Adding a new JS file**: three places to update — (1) `<script>` tag in `index.html`, (2) path in `APP_FILES` array in `sw.js`, (3) bump `CACHE_NAME` in `sw.js` so the new SW installs.
+
+**Script load order matters**: `data-*.js` files must load before `storage.js` (e.g. `COUNTER_ACHIEVEMENTS` is read inside `Storage.incrementCounter`). Put new data constants in `data-*.js`.
+
+**Deployment**: `git push origin main` → Netlify auto-deploys from `github.com/flenny2/italy-honeymoon` to `italy-honeymoon-app.netlify.app` within ~60s. iPhone PWA users may need to delete and re-add the home-screen app from Safari to pick up a new service worker.
 
 ## Architecture
 
@@ -103,7 +109,10 @@ User interaction → Storage.savePlaces() / Storage.saveJournalEntry() / etc.
 - **`getNearbyPairings(place, maxKm)`** (`data-places.js`) — finds places within 600m with walk times
 - **`getTripPhase()`** (`data-trip.js`) — returns `{phase: 'before'|'during'|'after', ...}` to drive contextual UI
 - **Verdict badges**: essential, worth-it, nice, overrated, hidden-gem — defined in `VERDICTS` (`data-trip.js`)
-- **Achievements**: 32 achievements with 5 rarity tiers (common, uncommon, rare, legendary, platinum). Platinum ("Amore Infinito") auto-unlocks when all others are complete — logic in `doUnlock()` in `achievements.js`
+- **Achievements**: 38 achievements with 5 rarity tiers (common, uncommon, rare, legendary, platinum). Platinum ("Amore Infinito") auto-unlocks when all non-platinum achievements are complete — logic in `doUnlock()` in `achievements.js`
+- **Counters** (`Storage.incrementCounter(type, city)` in `storage.js`): auto-unlocks achievements at thresholds in `COUNTER_ACHIEVEMENTS`. **Adding a new counter type requires edits in 3 places**: `DEFAULT_COUNTERS` (storage.js) + `COUNTER_TYPES` + `COUNTER_ACHIEVEMENTS` (data-achievements.js). UI chips on Today (during trip only) via `renderCounterChips()` in `counters.js`; dedicated stats page at `#stats`.
+- **Settings screen** (`#settings`, `settings.js`): `userName`, `partnerName`, `petName`, `weddingDate`, `hometown`, `departureAirport`, `couplePhoto`. Wired into Today (hero + dual countdown), Letters (From/To prefill + subtitle), Journal (subtitle), Capsule (salutation).
+- **First-run seeder** (`seedSettingsIfEmpty()` in `app.js`): detects first run via raw `localStorage.getItem('italy-settings-v1') !== null`. **Do not use `Storage.getSettings()` to detect first run** — it returns merged defaults even when the key is absent.
 - **Map filter modal** is a top-level element (not inside `#page-map`) to escape its stacking context and render above the tab bar. Uses multi-select toggle with OR logic (`mapActiveFilters[]`, `toggleMapFilter()`, `applyActiveFilters()`)
 - **Walking radius**: hotel-centered 8min/15min circles shown on city zoom (`app.js`)
 - **Hidden categories**: transit, pharmacy, restroom are filtered from UI via `isVisiblePlace()` in `helpers.js`
@@ -112,7 +121,9 @@ User interaction → Storage.savePlaces() / Storage.saveJournalEntry() / etc.
 
 - **Stacking context**: `#page-map` creates a stacking context (`position: fixed; z-index: 1`). Modals inside it cannot render above `#tab-bar` (`z-index: 100`). The map filter modal was moved outside `#page-map` for this reason. Any new modals on the map page must also be top-level.
 - **Safe area insets**: Map city bar and filter button use `env(safe-area-inset-top)`. Tab bar uses `env(safe-area-inset-bottom)`. Any fixed-position UI near screen edges must account for these.
-- **innerHTML pattern**: The entire app uses innerHTML for rendering. A security hook will warn about XSS — this is expected for a personal offline app with no external input.
+- **innerHTML pattern**: The entire app uses innerHTML for rendering. A security hook will intermittently **block** (not just warn about) Write/Edit calls containing `innerHTML` — retry the exact same operation and it usually succeeds on the second try. This is expected noise for a personal offline app with no external input.
+- **Time capsule unlock date**: `CONFIG.ANNIVERSARY_DATE = '2027-06-27'` is one year after the last night in Italy, **not** the wedding anniversary (which is 2027-06-06). Copy consistently uses "one year since Italy" — never "anniversary".
+- **Back buttons**: render with a bare `<button class="back-btn" onclick="Router.navigate('#parent')">← Parent</button>`. CSS pins it fixed bottom-left above the tab bar; `.page:has(.back-btn) .page-scroll` automatically adds 80px bottom padding. Don't wrap in custom containers.
 - **Place card verdict styling**: `buildPlaceCard()` in `today.js` adds `place-card-{verdict}` class. CSS in `components.css` transforms the card appearance based on verdict.
 
 ## Place Object Schema
