@@ -259,79 +259,18 @@ function renderFullMap() {
   // Darken everything except Italy
   addItalyMask(fullMap);
 
-  // Draw travel route
-  drawTravelRoute();
+  // Draw travel route (shared with Today mini-map)
+  var routeResult = drawTravelRoute(fullMap);
+  mapRouteLines = mapRouteLines.concat(routeResult.lines);
 
-  // Add hotel markers
-  addHotelMarkers();
+  // Add hotel markers (all cities, with name labels)
+  mapHotelMarkers = addHotelMarkers(fullMap);
 
   // Add all place markers
   addPlaceMarkers();
 
   // Fix size
   setTimeout(function() { fullMap.invalidateSize(); }, 100);
-}
-
-// ── Travel route lines ──
-function drawTravelRoute() {
-  if (!fullMap) return;
-
-  // Main route from shared coordinates
-  var mainCoords = ROUTE_COORDS.main.map(function(r) { return [r.lat, r.lng]; });
-  var mainLine = L.polyline(mainCoords, {
-    color: '#CE2B37', weight: 3, opacity: 0.5, dashArray: '10 8'
-  }).addTo(fullMap);
-  mapRouteLines.push(mainLine);
-
-  // Day trip routes (thinner, gold)
-  var dayTripLines = [
-    [[41.8975, 12.4800], [40.6880, 14.4849]],
-    [[43.7710, 11.2540], [43.55, 11.25]],
-    [[45.8100, 9.0800], [45.4391, 10.9946], [45.4400, 12.3350]]
-  ];
-  dayTripLines.forEach(function(coords) {
-    var line = L.polyline(coords, {
-      color: '#E8B931', weight: 2, opacity: 0.4, dashArray: '6 6'
-    }).addTo(fullMap);
-    mapRouteLines.push(line);
-  });
-
-  // Day trip point markers from shared coordinates
-  ROUTE_COORDS.dayTrips.forEach(function(dt) {
-    var icon = L.divIcon({
-      className: '',
-      html: '<div class="map-dt-marker">' + dt.emoji + '</div><div class="map-dt-label">' + dt.label + '</div>',
-      iconSize: [28, 40], iconAnchor: [14, 14]
-    });
-    L.marker([dt.lat, dt.lng], { icon: icon, interactive: false }).addTo(fullMap);
-  });
-}
-
-// ── Hotel markers (house icon, always visible) ──
-function addHotelMarkers() {
-  if (!fullMap) return;
-
-  Object.keys(HOTELS).forEach(function(cityName) {
-    var h = HOTELS[cityName];
-    var icon = L.divIcon({
-      className: '',
-      html: '<div class="map-hotel-marker">' +
-        '<span class="map-hotel-icon">🏠</span>' +
-        '</div>' +
-        '<div class="map-hotel-label">' + h.name.split(' ').slice(0, 3).join(' ') + '</div>',
-      iconSize: [36, 50],
-      iconAnchor: [18, 18]
-    });
-
-    var marker = L.marker([h.lat, h.lng], { icon: icon, zIndexOffset: 1000 }).addTo(fullMap);
-    marker.bindPopup(
-      '<div class="popup-inner">' +
-      '<div class="popup-name">🏠 ' + h.name + '</div>' +
-      '<div class="popup-meta">' + h.dates + ' · ' + h.address + '</div>' +
-      '</div>'
-    );
-    mapHotelMarkers.push({ marker: marker, city: cityName });
-  });
 }
 
 // ── Place markers with verdict styling ──

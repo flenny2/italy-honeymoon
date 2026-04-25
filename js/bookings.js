@@ -130,20 +130,16 @@ var BOOKINGS = [
   // (not shown in checklist, but noted for reference)
 ];
 
-// Storage key for booking checkboxes
-var BOOKING_STORAGE_KEY = 'italy-bookings-v1';
-
+// Booking checklist state lives in Storage (key: italy-bookings-v1).
+// Local wrappers kept so callers in suggestions.js / today.js don't all need updating.
 function getBookingState() {
-  try {
-    var data = localStorage.getItem(BOOKING_STORAGE_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch (e) { return {}; }
+  return Storage.getBookings();
 }
 
 function toggleBooking(id) {
   var state = getBookingState();
   state[id] = !state[id];
-  localStorage.setItem(BOOKING_STORAGE_KEY, JSON.stringify(state));
+  Storage.saveBookings(state);
   renderBookings();
 }
 

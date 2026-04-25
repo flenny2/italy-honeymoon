@@ -282,6 +282,16 @@
   margin-bottom: var(--space-md);
 }
 
+.detail-notes {
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--warm-gray);
+  margin-bottom: var(--space-md);
+  padding-left: 10px;
+  border-left: 2px solid var(--faint-gray);
+}
+
 .detail-category-badge {
   display: inline-block;
   font-size: 10px;

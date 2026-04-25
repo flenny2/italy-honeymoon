@@ -293,11 +293,17 @@ function initTodayMap() {
   var phase = getTripPhase();
   var currentCity = phase.phase === 'during' ? phase.city : null;
 
-  // Draw route
-  var mainCoords = ROUTE_COORDS.main.map(function(r) { return [r.lat, r.lng]; });
-  L.polyline(mainCoords, { color: '#CE2B37', weight: 2.5, opacity: 0.5, dashArray: '8 6' }).addTo(todayMap);
+  // Draw shared travel route — main polyline + day-trip lines + day-trip markers.
+  // Today map uses thinner strokes and the smaller .route-marker-mini pins.
+  drawTravelRoute(todayMap, {
+    routeStyle:        { color: '#CE2B37', weight: 2.5, opacity: 0.5, dashArray: '8 6' },
+    dayTripStyle:      { color: '#E8B931', weight: 1.5, opacity: 0.4, dashArray: '4 6' },
+    dayTripMarkerClass: 'route-marker-mini',
+    dayTripLabelClass:  'route-label-mini'
+  });
 
-  // City markers
+  // City emoji markers (today-map specific — not shared because the full map
+  // tab uses individual place pins instead of city markers).
   ROUTE_COORDS.main.forEach(function(r) {
     var isCurrent = r.city === currentCity;
     var size = isCurrent ? 44 : 36;
@@ -312,21 +318,6 @@ function initTodayMap() {
     var marker = L.marker([r.lat, r.lng], { icon: icon }).addTo(todayMap);
     marker.on('click', function() { Router.navigate('#city/' + cityToSlug(r.city)); });
   });
-
-  // Day trip markers
-  ROUTE_COORDS.dayTrips.forEach(function(dt) {
-    var icon = L.divIcon({
-      className: '',
-      html: '<div class="route-marker-mini">' + dt.emoji + '</div><div class="route-label-mini">' + dt.label + '</div>',
-      iconSize: [28, 40], iconAnchor: [14, 14]
-    });
-    L.marker([dt.lat, dt.lng], { icon: icon, interactive: false }).addTo(todayMap);
-  });
-
-  // Day trip route lines
-  L.polyline([[41.8975, 12.4800], [40.6880, 14.4849]], { color: '#E8B931', weight: 1.5, opacity: 0.4, dashArray: '4 6' }).addTo(todayMap);
-  L.polyline([[43.7710, 11.2540], [43.55, 11.25]], { color: '#E8B931', weight: 1.5, opacity: 0.4, dashArray: '4 6' }).addTo(todayMap);
-  L.polyline([[45.8100, 9.0800], [45.4391, 10.9946], [45.4400, 12.3350]], { color: '#E8B931', weight: 1.5, opacity: 0.4, dashArray: '4 6' }).addTo(todayMap);
 
   setTimeout(function() { todayMap.invalidateSize(); }, CONFIG.MAP_INVALIDATE_DELAY);
 }
@@ -366,6 +357,22 @@ function toggleSave(id, evt) {
   p.saved = !p.saved;
   Storage.savePlaces(places);
   invalidatePlaceIndex();
+
+  // Update the element that fired the event in place — no full re-render,
+  // so scroll position is preserved. Two element shapes:
+  //   - .place-card-star span (Today picks, City list)
+  //   - .btn save button (Place detail page)
+  var el = evt && evt.currentTarget;
+  if (el && el.classList) {
+    if (el.classList.contains('place-card-star')) {
+      el.classList.toggle('saved', p.saved);
+      el.textContent = p.saved ? '⭐' : '☆';
+    } else if (el.classList.contains('btn')) {
+      el.classList.toggle('btn-verde', p.saved);
+      el.classList.toggle('btn-outline', !p.saved);
+      el.textContent = p.saved ? '⭐ Saved' : '☆ Save';
+    }
+  }
+
   showToast(p.saved ? '⭐ Saved!' : 'Unsaved');
-  Router.navigate();
 }

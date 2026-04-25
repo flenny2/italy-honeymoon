@@ -11,7 +11,8 @@ var Storage = (function() {
     achievements: 'italy-achievements-v1',
     capsule:      'italy-capsule-v1',
     settings:     'italy-settings-v1',
-    counters:     'italy-counters-v1'
+    counters:     'italy-counters-v1',
+    bookings:     'italy-bookings-v1'
   };
 
   // Default settings shape — fields all optional, stored only in localStorage
@@ -154,8 +155,6 @@ var Storage = (function() {
     return read(KEYS.capsule) || {
       locked: false,
       lockUntil: null,
-      favoriteVotes: {},
-      letterToFutureSelf: {},
       snapshot: null
     };
   }
@@ -236,6 +235,15 @@ var Storage = (function() {
     localStorage.removeItem(KEYS.counters);
   }
 
+  // ── Bookings (checklist state — { [bookingId]: true } ) ──
+  function getBookings() {
+    return read(KEYS.bookings) || {};
+  }
+
+  function saveBookings(state) {
+    write(KEYS.bookings, state);
+  }
+
   // ── Reset All ──
   function resetAll() {
     Object.values(KEYS).forEach(function(key) {
@@ -273,6 +281,9 @@ var Storage = (function() {
     getCounters: getCounters,
     incrementCounter: incrementCounter,
     resetCounters: resetCounters,
+
+    getBookings: getBookings,
+    saveBookings: saveBookings,
 
     resetAll: resetAll
   };

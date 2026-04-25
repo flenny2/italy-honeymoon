@@ -64,6 +64,11 @@ function renderDetail(id) {
   // Description
   var descHTML = '<div class="detail-desc">' + p.description + '</div>';
 
+  // Curator notes (small italic line under description; only if present)
+  var notesHTML = p.notes
+    ? '<div class="detail-notes">' + p.notes + '</div>'
+    : '';
+
   // Nearby pairings
   var nearby = getNearbyPairings(p);
   var nearbyHTML = '';
@@ -105,7 +110,7 @@ function renderDetail(id) {
 
   content.innerHTML = '<div class="detail-content stagger">' +
     backHTML + catHTML + nameHTML + sourceHTML + tagsHTML + verdictHTML +
-    realTalkHTML + descHTML + nearbyHTML + visitHTML + saveHTML +
+    realTalkHTML + descHTML + notesHTML + nearbyHTML + visitHTML + saveHTML +
     '</div>';
 }
 
