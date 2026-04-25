@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Session state lives in `HANDOFF.md`.** Read it before starting any task —
+> it tracks the live cursor (last commit, queued items, deferred decisions,
+> open questions). CLAUDE.md is the stable spec; HANDOFF.md is what changed.
+
 ## What This Is
 
 Editorial companion app to Wanderlog for a June 2026 Italy honeymoon. Wanderlog handles logistics (maps, itinerary, reservations, GPS, directions, reviews). This app provides the curated content layer: honest summaries, verdict badges, source attribution, mood filtering, smart suggestions, nearby pairings, a phrasebook, journal, love letters, achievements, and a time capsule.
