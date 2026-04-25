@@ -38,22 +38,6 @@ var ROUTE_COORDS = {
   ]
 };
 
-// ── Place index for O(1) lookups by ID ──
-var _placeIndex = null;
-
-function getPlaceById(id) {
-  if (!_placeIndex) {
-    _placeIndex = {};
-    var places = Storage.getPlaces();
-    places.forEach(function(p) { _placeIndex[p.id] = p; });
-  }
-  return _placeIndex[id] || null;
-}
-
-function invalidatePlaceIndex() {
-  _placeIndex = null;
-}
-
 // ── Date helpers ──
 function getDayOfYear(date) {
   if (!date) date = new Date();

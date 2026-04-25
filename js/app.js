@@ -94,9 +94,9 @@ function renderCapsule() {
     var s = Storage.getSettings();
     var salutation = s.petName ? 'Dear ' + s.petName + ', ' : 'Dear future us, ';
     bodyHTML += '<div style="text-align:center;margin-bottom:24px;">' +
-      '<div style="font-size:64px;margin-bottom:12px;">🔮</div>' +
-      '<h2 style="font-family:var(--font-display);">Your Italy Time Capsule</h2>' +
-      '<div style="font-size:14px;color:var(--warm-gray);margin:12px 0;line-height:1.6;">' +
+      '<div class="capsule-hero-icon">🔮</div>' +
+      '<h2>Your Italy Time Capsule</h2>' +
+      '<div class="capsule-intro-text" style="margin:12px 0;">' +
       'On your last night in Italy, fill this out together. It seals away your memories ' +
       'and opens exactly one year later — June 27, 2027.' +
       '</div>' +
@@ -127,13 +127,13 @@ function renderCapsule() {
     var now = new Date();
     var daysLeft = Math.ceil((unlock - now) / (1000 * 60 * 60 * 24));
     bodyHTML += '<div style="text-align:center;">' +
-      '<div style="font-size:64px;margin-bottom:16px;">🔒</div>' +
-      '<h2 style="font-family:var(--font-display);">Capsule Sealed</h2>' +
+      '<div class="capsule-hero-icon" style="margin-bottom:16px;">🔒</div>' +
+      '<h2>Capsule Sealed</h2>' +
       '<div class="countdown-banner after" style="margin:20px 0;">' +
       '<div class="countdown-number">' + daysLeft + '</div>' +
       '<div class="countdown-label">days until Italy opens again</div>' +
       '</div>' +
-      '<div style="font-size:14px;color:var(--warm-gray);line-height:1.6;">' +
+      '<div class="capsule-intro-text">' +
       'Sealed on ' + formatDateFull(capsule.sealedAt) + '.<br>' +
       'Opens June 27, 2027 💕' +
       '</div>' +
@@ -142,9 +142,9 @@ function renderCapsule() {
   } else {
     // ── UNLOCKED — one year later reveal ──
     bodyHTML += '<div style="text-align:center;margin-bottom:24px;">' +
-      '<div style="font-size:64px;margin-bottom:12px;">🎉</div>' +
-      '<h2 style="font-family:var(--font-display);">One Year Since Italy</h2>' +
-      '<div style="font-size:14px;color:var(--warm-gray);margin:8px 0;">Sealed ' + formatDateFull(capsule.sealedAt) + ' in Italy</div>' +
+      '<div class="capsule-hero-icon">🎉</div>' +
+      '<h2>One Year Since Italy</h2>' +
+      '<div class="capsule-intro-text" style="margin:8px 0;">Sealed ' + formatDateFull(capsule.sealedAt) + ' in Italy</div>' +
       '</div>';
 
     if (capsule.letter) {
@@ -181,9 +181,9 @@ function renderCapsule() {
       }
       bodyHTML += '<div class="capsule-reveal-section" style="text-align:center;">' +
         '<div class="capsule-reveal-label">📊 Trip snapshot</div>' +
-        '<div style="display:flex;gap:16px;justify-content:center;margin-top:8px;">' +
-        '<div><div style="font-size:28px;font-weight:700;color:var(--rosso);">' + journalCount + '</div><div style="font-size:12px;color:var(--warm-gray);">journal entries</div></div>' +
-        '<div><div style="font-size:28px;font-weight:700;color:var(--verde);">' + achievementCount + '</div><div style="font-size:12px;color:var(--warm-gray);">achievements</div></div>' +
+        '<div class="capsule-snapshot-row">' +
+        '<div><div class="capsule-stat-num" style="color:var(--rosso);">' + journalCount + '</div><div class="capsule-stat-label">journal entries</div></div>' +
+        '<div><div class="capsule-stat-num" style="color:var(--verde);">' + achievementCount + '</div><div class="capsule-stat-label">achievements</div></div>' +
         '</div>' +
         '</div>';
     }
@@ -333,7 +333,7 @@ function addPlaceMarkers() {
     }
     popupHTML += '</div>';
     if (p.honest_summary) {
-      popupHTML += '<div style="font-size:12px;color:var(--espresso);margin-top:6px;line-height:1.4;max-height:60px;overflow:hidden;">' +
+      popupHTML += '<div class="popup-summary">' +
         p.honest_summary.substring(0, 120) + '...</div>';
     }
     popupHTML += '<button class="popup-btn" onclick="Router.navigate(\'#place/' + p.id + '\')">View Details →</button></div>';

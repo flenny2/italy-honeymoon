@@ -53,9 +53,23 @@
   --confetti-4: #8B5CF6;
   --confetti-5: #EC4899;
 
-  /* Typography */
+  /* Typography — faces */
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Typography — type scale (Tailwind-style naming).
+     Rule: Playfair Display only at --text-xl (22px) and above.
+     Documented exception: .journal-prompt-text keeps Playfair at --text-lg
+     because the prompt is the emotional core of the journal page. */
+  --text-2xs:     11px;  /* MICRO chrome — map labels, +1 pop, walking radius */
+  --text-xs:      12px;  /* eyebrow, badge, meta, .btn-sm, mood-pill */
+  --text-sm:      14px;  /* secondary body, .btn text, list metadata */
+  --text-base:    16px;  /* body, list-item titles, form inputs (iOS 16px floor) */
+  --text-lg:      18px;  /* h3, modal titles, sub-display */
+  --text-xl:      22px;  /* h2, page subhead — Playfair floor */
+  --text-2xl:     28px;  /* h1, achievement stat number */
+  --text-3xl:     36px;  /* dual-countdown number */
+  --text-display: 48px;  /* main countdown — hero only */
 
   /* Spacing */
   --space-xs: 4px;

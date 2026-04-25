@@ -199,12 +199,12 @@ function renderTodayBooking(phase) {
   var bStats = getBookingStats();
   if (bStats.remaining <= 0) return '';
   return '<div class="card" style="border-left:4px solid var(--rosso);cursor:pointer;" onclick="Router.navigate(\'#bookings\')">' +
-    '<div style="display:flex;align-items:center;gap:12px;">' +
-    '<span style="font-size:24px;">📋</span>' +
+    '<div class="today-booking-nag">' +
+    '<span class="today-booking-nag-icon">📋</span>' +
     '<div style="flex:1;">' +
-    '<div style="font-weight:700;font-size:14px;">Booking Checklist</div>' +
-    '<div style="font-size:12px;color:var(--rosso);font-weight:600;">' + bStats.remaining + ' of ' + bStats.total + ' still need booking</div>' +
-    '</div><span style="color:var(--light-gray);">→</span></div></div>';
+    '<div class="today-booking-nag-title">Booking Checklist</div>' +
+    '<div class="today-booking-nag-count">' + bStats.remaining + ' of ' + bStats.total + ' still need booking</div>' +
+    '</div><span class="today-booking-nag-arrow">→</span></div></div>';
 }
 
 function renderTodayPhrase() {
@@ -224,10 +224,10 @@ function renderTodayGifts(city) {
   var html = '<div class="section-header">🎁 Wedding Gifts</div>';
   cityGifts.forEach(function(gift) {
     html += '<div class="card card-gift">' +
-      '<div style="font-size:24px;margin-bottom:8px;">' + gift.icon + '</div>' +
-      '<div style="font-weight:700;font-size:15px;margin-bottom:4px;">' + gift.title + '</div>' +
-      '<div style="font-size:13px;color:var(--warm-gray);margin-bottom:8px;">' + gift.description + '</div>' +
-      '<div style="font-size:12px;color:#8B7420;background:var(--giallo-light);padding:6px 10px;border-radius:var(--radius-sm);border-left:3px solid var(--giallo);">' + gift.notes + '</div></div>';
+      '<div class="gift-card-icon">' + gift.icon + '</div>' +
+      '<div class="gift-card-title">' + gift.title + '</div>' +
+      '<div class="gift-card-desc">' + gift.description + '</div>' +
+      '<div class="gift-card-tip">' + gift.notes + '</div></div>';
   });
   return html;
 }
@@ -239,8 +239,8 @@ function renderTodaySuggestion(city) {
   tips.forEach(function(tip) {
     html += '<div class="card' + (tip.placeId ? ' card-interactive" onclick="Router.navigate(\'#place/' + tip.placeId + '\')"' : '"') +
       ' style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">' +
-      '<span style="font-size:24px;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:' + tip.color + '15;flex-shrink:0;">' + tip.icon + '</span>' +
-      '<span style="font-size:14px;flex:1;">' + tip.text + '</span>' +
+      '<span class="tip-icon-box" style="background:' + tip.color + '15;">' + tip.icon + '</span>' +
+      '<span class="tip-text">' + tip.text + '</span>' +
       (tip.placeId ? '<span style="color:var(--light-gray);">→</span>' : '') + '</div>';
   });
   return html;
@@ -276,7 +276,7 @@ var todayMap = null;
 function initTodayMap() {
   var container = document.getElementById('today-map');
   if (!container) return;
-  if (typeof L === 'undefined') { container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--warm-gray);font-size:13px;">Map loads after first online visit</div>'; return; }
+  if (typeof L === 'undefined') { container.innerHTML = '<div class="map-empty">Map loads after first online visit</div>'; return; }
 
   if (todayMap) { todayMap.remove(); todayMap = null; }
 
@@ -335,7 +335,7 @@ function buildPlaceCard(p) {
     '<span>' + p.category + '</span>' +
     (p.source ? '<span>· ' + p.source + '</span>' : '') +
     (booked ? '<span class="place-booked-badge">✓ Booked</span>' : '') +
-    (v ? '<span class="verdict-badge verdict-' + p.verdict + '" style="font-size:10px;padding:2px 8px;">' + v.icon + ' ' + v.label + '</span>' : '') +
+    (v ? '<span class="verdict-badge verdict-badge-sm verdict-' + p.verdict + '">' + v.icon + ' ' + v.label + '</span>' : '') +
     '</div></div>' +
     '<span class="place-card-star ' + (p.saved ? 'saved' : '') + '" onclick="toggleSave(\'' + p.id + '\', event)">' + (p.saved ? '⭐' : '☆') + '</span></div>';
 }
@@ -356,7 +356,6 @@ function toggleSave(id, evt) {
   if (!p) return;
   p.saved = !p.saved;
   Storage.savePlaces(places);
-  invalidatePlaceIndex();
 
   // Update the element that fired the event in place — no full re-render,
   // so scroll position is preserved. Two element shapes:

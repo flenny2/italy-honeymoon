@@ -22,16 +22,24 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Typography ── */
-h1, h2, h3 {
+/* ── Typography ──
+   h1/h2 are display Playfair. h3 is DM Sans (Playfair floor is --text-xl/22px).
+   To keep Playfair on a sub-22px element, set font-family explicitly and
+   document the exception (see .journal-prompt-text). */
+h1, h2 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.2;
 }
 
-h1 { font-size: 28px; }
-h2 { font-size: 22px; }
-h3 { font-size: 18px; }
+h3 {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
 
 /* ── Pages ── */
 .page {
@@ -69,7 +77,7 @@ h3 { font-size: 18px; }
 }
 
 .page-header .subtitle {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--warm-gray);
 }
 
@@ -130,7 +138,7 @@ h3 { font-size: 18px; }
 }
 
 .tab-label {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.3px;
 }
@@ -143,7 +151,7 @@ h3 { font-size: 18px; }
   background: var(--bianco);
   border: 2px solid var(--rosso-light);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: 700;
   color: var(--rosso);
   cursor: pointer;
@@ -183,7 +191,7 @@ h3 { font-size: 18px; }
   color: #fff;
   padding: 10px 24px;
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
   font-family: var(--font-body);
   opacity: 0;

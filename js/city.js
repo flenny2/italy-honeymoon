@@ -26,7 +26,7 @@ function renderCity(citySlug) {
   var headerHTML = '<div class="city-header">' +
     '<button class="back-btn" onclick="Router.navigate(\'#explore\')">← Explore</button>' +
     '<h1>' + emoji + ' ' + cityName + '</h1>' +
-    '<div style="font-size:13px;color:var(--warm-gray);">' + cityPlaces.length + ' places</div>' +
+    '<div class="city-header-meta">' + cityPlaces.length + ' places</div>' +
     '</div>';
 
   // Hotel card
@@ -49,7 +49,7 @@ function renderCity(citySlug) {
     cityGifts.forEach(function(gift) {
       giftHTML += '<div class="today-section"><div class="card card-gift">' +
         '<div style="font-weight:700;">' + gift.icon + ' ' + gift.title + '</div>' +
-        '<div style="font-size:13px;color:var(--warm-gray);margin-top:4px;">' + gift.notes + '</div>' +
+        '<div class="city-gift-desc">' + gift.notes + '</div>' +
         '</div></div>';
     });
   }
@@ -145,7 +145,7 @@ function filterCityMood(mood, citySlug) {
 function initCityMap(slug, cityName, cityPlaces) {
   var container = document.getElementById('city-map-' + slug);
   if (!container) return;
-  if (typeof L === 'undefined') { container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--warm-gray);font-size:13px;">Map loads after first online visit</div>'; return; }
+  if (typeof L === 'undefined') { container.innerHTML = '<div class="map-empty">Map loads after first online visit</div>'; return; }
 
   // Remove existing map
   if (cityMaps[slug]) {
@@ -172,7 +172,7 @@ function initCityMap(slug, cityName, cityPlaces) {
     var hotelIcon = L.divIcon({
       className: '',
       html: '<div class="map-hotel-marker" style="width:32px;height:32px;">' +
-        '<span class="map-hotel-icon" style="font-size:16px;">🏠</span></div>',
+        '<span class="map-hotel-icon map-hotel-icon-sm">🏠</span></div>',
       iconSize: [32, 32],
       iconAnchor: [16, 16]
     });

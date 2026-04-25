@@ -171,8 +171,8 @@ function renderBookings() {
     '<div style="height:100%;width:' + pct + '%;background:' + (pct === 100 ? 'var(--verde)' : 'var(--rosso)') + ';border-radius:4px;transition:width 0.5s var(--bounce);"></div>' +
     '</div>' +
     (stats.remaining > 0
-      ? '<div style="text-align:center;font-size:12px;color:var(--rosso);font-weight:600;margin-top:6px;">⚠️ ' + stats.remaining + ' still need booking</div>'
-      : '<div style="text-align:center;font-size:12px;color:var(--verde);font-weight:600;margin-top:6px;">✅ All booked! You\'re ready for Italy!</div>') +
+      ? '<div class="bookings-status-line urgent">⚠️ ' + stats.remaining + ' still need booking</div>'
+      : '<div class="bookings-status-line done">✅ All booked! You\'re ready for Italy!</div>') +
     '</div>';
 
   // Group by urgency

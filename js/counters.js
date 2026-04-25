@@ -73,8 +73,8 @@ function renderStats() {
       '<div class="content-wrap">' +
       '<div class="stats-empty">' +
       '<div class="stats-empty-emoji">🍽️</div>' +
-      '<div style="font-size:16px;font-weight:600;margin-bottom:6px;">No counts yet</div>' +
-      '<div style="font-size:13px;line-height:1.5;">During the trip, tap the chips on your Today screen every time you have a gelato, pasta, espresso, or a glass of wine. They will stack up here.</div>' +
+      '<div class="stats-empty-title">No counts yet</div>' +
+      '<div class="stats-empty-desc">During the trip, tap the chips on your Today screen every time you have a gelato, pasta, espresso, or a glass of wine. They will stack up here.</div>' +
       '</div>' +
       '</div>';
     return;
@@ -129,8 +129,8 @@ function renderStats() {
   }
 
   var totalHTML = '<div class="card" style="text-align:center;padding:var(--space-lg);margin-bottom:var(--space-md);">' +
-    '<div style="font-family:var(--font-display);font-size:44px;font-weight:700;color:var(--rosso);line-height:1;">' + total + '</div>' +
-    '<div style="font-size:13px;color:var(--warm-gray);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;">moments tracked</div>' +
+    '<div class="stats-total-num">' + total + '</div>' +
+    '<div class="stats-total-label">moments tracked</div>' +
     '</div>';
 
   content.innerHTML = headerHTML + '<div class="content-wrap">' +

@@ -24,10 +24,8 @@ function renderLetters() {
     '<button class="btn btn-primary btn-full" onclick="showLetterForm()" id="write-letter-btn">✍️ Write a Letter</button>' +
     '</div>';
 
-  // Letter form (hidden by default)
-  var labelStyle = 'font-size:12px;font-weight:700;color:var(--warm-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;';
-  var inputStyle = 'width:100%;padding:12px 14px;min-height:44px;border-radius:var(--radius-sm);border:2px solid var(--light-gray);font-family:var(--font-body);font-size:16px;';
-
+  // Letter form (hidden by default) — reuses .settings-label + .settings-input
+  // for consistency with the Settings page form fields.
   var fromDefault = s.userName ? s.userName : '';
   var toDefault = s.partnerName ? s.partnerName : '';
 
@@ -36,20 +34,20 @@ function renderLetters() {
     '<h3 style="margin-bottom:12px;">Write a Sealed Letter</h3>' +
     '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
     '<div style="flex:1;">' +
-    '<label style="' + labelStyle + '">From</label>' +
-    '<input id="letter-from" type="text" autocapitalize="words" placeholder="Your name" value="' + fromDefault + '" style="' + inputStyle + '">' +
+    '<label class="settings-label">From</label>' +
+    '<input id="letter-from" class="settings-input" type="text" autocapitalize="words" placeholder="Your name" value="' + fromDefault + '">' +
     '</div>' +
     '<div style="flex:1;">' +
-    '<label style="' + labelStyle + '">To</label>' +
-    '<input id="letter-to" type="text" autocapitalize="words" placeholder="Partner\'s name" value="' + toDefault + '" style="' + inputStyle + '">' +
+    '<label class="settings-label">To</label>' +
+    '<input id="letter-to" class="settings-input" type="text" autocapitalize="words" placeholder="Partner\'s name" value="' + toDefault + '">' +
     '</div>' +
     '</div>' +
     '<div style="margin-bottom:12px;">' +
-    '<label style="' + labelStyle + '">Open on (date)</label>' +
-    '<input id="letter-date" type="date" style="' + inputStyle + '">' +
+    '<label class="settings-label">Open on (date)</label>' +
+    '<input id="letter-date" class="settings-input" type="date">' +
     '</div>' +
     '<div style="margin-bottom:12px;">' +
-    '<label style="' + labelStyle + '">Your message</label>' +
+    '<label class="settings-label">Your message</label>' +
     '<textarea id="letter-text" class="journal-textarea" style="min-height:120px;" autocapitalize="sentences" placeholder="Write something heartfelt..."></textarea>' +
     '</div>' +
     '<div style="display:flex;gap:8px;">' +
@@ -81,7 +79,7 @@ function renderLetters() {
     });
   } else {
     listHTML += '<div style="text-align:center;padding:32px;color:var(--warm-gray);">' +
-      '<div style="font-size:48px;margin-bottom:12px;">💌</div>' +
+      '<div class="modal-icon-md" style="margin-bottom:12px;">💌</div>' +
       '<div>No letters yet. Write one for your partner!</div>' +
       '</div>';
   }
@@ -131,12 +129,12 @@ function openLetter(id) {
   var content = document.getElementById('surprise-content');
   var body =
     '<div style="text-align:center;">' +
-    '<div style="font-size:48px;margin-bottom:12px;" class="anim-bounce-in">💌</div>' +
+    '<div class="modal-icon-md anim-bounce-in" style="margin-bottom:12px;">💌</div>' +
     '<h2 style="margin-bottom:4px;">A Letter For You</h2>' +
-    '<div style="font-size:13px;color:var(--warm-gray);margin-bottom:20px;">' + meta + '</div>' +
+    '<div class="modal-meta" style="margin-bottom:20px;">' + meta + '</div>' +
     '</div>' +
     '<div class="card anim-slide-up" style="padding:24px;">' +
-    '<div style="font-size:15px;line-height:1.8;color:var(--espresso);white-space:pre-wrap;">' + letter.text + '</div>' +
+    '<div class="letter-body">' + letter.text + '</div>' +
     '</div>' +
     '<button class="btn btn-primary btn-full" style="margin-top:16px;" onclick="closeModal(\'surprise-modal\');if(typeof renderLetters===\'function\')renderLetters();Router.navigate();">Close 💕</button>';
   content.innerHTML = body;

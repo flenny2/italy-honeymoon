@@ -70,7 +70,7 @@ function renderAchievements() {
       '<div class="ach-card-challenge">' + (platinumUnlocked ? platinumAch.challenge : 'Unlock every achievement to earn the platinum') + '</div>' +
       '<div class="ach-card-bottom">' +
       '<span class="ach-rarity ach-rarity-platinum">💎 Platinum</span>' +
-      (platinumUnlocked ? '<span class="ach-completed">✓ ' + formatDateShort(state[platinumAch.id].unlockedAt) + '</span>' : '<span style="font-size:11px;color:var(--warm-gray);">' + totalUnlocked + ' / ' + total + '</span>') +
+      (platinumUnlocked ? '<span class="ach-completed">✓ ' + formatDateShort(state[platinumAch.id].unlockedAt) + '</span>' : '<span class="ach-platinum-progress">' + totalUnlocked + ' / ' + total + '</span>') +
       '</div>' +
       '</div>' +
       '</div>';
@@ -132,7 +132,7 @@ function showAchievementDetail(id) {
     '<div style="text-align:center;">' +
     '<div class="ach-detail-icon anim-bounce-in">' + a.icon + '</div>' +
     '<h2 style="margin-bottom:2px;">' + a.title + '</h2>' +
-    '<span class="ach-rarity" style="background:' + rarity.bg + ';color:' + rarity.color + ';font-size:11px;">' + (rarity.icon ? rarity.icon + ' ' : '') + rarity.label + '</span>' +
+    '<span class="ach-rarity" style="background:' + rarity.bg + ';color:' + rarity.color + ';">' + (rarity.icon ? rarity.icon + ' ' : '') + rarity.label + '</span>' +
     '</div>' +
     '<div class="ach-detail-section">' +
     '<div class="ach-detail-label">🎯 Challenge</div>' +
