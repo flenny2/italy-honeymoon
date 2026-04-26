@@ -18,13 +18,13 @@
   --giallo-light: #FFF8E1;
   --giallo-bg: #FFF3CC;
 
-  /* Neutrals — tuned for readability */
-  --espresso: #2D2926;
-  --cream: #F5F1EB;
+  /* Neutrals — Stage 3 lighter refresh (iter 3 with slight darken nudge) */
+  --espresso: #42404B;
+  --cream: #FAF9F6;
   --bianco: #FFFFFF;
-  --warm-gray: #564B47;
-  --light-gray: #D8D3CC;
-  --faint-gray: #EDEAE4;
+  --warm-gray: #7D7882;
+  --light-gray: #ECEAE5;
+  --faint-gray: #F8F6F2;
 
   /* Warm romantic tones */
   --terracotta: #C4724D;
@@ -68,8 +68,8 @@
   --text-lg:      18px;  /* h3, modal titles, sub-display */
   --text-xl:      22px;  /* h2, page subhead — Playfair floor */
   --text-2xl:     28px;  /* h1, achievement stat number */
-  --text-3xl:     36px;  /* dual-countdown number */
-  --text-display: 48px;  /* main countdown — hero only */
+  --text-3xl:     36px;  /* sub-display tier (available; no current consumer) */
+  --text-display: 48px;  /* hero countdown number — Today only */
 
   /* Spacing */
   --space-xs: 4px;
@@ -86,13 +86,13 @@
   --radius-pill: 50px;
   --radius-circle: 50%;
 
-  /* Shadows — warm tinted, visible */
-  --shadow-sm: 0 2px 8px rgba(45, 41, 38, 0.14);
-  --shadow-md: 0 4px 20px rgba(45, 41, 38, 0.18);
-  --shadow-lg: 0 8px 40px rgba(45, 41, 38, 0.22);
-  --shadow-glow-rosso: 0 4px 20px rgba(206, 43, 55, 0.25);
-  --shadow-glow-verde: 0 4px 20px rgba(0, 140, 69, 0.25);
-  --shadow-glow-giallo: 0 4px 20px rgba(232, 185, 49, 0.25);
+  /* Shadows — iter 3 halved weight (Stage 3 design pass) */
+  --shadow-sm: 0 1px 4px rgba(45, 41, 38, 0.06);
+  --shadow-md: 0 2px 10px rgba(45, 41, 38, 0.08);
+  --shadow-lg: 0 4px 20px rgba(45, 41, 38, 0.10);
+  --shadow-glow-rosso: 0 2px 14px rgba(206, 43, 55, 0.14);
+  --shadow-glow-verde: 0 2px 14px rgba(0, 140, 69, 0.14);
+  --shadow-glow-giallo: 0 2px 14px rgba(232, 185, 49, 0.14);
 
   /* Animations */
   --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);

@@ -11,18 +11,15 @@ function renderToday() {
   var city = getTodayCity();
 
   var sections = [
-    renderTodayHero(),
+    renderTodayHero(phase, city),
     renderTodayLetter(),
     renderTodayCapsuleNudge(),
-    renderTodayCountdown(phase),
-    renderTodayHotel(city),
-    renderTodayMap(),
     renderTodayBooking(phase),
+    renderTodayCounters(phase),
     renderTodayPhrase(),
     renderTodayGifts(city),
-    renderTodayCounters(phase),
+    renderTodayHotel(city, phase),
     renderTodaySuggestion(city),
-    renderTodayActions(city),
     renderTodayPicks(city)
   ];
 
@@ -30,31 +27,78 @@ function renderToday() {
     sections.map(function(html) {
       return html ? '<div class="today-section">' + html + '</div>' : '';
     }).join('') + '</div>';
-
-  setTimeout(initTodayMap, 50);
 }
 
-function renderTodayHero() {
+// Hero composite: typography-led for BEFORE/AFTER (names + flag stripe +
+// countdown + optional wedding pill), city-photo backdrop for DURING.
+// No couple photo — "more pictures = locations, not us."
+function renderTodayHero(phase, city) {
   var s = Storage.getSettings();
-  if (!s.couplePhoto && !s.userName && !s.partnerName) return '';
+  var name1 = s.userName || '';
+  var name2 = s.partnerName || '';
+  var namesHTML = '';
+  if (name1 && name2) {
+    namesHTML = '<div class="hero-names">' + name1 +
+      '<span class="hero-names-amp">&amp;</span>' + name2 + '</div>';
+  } else if (name1 || name2) {
+    namesHTML = '<div class="hero-names">' + (name1 || name2) + '</div>';
+  }
 
-  var html = '';
-  if (s.couplePhoto) {
-    html += '<div class="today-couple-hero">' +
-      '<img src="' + s.couplePhoto + '" alt="Us" class="today-couple-photo">' +
-      '</div>';
+  var flagHTML = '<div class="hero-flag-bar">' +
+    '<span class="hero-flag-bar-r"></span>' +
+    '<span class="hero-flag-bar-w"></span>' +
+    '<span class="hero-flag-bar-g"></span>' +
+    '</div>';
+
+  // DURING — current-city photo as backdrop (Stage 6 swaps gradient for real photo)
+  if (phase.phase === 'during') {
+    var dt = phase.dayTrip;
+    var emoji = CITY_EMOJI[phase.city] || '';
+    var cityTag = emoji + ' ' + phase.city + ' · Day ' + phase.day;
+    var orientation = dt ? dt.emoji + ' ' + dt.label : 'Today in ' + phase.city;
+    return '<div class="hero-during anim-bounce-in" data-city="' + phase.city + '">' +
+      '<div class="hero-during-bg"></div>' +
+      '<div class="hero-during-overlay">' +
+      '<span class="hero-city-tag">' + cityTag + '</span>' +
+      '<div class="hero-day-orientation">' + orientation + '</div>' +
+      '</div></div>';
   }
-  if (s.userName || s.partnerName) {
-    var name1 = s.userName || '';
-    var name2 = s.partnerName || '';
-    if (name1 && name2) {
-      html += '<div class="today-couple-names">' + name1 +
-        '<span class="today-couple-amp">&amp;</span>' + name2 + '</div>';
-    } else {
-      html += '<div class="today-couple-names">' + (name1 || name2) + '</div>';
+
+  // BEFORE / AFTER — typography-led
+  var phaseClass = phase.phase === 'after' ? 'hero-type after' : 'hero-type';
+  var bigNum, label;
+  var weddingPill = '';
+
+  if (phase.phase === 'before') {
+    bigNum = phase.daysUntil;
+    label = 'days until Italy 🇮🇹';
+    if (s.weddingDate) {
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      var wedding = new Date(s.weddingDate);
+      wedding.setHours(0, 0, 0, 0);
+      var daysToWedding = Math.ceil((wedding - today) / (1000 * 60 * 60 * 24));
+      if (daysToWedding > 0) {
+        weddingPill = '<div class="hero-wedding-pill">💍 ' + daysToWedding +
+          ' days until the wedding</div>';
+      } else if (daysToWedding === 0) {
+        weddingPill = '<div class="hero-wedding-pill">🎉 WEDDING DAY!</div>';
+      }
     }
+  } else {
+    bigNum = phase.daysSince;
+    label = 'days since Italy 💕';
   }
-  return html;
+
+  return '<div class="' + phaseClass + ' anim-bounce-in">' +
+    namesHTML +
+    flagHTML +
+    '<div class="hero-since-row">' +
+    '<div class="hero-big-num">' + bigNum + '</div>' +
+    '<div class="hero-label">' + label + '</div>' +
+    '</div>' +
+    weddingPill +
+    '</div>';
 }
 
 function renderTodayLetter() {
@@ -124,74 +168,30 @@ function renderTodayCapsuleNudge() {
 
 // ── Section renderers ──
 
-function renderTodayCountdown(phase) {
-  if (phase.phase === 'before') {
-    var s = Storage.getSettings();
-    var italyBanner = '<div class="countdown-banner before anim-bounce-in">' +
-      '<div class="countdown-number">' + phase.daysUntil + '</div>' +
-      '<div class="countdown-label">days until Italy! 🇮🇹</div></div>';
-
-    // Dual countdown: show wedding countdown if we have a future wedding date
-    if (s.weddingDate) {
-      var today = new Date();
-      today.setHours(0, 0, 0, 0);
-      var wedding = new Date(s.weddingDate);
-      wedding.setHours(0, 0, 0, 0);
-      var daysToWedding = Math.ceil((wedding - today) / (1000 * 60 * 60 * 24));
-      if (daysToWedding > 0) {
-        return '<div class="dual-countdown">' +
-          '<div class="countdown-banner wedding anim-bounce-in">' +
-          '<div class="countdown-number">' + daysToWedding + '</div>' +
-          '<div class="countdown-label">days until the wedding 💍</div>' +
-          '</div>' +
-          '<div class="countdown-banner before anim-bounce-in">' +
-          '<div class="countdown-number">' + phase.daysUntil + '</div>' +
-          '<div class="countdown-label">days until Italy! 🇮🇹</div>' +
-          '</div>' +
-          '</div>';
-      } else if (daysToWedding === 0) {
-        return '<div class="dual-countdown">' +
-          '<div class="countdown-banner wedding anim-bounce-in">' +
-          '<div class="countdown-number">🎉</div>' +
-          '<div class="countdown-label">WEDDING DAY!</div>' +
-          '</div>' +
-          '<div class="countdown-banner before anim-bounce-in">' +
-          '<div class="countdown-number">' + phase.daysUntil + '</div>' +
-          '<div class="countdown-label">days until Italy!</div>' +
-          '</div>' +
-          '</div>';
-      }
-    }
-    return italyBanner;
-  } else if (phase.phase === 'during') {
-    var dt = phase.dayTrip;
-    return '<div class="countdown-banner during anim-bounce-in">' +
-      '<div class="countdown-number">Day ' + phase.day + '</div>' +
-      '<div class="countdown-label">' + (CITY_EMOJI[phase.city] || '') + ' ' + phase.city +
-      (dt ? ' — ' + dt.emoji + ' ' + dt.label : '') + '</div></div>';
-  } else {
-    return '<div class="countdown-banner after anim-bounce-in">' +
-      '<div class="countdown-number">' + phase.daysSince + '</div>' +
-      '<div class="countdown-label">days since Italy 💕</div></div>';
-  }
-}
-
-function renderTodayHotel(city) {
+// Hotel — one-line strip during BEFORE; full card during DURING (Item 10
+// will give DURING a richer "Tonight" treatment in a later commit).
+function renderTodayHotel(city, phase) {
   var hotel = HOTELS[city];
   if (!hotel) return '';
-  return '<div class="section-header">🏨 Your Hotel</div>' +
-    '<div class="hotel-card">' +
+
+  if (phase && phase.phase === 'before') {
+    return '<div class="hotel-strip">' +
+      '<span class="hotel-strip-icon">' + (hotel.emoji || '🏨') + '</span>' +
+      '<span class="hotel-strip-name">' + hotel.name + '</span>' +
+      '<span class="hotel-strip-dot">·</span>' +
+      '<span>' + city + '</span>' +
+      '<span class="hotel-strip-dot">·</span>' +
+      '<span>' + hotel.dates + '</span>' +
+      '</div>';
+  }
+
+  return '<div class="hotel-card">' +
     '<div class="hotel-emoji">' + (hotel.emoji || '🏨') + '</div>' +
     '<div class="hotel-info">' +
     '<div class="hotel-name">' + hotel.name + '</div>' +
     '<div class="hotel-dates">' + hotel.dates + ' (' + hotel.nights + ' nights)</div>' +
     '<div class="hotel-address">📍 ' + hotel.address + '</div>' +
     '</div></div>';
-}
-
-function renderTodayMap() {
-  return '<div class="section-header">🗺️ Your Route</div>' +
-    '<div class="today-map-wrap"><div id="today-map" class="today-mini-map"></div></div>';
 }
 
 function renderTodayBooking(phase) {
@@ -211,8 +211,8 @@ function renderTodayPhrase() {
   var allPhrases = [];
   PHRASES.forEach(function(cat) { cat.phrases.forEach(function(p) { allPhrases.push(p); }); });
   var phrase = allPhrases[getDayOfYear() % allPhrases.length];
-  return '<div class="section-header">🇮🇹 Phrase of the Day</div>' +
-    '<div class="phrase-of-day">' +
+  return '<div class="phrase-of-day">' +
+    '<div class="phrase-of-day-bg"></div>' +
     '<div class="phrase-of-day-italian">' + phrase.it + '</div>' +
     '<div class="phrase-of-day-pronounce">/' + phrase.pr + '/</div>' +
     '<div class="phrase-of-day-english">' + phrase.en + '</div></div>';
@@ -235,7 +235,7 @@ function renderTodayGifts(city) {
 function renderTodaySuggestion(city) {
   var tips = getSmartSuggestions(city);
   if (tips.length === 0) return '';
-  var html = '<div class="section-header">💡 Suggestion</div>';
+  var html = '';
   tips.forEach(function(tip) {
     html += '<div class="card' + (tip.placeId ? ' card-interactive" onclick="Router.navigate(\'#place/' + tip.placeId + '\')"' : '"') +
       ' style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">' +
@@ -244,19 +244,6 @@ function renderTodaySuggestion(city) {
       (tip.placeId ? '<span style="color:var(--light-gray);">→</span>' : '') + '</div>';
   });
   return html;
-}
-
-function renderTodayActions(city) {
-  var slug = cityToSlug(city);
-  return '<div class="quick-actions">' +
-    '<button class="quick-action" onclick="openSurprise(\'' + city + '\')">' +
-    '<span class="quick-action-icon">🎲</span><span class="quick-action-label">Surprise Me</span></button>' +
-    '<button class="quick-action" onclick="Router.navigate(\'#journal\')">' +
-    '<span class="quick-action-icon">📝</span><span class="quick-action-label">Journal</span></button>' +
-    '<button class="quick-action" onclick="Router.navigate(\'#achievements\')">' +
-    '<span class="quick-action-icon">🏆</span><span class="quick-action-label">Badges</span></button>' +
-    '<button class="quick-action" onclick="Router.navigate(\'#city/' + slug + '\')">' +
-    '<span class="quick-action-icon">🗺️</span><span class="quick-action-label">Explore ' + city.split(' ')[0] + '</span></button></div>';
 }
 
 function renderTodayPicks(city) {
@@ -268,58 +255,6 @@ function renderTodayPicks(city) {
   var html = '<div class="section-header">⭐ Don\'t Miss in ' + city + '</div>';
   essentials.forEach(function(p) { html += buildPlaceCard(p); });
   return html;
-}
-
-// ── Today Route Map ──
-var todayMap = null;
-
-function initTodayMap() {
-  var container = document.getElementById('today-map');
-  if (!container) return;
-  if (typeof L === 'undefined') { container.innerHTML = '<div class="map-empty">Map loads after first online visit</div>'; return; }
-
-  if (todayMap) { todayMap.remove(); todayMap = null; }
-
-  todayMap = L.map(container, {
-    center: [43.0, 11.5],
-    zoom: 6,
-    zoomControl: false,
-    attributionControl: false
-  });
-
-  addTileLayer(todayMap);
-  addItalyMask(todayMap);
-
-  var phase = getTripPhase();
-  var currentCity = phase.phase === 'during' ? phase.city : null;
-
-  // Draw shared travel route — main polyline + day-trip lines + day-trip markers.
-  // Today map uses thinner strokes and the smaller .route-marker-mini pins.
-  drawTravelRoute(todayMap, {
-    routeStyle:        { color: '#CE2B37', weight: 2.5, opacity: 0.5, dashArray: '8 6' },
-    dayTripStyle:      { color: '#E8B931', weight: 1.5, opacity: 0.4, dashArray: '4 6' },
-    dayTripMarkerClass: 'route-marker-mini',
-    dayTripLabelClass:  'route-label-mini'
-  });
-
-  // City emoji markers (today-map specific — not shared because the full map
-  // tab uses individual place pins instead of city markers).
-  ROUTE_COORDS.main.forEach(function(r) {
-    var isCurrent = r.city === currentCity;
-    var size = isCurrent ? 44 : 36;
-    var icon = L.divIcon({
-      className: '',
-      html: '<div class="route-marker' + (isCurrent ? ' route-marker-current' : '') + '" style="width:' + size + 'px;height:' + size + 'px;">' +
-        '<span style="font-size:' + (isCurrent ? '22' : '18') + 'px;">' + r.emoji + '</span></div>' +
-        '<div class="route-label">' + r.city + '<br><span class="route-dates">' + r.dates + '</span></div>',
-      iconSize: [size, size + 30],
-      iconAnchor: [size / 2, size / 2]
-    });
-    var marker = L.marker([r.lat, r.lng], { icon: icon }).addTo(todayMap);
-    marker.on('click', function() { Router.navigate('#city/' + cityToSlug(r.city)); });
-  });
-
-  setTimeout(function() { todayMap.invalidateSize(); }, CONFIG.MAP_INVALIDATE_DELAY);
 }
 
 // ── Shared place card builder ──

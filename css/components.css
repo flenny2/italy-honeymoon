@@ -268,34 +268,6 @@
   width: 100%;
 }
 
-/* ── Quick Action Buttons (Today view) ── */
-.quick-actions {
-  display: flex;
-  gap: var(--space-sm);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.quick-action {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: var(--space-sm) var(--space-md);
-  background: var(--bianco);
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  transition: transform var(--duration-fast) var(--bounce);
-  box-shadow: var(--shadow-sm);
-  -webkit-tap-highlight-color: transparent;
-  min-width: 80px;
-}
-
-.quick-action:active { transform: scale(0.92); }
-.quick-action-icon { font-size: 24px; }
-.quick-action-label { font-size: var(--text-2xs); font-weight: 600; color: var(--warm-gray); }
-
 /* ── City Pill Selector ── */
 .city-pills {
   display: flex;
@@ -725,20 +697,13 @@
   color: var(--espresso);
 }
 
-/* ── Countdown Banner ── */
+/* ── Countdown Banner — kept for Capsule "sealed" countdown only.
+   Today's BEFORE/DURING countdowns now compose into the hero. ── */
 .countdown-banner {
   text-align: center;
   padding: var(--space-lg) var(--space-md);
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-md);
-}
-
-.countdown-banner.before {
-  background: linear-gradient(135deg, var(--blush-light), var(--warm-gold-light), var(--terracotta-light));
-}
-
-.countdown-banner.during {
-  background: linear-gradient(135deg, var(--sage-light), var(--warm-gold-light));
 }
 
 .countdown-banner.after {
