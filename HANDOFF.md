@@ -4,14 +4,14 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-04-26
-**Branch:** `main`, commits ahead of `origin/main`, not pushed
+**Last updated:** 2026-04-26 (session close)
+**Branch:** `main`, in sync with `origin/main` (just pushed)
 
 ---
 
 ## Where we are
 
-- Last commit (this session): **Stage 3 — Today design pass** (bundles Stage 1 IA cleanup + design rework + lighter Italian-flag palette).
+- Last commit: **`4cc0894` — Today design pass** (bundles Stage 1 IA cleanup + Stage 3 design rework + lighter Italian-flag palette). Pushed to origin → Netlify auto-deploys.
   - **Stage 1 IA cleanup** (was held in working tree): Your Route mini-map killed; hotel demoted from #2 to #9 in section order.
   - **New typography-led hero composite** (`renderTodayHero(phase, city)` in `today.js`): names + Italian flag stripe + countdown + wedding pill (BEFORE/AFTER), or Italian-flag rosso→verde gradient backdrop with overlay copy (DURING). **No couple photo** ("more pictures = locations, not us").
   - **Hotel one-line strip** during BEFORE phase; full card during DURING (Item 10 will give DURING a richer "Tonight" treatment).
@@ -20,11 +20,11 @@
   - **Section headers dropped** from Hotel, Phrase, Suggestion. Kept on Wedding Gifts and Don't Miss in [City].
   - **Palette lightened** in `variables.css`: cream `#F5F1EB → #FAF9F6`, espresso `#2D2926 → #42404B`, warm-gray `#564B47 → #7D7882`, light-gray, faint-gray; shadows halved.
 - Net: Today reads from 13 → 10 sections, ~73 lines of dead code removed, full Italian-flag identity in accents.
-- Mockup file `mockup-today-design-pass.html` is in project root, **not committed** (throwaway design artifact). Three iterations recorded: V1/V2/V3 hero (hidden in iter 2), V4 typography-led hero (iter 2), iter 3 lighter palette + slight darken nudge.
-- Audit + planning context lives in:
+- Design-pass mockup committed at `mockups/mockup-2026-04-today-design-pass.html` as design history. Three iterations recorded inside: V1/V2/V3 hero (hidden in iter 2), V4 typography-led hero (iter 2 lock), iter 3 palette refresh with slight darken nudge (iter 3 lock). Open in a browser served from project root to render correctly (root-relative paths to `/css/variables.css` and `/fonts/fonts.css`).
+- Planning context:
   - `~/.claude/plans/let-s-pick-up-where-encapsulated-leaf.md` — full design-pass plan with per-page top-of-fold map and stage breakdown
   - `~/.claude/plans/round-a-approved-decisions-joyful-ember.md` — earlier audit (Item 7 type scale + dead-code residual)
-  - Commit messages on the design-pass commit and prior `5947616` / `daefb9f`
+  - Commit messages on `4cc0894`, `daefb9f`, `5947616`
 
 ---
 
@@ -43,15 +43,16 @@ Sequence:
 
 ---
 
-## Stages queued (do not start until told)
+## Stages queued (Dylan-confirmed order: 4 → 5 → 6 → 7 → Item 8 → 9, 11, 12)
 
-- **Stage 5 — Item 10 Tonight surface** — build composed Tonight surface for DURING phase. Removes Smart Suggestion + Don't Miss picks. Today drops from ~10 sections to ~6. Already in HANDOFF backlog.
-- **Stage 6 — Italian-flag color sweep across the rest of the app** — Dylan's "colors should be based on the italian flag almost always" directive applied broadly. Audit existing CSS for terracotta / blush / sage / warm-gold / purple gradients and accents; replace with rosso/verde/bianco/giallo where reasonable. Likely candidates: `.page-header` gradient (currently blush-light → cream), `.countdown-banner.after` for Capsule (currently blush-light → purple-light), `.card-featured`, gift-card backgrounds, letter-card decoration. Verdict colors stay (essential=verde, hidden-gem=purple have semantic meaning). Wedding pink stays (semantic "wedding").
-- **Stage 7 — Imagery sweep** — city hero images per city (Rome, Florence, Tuscany, Como, Verona, Venice) for the DURING hero + city detail pages. Letter card paper texture. Time capsule illustrated treatment. Achievement badge illustrations. Place hero images for the ~10 essentials only. Empty-state illustrations.
-- **Item 8 — Lucide icon swap** — emoji → Lucide SVG sweep. Was the original "next" item but pushed back by the design pass + theming work. Still queued.
-- **Item 9** — reduce place-card visual noise (strip to dot/name/verdict/star). Pairs naturally with Stage 6 city detail rework.
-- **Item 11** — Saved Places view.
-- **Item 12** — strip multi-trip support.
+1. **Stage 4 — Dark/light theme toggle** (next). See "What's next" above.
+2. **Stage 5 — Item 10 Tonight surface** — build composed Tonight surface for DURING phase. Removes Smart Suggestion + Don't Miss picks. Today drops from ~10 sections to ~6.
+3. **Stage 6 — Italian-flag color sweep across the rest of the app** — Dylan's "colors should be based on the italian flag almost always" directive applied broadly. Audit existing CSS for terracotta / blush / sage / warm-gold / purple gradients and accents; replace with rosso/verde/bianco/giallo where reasonable. Likely candidates: `.page-header` gradient (currently blush-light → cream), `.countdown-banner.after` for Capsule (currently blush-light → purple-light), `.card-featured`, gift-card backgrounds, letter-card decoration. **Semantic exceptions stay**: verdict colors (essential=verde, hidden-gem=purple, etc.); wedding pink ("wedding" semantic).
+4. **Stage 7 — Imagery sweep** — city hero images per city (Rome, Florence, Tuscany, Como, Verona, Venice) for the DURING hero + city detail pages. Letter card paper texture. Time capsule illustrated treatment. Achievement badge illustrations. Place hero images for the ~10 essentials only. Empty-state illustrations.
+5. **Item 8 — Lucide icon swap** — emoji → Lucide SVG sweep. Was the original "next" item but pushed back by the design pass + theming work. Still queued.
+6. **Item 9** — reduce place-card visual noise (strip to dot/name/verdict/star). Pairs naturally with Stage 6 city detail rework.
+7. **Item 11** — Saved Places view.
+8. **Item 12** — strip multi-trip support.
 
 ---
 
@@ -83,8 +84,23 @@ Dylan explicitly said leave these for a later cleanup pass:
 
 ## Open questions for next session
 
-- **Wedding pill color** — currently kept pink/blush as semantic "wedding" exception. If Dylan wants strict Italian-flag identity (giallo for wedding accent instead of pink), small change in `.hero-wedding-pill` rule.
-- **Stage 4 sequencing** — does dark/light toggle land before or after Stage 5 Tonight surface? Defaulting to Stage 4 next, but Tonight surface is the bigger UX win.
+- **Wedding pill color** — currently kept pink/blush as semantic "wedding" exception. If Dylan wants strict Italian-flag identity (giallo for wedding accent instead of pink), one-line CSS change in `.hero-wedding-pill`. Decide when Stage 6 color sweep starts.
+
+---
+
+## Decisions made this session worth remembering
+
+These won't be obvious from the diff alone:
+
+- **"More pictures = locations, not us."** Dylan's clarifying directive mid-session. Couple photo was the original A-variant hero centerpiece; got reframed as location-photo-only. The hero now has zero couple photo at any phase. Couple photo lives in Settings + future Journal/Capsule reveals only.
+- **"Italian flag colors almost always."** Late-session directive. Stage 6 was created specifically to sweep the rest of the app for warm-brown / terracotta / sage / blush / purple gradients and replace with rosso/verde/bianco/giallo. Stage 3 fixed only the colors I introduced this commit (hero DURING gradient, phrase backdrop) — the broader sweep is queued.
+- **Palette went through three iterations.** Iter 1 = original warm browns. Iter 2 = "cooler neutral" but Dylan called still too dark. Iter 3 = much lighter (espresso #4A4651 etc.). Final landed = iter 3 with slight darken nudge (espresso #42404B, warm-gray #7D7882). The mockup file preserves all three for future reference.
+- **DURING hero gradient is a placeholder.** The rosso→verde gradient at `.hero-during-bg` is the Stage 3 stand-in. Stage 7 (Imagery sweep) will swap in real per-city photos via `background-image` from `/img/cities/`. The CSS comment in `pages.css` flags this.
+- **Bundle Stage 1 + Stage 3 was Dylan's call.** "No reason to commit a half-finished today rework in two pieces." Stage 1 was held in working tree from the prior session start; landed together with the design pass.
+- **Mockup-first iteration was high-leverage.** Three rounds of mockup edits (~iter 1 → iter 2 → iter 3) replaced what would have been three round-trips of real-codebase changes. Worth repeating for Stage 4+ design conversations.
+- **Suggestion section's header was dropped this commit, but Suggestion itself disappears in Stage 5** (Item 10 Tonight surface removes both Smart Suggestion + Don't Miss picks). The half-orphan work was intentional — keeps the Today rework coherent in the meantime.
+- **Wedding pill (pink) is a semantic exception** to "Italian flag almost always." Same reasoning protects verdict-color purple (hidden-gem) and similar context-meaningful colors. Question logged above.
+- **iPhone PWA reinstall** still needed on Dylan's home-screen install for the v3→v4 cache transition (per CLAUDE.md). One-time delete + re-add in Safari.
 
 ---
 
