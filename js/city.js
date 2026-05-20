@@ -42,13 +42,18 @@ function renderCity(citySlug) {
       '</div></div></div>';
   }
 
-  // Gifted experiences
+  // Gifted experiences — show giver + status (auto-transition handled by getEntryStatus).
   var giftHTML = '';
   var cityGifts = GIFTED_EXPERIENCES.filter(function(g) { return g.city === cityName; });
   if (cityGifts.length > 0) {
     cityGifts.forEach(function(gift) {
-      giftHTML += '<div class="today-section"><div class="card card-gift">' +
+      var status = (typeof getEntryStatus === 'function') ? getEntryStatus(gift) : (gift.bookingStatus || 'voucher-only');
+      var statusLine = (typeof formatGiftStatus === 'function') ? formatGiftStatus(gift) : '';
+      var giverLine = gift.giver ? '<div class="gift-card-giver">A gift from ' + gift.giver + '</div>' : '';
+      giftHTML += '<div class="today-section"><div class="card card-gift gift-status-' + status + '">' +
         '<div style="font-weight:700;">' + gift.icon + ' ' + gift.title + '</div>' +
+        giverLine +
+        '<div class="gift-card-status">' + statusLine + '</div>' +
         '<div class="city-gift-desc">' + gift.notes + '</div>' +
         '</div></div>';
     });

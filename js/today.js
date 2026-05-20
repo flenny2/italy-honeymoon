@@ -15,6 +15,7 @@ function renderToday() {
     renderTodayLetter(),
     renderTodayCapsuleNudge(),
     renderTodayBooking(phase),
+    renderTodayGiftCallout(phase),
     renderTodayCounters(phase),
     renderTodayPhrase(),
     renderTodayGifts(city),
@@ -207,6 +208,48 @@ function renderTodayBooking(phase) {
     '</div><span class="today-booking-nag-arrow">→</span></div></div>';
 }
 
+// Day-of (and softer day-before) gift callout — fires only during the trip,
+// matched against gift.date. Shares the "action card" slot with the booking
+// nag (which only fires BEFORE the trip), so they never compete visually.
+function renderTodayGiftCallout(phase) {
+  if (phase.phase !== 'during' || typeof GIFTED_EXPERIENCES === 'undefined') return '';
+  var todayISO = phase.date;
+  var tomorrowISO = (typeof addDaysISO === 'function') ? addDaysISO(todayISO, 1) : '';
+
+  var todayGift = null, tomorrowGift = null;
+  for (var i = 0; i < GIFTED_EXPERIENCES.length; i++) {
+    var g = GIFTED_EXPERIENCES[i];
+    if (!g.date) continue;
+    if (g.date === todayISO) { todayGift = g; break; }
+    if (g.date === tomorrowISO) tomorrowGift = g;
+  }
+
+  if (todayGift) {
+    var timeLine = todayGift.time ? '<div class="today-gift-callout-time">' + todayGift.time + '</div>' : '';
+    var giverLine = todayGift.giver
+      ? '<div class="today-gift-callout-giver">A gift from ' + todayGift.giver + '</div>' : '';
+    return '<div class="today-gift-callout today-gift-callout-today">' +
+      '<div class="today-gift-callout-icon">' + (todayGift.icon || '🎁') + '</div>' +
+      '<div class="today-gift-callout-body">' +
+      '<div class="today-gift-callout-eyebrow">Today</div>' +
+      '<div class="today-gift-callout-title">' + todayGift.title + '</div>' +
+      timeLine + giverLine +
+      '</div></div>';
+  }
+
+  if (tomorrowGift) {
+    var t2 = tomorrowGift.time ? ' at ' + tomorrowGift.time : '';
+    return '<div class="today-gift-callout today-gift-callout-tomorrow">' +
+      '<div class="today-gift-callout-icon">' + (tomorrowGift.icon || '🎁') + '</div>' +
+      '<div class="today-gift-callout-body">' +
+      '<div class="today-gift-callout-eyebrow">Tomorrow' + t2 + '</div>' +
+      '<div class="today-gift-callout-title">' + tomorrowGift.title + '</div>' +
+      '</div></div>';
+  }
+
+  return '';
+}
+
 function renderTodayPhrase() {
   var allPhrases = [];
   PHRASES.forEach(function(cat) { cat.phrases.forEach(function(p) { allPhrases.push(p); }); });
@@ -223,9 +266,14 @@ function renderTodayGifts(city) {
   if (cityGifts.length === 0) return '';
   var html = '<div class="section-header">🎁 Wedding Gifts</div>';
   cityGifts.forEach(function(gift) {
-    html += '<div class="card card-gift">' +
+    var status = (typeof getEntryStatus === 'function') ? getEntryStatus(gift) : (gift.bookingStatus || 'voucher-only');
+    var statusLine = (typeof formatGiftStatus === 'function') ? formatGiftStatus(gift) : '';
+    var giverLine = gift.giver ? '<div class="gift-card-giver">A gift from ' + gift.giver + '</div>' : '';
+    html += '<div class="card card-gift gift-status-' + status + '">' +
       '<div class="gift-card-icon">' + gift.icon + '</div>' +
       '<div class="gift-card-title">' + gift.title + '</div>' +
+      giverLine +
+      '<div class="gift-card-status">' + statusLine + '</div>' +
       '<div class="gift-card-desc">' + gift.description + '</div>' +
       '<div class="gift-card-tip">' + gift.notes + '</div></div>';
   });
@@ -275,11 +323,21 @@ function buildPlaceCard(p) {
     '<span class="place-card-star ' + (p.saved ? 'saved' : '') + '" onclick="toggleSave(\'' + p.id + '\', event)">' + (p.saved ? '⭐' : '☆') + '</span></div>';
 }
 
-// Check if a place has been booked (from booking checklist)
+// Check if a place has been booked — checks both venue BOOKINGS state
+// AND gift bookingStatus (scheduled/completed counts as booked for the
+// "✓ Booked" badge, since the user has a ticket via the gift).
 function isPlaceBooked(placeId) {
   var state = getBookingState();
   for (var i = 0; i < BOOKINGS.length; i++) {
     if (BOOKINGS[i].placeId === placeId && state[BOOKINGS[i].id]) return true;
+  }
+  if (typeof GIFTED_EXPERIENCES !== 'undefined' && typeof getEntryStatus === 'function') {
+    for (var j = 0; j < GIFTED_EXPERIENCES.length; j++) {
+      var g = GIFTED_EXPERIENCES[j];
+      if (!g.linkedPlaces || g.linkedPlaces.indexOf(placeId) === -1) continue;
+      var st = getEntryStatus(g);
+      if (st === 'scheduled' || st === 'completed') return true;
+    }
   }
   return false;
 }

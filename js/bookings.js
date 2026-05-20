@@ -46,14 +46,7 @@ var BOOKINGS = [
     url: '' },
 
   // 🟡 BOOK SOON — recommended but more flexible
-  { id: 'bk-colosseum', placeId: 'l1', urgency: 'soon',
-    title: 'Colosseum + Roman Forum',
-    city: 'Rome', when: 'June 13–17',
-    what: 'Timed entry combo ticket (may be covered by gift tour!)',
-    why: 'You have a gifted Colosseum/Forum/Palatine tour — check if tickets are included or if you need separate entry.',
-    tip: 'Verify your gift voucher covers entry. If not, book the combo ticket online.',
-    url: '' },
-
+  // (Colosseum / Roman Forum is now owned by gift-1 — see GIFTED_EXPERIENCES.)
   { id: 'bk-duomo', placeId: 'f1', urgency: 'soon',
     title: 'Florence Duomo Dome Climb',
     city: 'Florence', when: 'June 18–21',
@@ -94,14 +87,7 @@ var BOOKINGS = [
     tip: 'Water taxi from Lenno or 1km walk to reach it.',
     url: '' },
 
-  { id: 'bk-gondola', placeId: null, urgency: 'soon',
-    title: 'Gondola Serenade (Wedding Gift)',
-    city: 'Venice', when: 'June 24–26',
-    what: 'Schedule specific date/time with provider',
-    why: 'This is a wedding gift — check the voucher and book a specific evening slot.',
-    tip: 'Evening is most romantic. The canals at golden hour are pure magic.',
-    url: '' },
-
+  // (Gondola Serenade is now owned by gift-2 — see GIFTED_EXPERIENCES.)
   { id: 'bk-pantheon', placeId: 'l5', urgency: 'soon',
     title: 'Pantheon',
     city: 'Rome', when: 'June 13–17',
@@ -131,7 +117,7 @@ var BOOKINGS = [
 ];
 
 // Booking checklist state lives in Storage (key: italy-bookings-v1).
-// Local wrappers kept so callers in suggestions.js / today.js don't all need updating.
+// Mixed shape: state[venueId] = true; state[giftId] = { status: '...' }.
 function getBookingState() {
   return Storage.getBookings();
 }
@@ -143,11 +129,63 @@ function toggleBooking(id) {
   renderBookings();
 }
 
-function getBookingStats() {
+// Unified entry view across BOOKINGS (venues) and GIFTED_EXPERIENCES (gifts).
+// Discriminator: entry.source = 'venue' | 'registry-gift'.
+function getAllEntries() {
+  var venues = BOOKINGS.map(function(b) {
+    return {
+      source: 'venue', id: b.id, title: b.title, city: b.city,
+      placeIds: b.placeId ? [b.placeId] : [],
+      urgency: b.urgency, when: b.when, what: b.what,
+      why: b.why, tip: b.tip, url: b.url
+    };
+  });
+  var gifts = (typeof GIFTED_EXPERIENCES !== 'undefined' ? GIFTED_EXPERIENCES : []).map(function(g) {
+    return {
+      source: 'registry-gift', id: g.id, title: g.title, city: g.city,
+      placeIds: g.linkedPlaces || [],
+      giver: g.giver, icon: g.icon, description: g.description,
+      date: g.date, time: g.time, duration: g.duration,
+      bookingStatus: g.bookingStatus, confirmationUrl: g.confirmationUrl,
+      notes: g.notes
+    };
+  });
+  return venues.concat(gifts);
+}
+
+// Returns the effective status for an entry, reading user state and applying
+// the scheduled→completed auto-transition for gifts whose date has passed.
+// Returns: 'booked'|'pending' for venues; 'voucher-only'|'scheduled'|'completed' for gifts.
+function getEntryStatus(entry) {
   var state = getBookingState();
-  var total = BOOKINGS.length;
+  var s = state[entry.id];
+  if (entry.source === 'registry-gift') {
+    var stored = (s && s.status) || entry.bookingStatus || 'voucher-only';
+    if (stored === 'scheduled' && entry.date) {
+      var todayISO = new Date().toISOString().split('T')[0];
+      if (entry.date < todayISO) return 'completed';
+    }
+    return stored;
+  }
+  return s === true ? 'booked' : 'pending';
+}
+
+// Set a gift's status. Called from gift card UI in renderBookings.
+function setGiftStatus(giftId, status) {
+  var state = getBookingState();
+  state[giftId] = Object.assign({}, state[giftId] || {}, { status: status });
+  Storage.saveBookings(state);
+  renderBookings();
+}
+
+function getBookingStats() {
+  var entries = getAllEntries();
+  var total = entries.length;
   var booked = 0;
-  BOOKINGS.forEach(function(b) { if (state[b.id]) booked++; });
+  entries.forEach(function(e) {
+    var st = getEntryStatus(e);
+    if (st === 'booked' || st === 'scheduled' || st === 'completed') booked++;
+  });
   return { booked: booked, total: total, remaining: total - booked };
 }
 
@@ -182,6 +220,15 @@ function renderBookings() {
   });
 
   var listHTML = '<div class="content-wrap">';
+
+  // 🎁 Wedding Gift Experiences — top slot (emotional priority)
+  var gifts = getAllEntries().filter(function(e) { return e.source === 'registry-gift'; });
+  if (gifts.length > 0) {
+    listHTML += '<div class="booking-urgency-header booking-urgency-gift">🎁 Wedding Gift Experiences</div>';
+    gifts.forEach(function(g) {
+      listHTML += buildGiftCard(g);
+    });
+  }
 
   // Book NOW
   if (groups.now.length > 0) {
@@ -220,5 +267,46 @@ function buildBookingCard(b, isBooked) {
     (b.tip ? '<div class="booking-tip">💡 ' + b.tip + '</div>' : '') +
     '</div>' +
     (b.placeId ? '<div class="booking-link" onclick="Router.navigate(\'#place/' + b.placeId + '\')">→</div>' : '') +
+    '</div>';
+}
+
+// Human-readable status line for a gift, used by both bookings.js and detail.js.
+function formatGiftStatus(g) {
+  var status = getEntryStatus(g);
+  if (status === 'completed') return 'Completed ✓';
+  if (status === 'scheduled') {
+    if (g.date) {
+      var d = new Date(g.date + 'T00:00:00');
+      var pretty = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+      return 'Scheduled ' + pretty + (g.time ? ' at ' + g.time : '');
+    }
+    return 'Scheduled';
+  }
+  return '⚠️ Voucher only — schedule with provider';
+}
+
+function buildGiftCard(g) {
+  var status = getEntryStatus(g);
+  var statusClass = 'gift-status-' + status; // voucher-only | scheduled | completed
+  var giverLine = g.giver
+    ? '<div class="gift-card-giver">A gift from ' + g.giver + '</div>'
+    : '<div class="gift-card-giver gift-card-giver-empty">A gift from …</div>';
+  var urlLine = g.confirmationUrl
+    ? '<a class="gift-card-url" href="' + g.confirmationUrl + '" target="_blank" rel="noopener">View voucher / provider →</a>'
+    : '';
+  var placeLink = (g.placeIds && g.placeIds[0])
+    ? '<div class="booking-link" onclick="Router.navigate(\'#place/' + g.placeIds[0] + '\')">→</div>'
+    : '';
+  return '<div class="booking-card booking-card-gift ' + statusClass + '">' +
+    '<div class="gift-card-icon">' + (g.icon || '🎁') + '</div>' +
+    '<div class="booking-info">' +
+    '<div class="booking-title">' + g.title + '</div>' +
+    giverLine +
+    '<div class="gift-card-status">' + formatGiftStatus(g) + '</div>' +
+    '<div class="booking-what">' + (g.description || '') + '</div>' +
+    (g.notes ? '<div class="booking-tip">💡 ' + g.notes + '</div>' : '') +
+    urlLine +
+    '</div>' +
+    placeLink +
     '</div>';
 }

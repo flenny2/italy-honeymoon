@@ -64,6 +64,13 @@ function formatDateFull(date) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function addDaysISO(iso, n) {
+  if (!iso) return '';
+  var d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toISOString().split('T')[0];
+}
+
 // ── Map tile layer helper ──
 function addTileLayer(map) {
   return L.tileLayer(CONFIG.MAP_TILE_URL, { maxZoom: CONFIG.MAP_MAX_ZOOM }).addTo(map);

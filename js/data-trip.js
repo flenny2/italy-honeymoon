@@ -84,25 +84,58 @@ const VERDICTS = {
   'hidden-gem': { label: 'Hidden Gem',      icon: '💎', color: '#8B5CF6', desc: 'Locals know, tourists miss' },
 };
 
-// Gifted experiences from wedding registry
+// Gifted experiences from wedding registry.
+// Unified with venue BOOKINGS via source='registry-gift' discriminator —
+// see getAllEntries() in bookings.js. State persists to italy-bookings-v1
+// (mixed shape: booleans for venues, { status } objects for gifts).
 const GIFTED_EXPERIENCES = [
   {
     id: 'gift-1',
+    source: 'registry-gift',
     title: 'Colosseum, Roman Forum & Palatine Hill Tour',
+    giver: '',
     city: 'Rome',
     icon: '🎁',
     description: 'A guided tour through ancient Rome — the Colosseum, Roman Forum, and Palatine Hill. A wedding gift!',
     linkedPlaces: ['l1', 'l6'],
+    date: '',
+    time: '',
+    duration: '3 hours',
+    bookingStatus: 'voucher-only',
+    confirmationUrl: '',
     notes: 'Check voucher for date/time. Arrive 15 min early.'
   },
   {
     id: 'gift-2',
+    source: 'registry-gift',
     title: 'Gondola Serenade for Two',
+    giver: '',
     city: 'Venice',
     icon: '🎁',
     description: 'Private gondola ride with a musician serenading you through the canals. Pure honeymoon magic.',
     linkedPlaces: [],
+    date: '',
+    time: '',
+    duration: '30 minutes',
+    bookingStatus: 'voucher-only',
+    confirmationUrl: '',
     notes: 'Book specific date/time. Evening is most romantic.'
+  },
+  {
+    id: 'gift-3',
+    source: 'registry-gift',
+    title: 'Pasta-Making Class for Two',
+    giver: '',
+    city: 'Rome',
+    icon: '🎁',
+    description: 'Hands-on class learning to make fresh Roman pasta — likely cacio e pepe and carbonara. A wedding gift!',
+    linkedPlaces: [],
+    date: '',
+    time: '',
+    duration: '3 hours',
+    bookingStatus: 'voucher-only',
+    confirmationUrl: '',
+    notes: 'Book specific date/time with provider. Likely includes dinner.'
   }
 ];
 

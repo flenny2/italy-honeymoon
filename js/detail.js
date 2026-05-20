@@ -51,6 +51,30 @@ function renderDetail(id) {
       '</div>';
   }
 
+  // Wedding-gift callout — fires if any GIFTED_EXPERIENCES has this place
+  // in its linkedPlaces. Sits with verdict (both are "decision info"),
+  // above Real Talk (narrative).
+  var giftHTML = '';
+  if (typeof GIFTED_EXPERIENCES !== 'undefined') {
+    var matchingGifts = GIFTED_EXPERIENCES.filter(function(g) {
+      return g.linkedPlaces && g.linkedPlaces.indexOf(p.id) !== -1;
+    });
+    if (matchingGifts.length > 0) {
+      matchingGifts.forEach(function(g) {
+        var status = (typeof getEntryStatus === 'function') ? getEntryStatus(g) : (g.bookingStatus || 'voucher-only');
+        var statusLine = (typeof formatGiftStatus === 'function') ? formatGiftStatus(g) : '';
+        var giver = g.giver ? 'A gift from ' + g.giver : 'A gift from …';
+        giftHTML += '<div class="detail-gift-callout gift-status-' + status + '">' +
+          '<div class="detail-gift-icon">' + (g.icon || '🎁') + '</div>' +
+          '<div class="detail-gift-body">' +
+          '<strong>' + g.title + '</strong>' +
+          '<div class="detail-gift-giver">' + giver + '</div>' +
+          '<div class="detail-gift-status">' + statusLine + '</div>' +
+          '</div></div>';
+      });
+    }
+  }
+
   // Real Talk section
   var realTalkHTML = '';
   if (p.honest_summary) {
@@ -110,7 +134,7 @@ function renderDetail(id) {
 
   content.innerHTML = '<div class="detail-content stagger">' +
     backHTML + catHTML + nameHTML + sourceHTML + tagsHTML + verdictHTML +
-    realTalkHTML + descHTML + notesHTML + nearbyHTML + visitHTML + saveHTML +
+    giftHTML + realTalkHTML + descHTML + notesHTML + nearbyHTML + visitHTML + saveHTML +
     '</div>';
 }
 

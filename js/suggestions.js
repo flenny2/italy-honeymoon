@@ -22,6 +22,22 @@ function getSmartSuggestions(city) {
       var pick = urgent[0];
       tips.push({ icon: '📋', text: pick.title + ' needs booking — sells out in June!', placeId: pick.placeId, color: '#CE2B37' });
     }
+
+    // Voucher-only gift reminder — escalates as trip approaches.
+    if (typeof GIFTED_EXPERIENCES !== 'undefined') {
+      var voucherGifts = GIFTED_EXPERIENCES.filter(function(g) {
+        return (g.bookingStatus || 'voucher-only') === 'voucher-only';
+      });
+      if (voucherGifts.length > 0) {
+        var g = voucherGifts[0];
+        var soon = (phase.daysUntil || 0) <= 10;
+        tips.push({
+          icon: soon ? '⚠️' : '🎁',
+          text: g.title + " isn't scheduled — contact provider",
+          color: soon ? '#CE2B37' : '#E8B931'
+        });
+      }
+    }
   }
 
   // ── Time-based suggestions ──
