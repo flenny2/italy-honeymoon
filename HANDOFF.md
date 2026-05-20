@@ -145,3 +145,27 @@ These won't be obvious from the diff alone:
 - **Mixed shape in storage is fine** when guarded by a single accessor (`getEntryStatus`). The legacy boolean coexists with the object shape; both stay clear in source.
 - **The innerHTML security hook intermittently blocks `Edit` calls** (per CLAUDE.md). Retry the same call.
 - **Always grep-verify after JS edits**: `grep -l "\.classname" css/*.css` for every new class introduced.
+
+---
+
+## Session close — where we landed (2026-05-20)
+
+**Shipped to origin/main** (Netlify auto-deploys):
+
+- **`c88ef15`** — Path B: unify bookings + registry gifts.
+- **`a9eec37`** — Bologna half-day addendum (7th top-level city, 5 places, Jun 19).
+
+**Data inputs pending from Dylan** — plumbing is live, surfaces silent until set:
+
+- **3 gifts in `js/data-trip.js`** (`gift-1` Colosseum tour · `gift-2` Gondola serenade · `gift-3` Pasta-making class): fill in `giver`, `date` (YYYY-MM-DD), `time` (HH:mm) from each voucher. Once a date is locked, promote `bookingStatus: 'voucher-only' → 'scheduled'`. Auto-completes after the date passes.
+- **Bologna places `b1`–`b5` in `js/data-places.js`**: editorial copy for `verdict`, `honest_summary`, `best_for`. Today the verdict badge and Real Talk section gracefully skip when these are absent.
+
+**What's next, in order:**
+
+1. **Stage 5 — Tonight surface (Item 10)**. Composed DURING-phase block replacing Smart Suggestion + Don't Miss picks. Highest-leverage trip-readiness item remaining. Start with a proposal, never implementation.
+2. **Offline / PWA reliability check**. Verify the v6 cache, all 7 cities' map tiles pre-cache pre-trip, fonts/CSS load in airplane mode. Target ~7–10 days pre-departure (~Jun 3–6).
+3. **Dylan's editorial pass on Bologna places** (manual).
+4. **Dylan's `data-places.js` dedupe homework** (21 entries, Nathan-rec pattern; manual).
+5. Defer to post-trip: Stage 4 dark mode, Stage 6 flag color sweep, Stage 7 imagery, Item 8 Lucide icons, Item 9 place-card noise, Item 11 Saved Places, Item 12 strip multi-trip.
+
+iPhone PWA: delete + re-add in Safari to pick up the v4 → v6 cache jump.
