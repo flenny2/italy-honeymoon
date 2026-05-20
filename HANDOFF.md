@@ -36,32 +36,43 @@
 
 ---
 
-## What's next — Bologna half-day addendum
+## Also landed this session — Bologna half-day addendum
 
-**PROCESS GATE — do not skip:** start with a proposal, never implementation. (For Bologna the plan is already approved in `~/.claude/plans/decisions-on-your-open-deep-cat.md` — the Bologna addendum section at the bottom.)
+Bologna ships as a separate commit on top of Path B (per Dylan's "ship Path B first as one commit, then Bologna as a separate commit" instruction).
 
-Decisions locked in this session:
-- Bologna becomes a 7th top-level city (NOT a `subCity` field — no such precedent in the codebase; Tuscany and Verona are top-level cities with `TRIP.dayTrips` entries, which is the consistent pattern).
+- 7th top-level city in `CITIES`, inserted between Florence and Tuscany (travel-order). Not a `subCity` — that field doesn't exist in the codebase; Tuscany and Verona are also top-level cities with `TRIP.dayTrips` entries, which is the consistent pattern.
 - Day-trip date: **Friday Jun 19, 2026**. `TRIP.schedule[5]` stays `'Florence'` — `dayTrips` is additive.
-- Emoji: **🟥** (la rossa nod). Consistent shape with Tuscany 🍷 and Verona 💌.
-- **No map-city-chip** in `index.html` (matches Tuscany/Verona precedent).
-- **No new mood** for political-leaning content — lean on `historic` + good editorial copy.
-- **No achievement threshold updates** — Bologna is a side quest, not a primary destination.
-- 5 places to add: Bologna Centrale 1980 Memorial, Sacrario dei Partigiani / Resistance Wall at Piazza del Nettuno, Bologna Rossa political walking tour, Quadrilatero market, Tamburini. Editorial content (real story / verdict / best for) Dylan-supplied separately.
+- Emoji: **🟥** (la rossa nod). Shape-consistent with Tuscany 🍷 and Verona 💌.
+- `CITY_VIEWS['Bologna'] = { center: [44.4949, 11.3426], zoom: 14 }`.
+- **No map-city-chip** in `index.html` (matches Tuscany/Verona precedent — both are in CITIES but not chips).
+- **No new mood** for political-leaning content — leans on `historic` + editorial copy.
+- 5 places added with factual `description` + `category` + `lat`/`lng` only. **Verdict / honest_summary / best_for left empty** for Dylan editorial — comment block in `data-places.js` flags this. JS handles missing fields gracefully (verdict badge skipped, Real Talk section omitted) until Dylan fills them in.
+- Places: `b1` Bologna Centrale 1980 Memorial · `b2` Sacrario dei Partigiani at Piazza del Nettuno · `b3` Bologna Rossa walking tour · `b4` Quadrilatero market · `b5` Tamburini.
+- `CACHE_NAME` bumped v5 → v6.
 
-Files: `data-trip.js` (CITIES + CITY_EMOJI + CITY_VIEWS + dayTrips), `data-places.js` (5 places), `sw.js` (CACHE_NAME v5 → v6), HANDOFF.md, CLAUDE.md (Cities list).
+---
+
+## What's next — Stage 5: Tonight surface (Item 10)
+
+**PROCESS GATE — do not skip:** start with a proposal, never implementation.
+
+Stage 5 builds a composed "Tonight" surface for DURING phase that consolidates current Smart Suggestion + Don't Miss picks into a single richer block. Today drops from ~11 sections to ~6 during the trip.
+
+Why this is next: it's the single highest-leverage trip-readiness item remaining; was the candidate for #1 at session open, demoted only because Path B gift work was more time-sensitive (gift dates have real-world deadlines that the Tonight surface doesn't).
+
+Files likely to touch: `today.js` (new `renderTodayTonight(phase, city)` composite + section reshuffle), `suggestions.js` (may absorb or be obsoleted), `pages.css` (new Tonight surface styling), possibly `data-trip.js` (per-day theming). Bump `CACHE_NAME` v6 → v7 on the resulting commit.
 
 ---
 
 ## Stages queued (revised order from this session)
 
-1. **Bologna addendum** (next). See "What's next" above.
-2. **Stage 5 — Item 10 Tonight surface** — build composed Tonight surface for DURING phase. Removes Smart Suggestion + Don't Miss picks. Today drops from ~11 sections to ~6. **Note**: this is the single highest-leverage trip-readiness item remaining; was the #1 candidate at session open, demoted to #2 only because Path B gift work was more time-sensitive (gift dates have real-world deadlines).
-3. **Offline / PWA reliability check** — verify v5 cache, all 6 cities' map tiles pre-cache pre-trip, fonts/CSS load in airplane mode. Target: ~7–10 days pre-departure.
+1. **Stage 5 — Item 10 Tonight surface** (next). See "What's next" above.
+2. **Offline / PWA reliability check** — verify v6 cache, all 7 cities' map tiles pre-cache pre-trip, fonts/CSS load in airplane mode. Target: ~7–10 days pre-departure.
+3. **Dylan's editorial pass on Bologna places** — fill in `verdict`, `honest_summary`, `best_for` for `b1`-`b5` in `data-places.js`. Manual edit; no CC dependency.
 4. **Dylan's `data-places.js` dedupe homework** (21 entries, Nathan-rec pattern). Manual edit; no CC dependency.
 5. (Defer to post-trip) **Stage 4 Dark/light theme toggle**, **Stage 6 Italian-flag color sweep**, **Stage 7 Imagery sweep**, **Item 8 Lucide icon swap**, **Item 9 place-card noise reduction**, **Item 11 Saved Places view**, **Item 12 strip multi-trip support**.
 
-**Refusal pattern if Dylan says "ok start [stage]" without seeing the plan:** push back with "let me show you the plan first." (Bologna already has an approved plan; jump straight in.)
+**Refusal pattern if Dylan says "ok start [stage]" without seeing the plan:** push back with "let me show you the plan first."
 
 ---
 

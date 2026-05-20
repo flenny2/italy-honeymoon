@@ -297,6 +297,25 @@ const DEFAULT_PLACES = [
     source:"Oltrarno Splendid rec", duration_min:"75–105", cost:"€25–35/person", booking:"Book ahead — small space fills quickly", best_time:"Dinner", transport:"Via dell'Orto, 49 — 8 min walk from hotel", verdict:"hidden-gem",
     honest_summary:"The most interesting cooking on this list. While the other Oltrarno trattorias lean traditional, Il Guscio takes Tuscan ingredients and does something slightly more modern and creative with them. The menu changes frequently, which keeps things fresh. It is small and fills up fast, so booking is essential. Not every dish is a home run — the experimental ones occasionally miss — but when they hit, they really hit. The wine list punches above its weight.",
     best_for:"Foodies who want something beyond standard trattoria fare. Best for your second or third Florence dinner when you are ready for a creative twist." },
+
+  // ── BOLOGNA HALF-DAY (Jun 19, day-trip from Florence) ──
+  // Political-leaning half-day with tortellini lunch. Verdict / honest_summary
+  // / best_for left empty pending Dylan's editorial pass.
+  { id:"b1", name:"Bologna Centrale 1980 Memorial", city:"Bologna", category:"landmark", lat:44.5054, lng:11.3434,
+    description:"Memorial to the Strage di Bologna — the August 2, 1980 neo-fascist bombing of Bologna Centrale station that killed 85 people. The cracked clock face stopped at 10:25 is preserved in the rebuilt waiting room. A list of names and ages is set into the floor and exterior wall." },
+
+  { id:"b2", name:"Sacrario dei Partigiani — Piazza del Nettuno", city:"Bologna", category:"landmark", lat:44.4943, lng:11.3428,
+    description:"Outdoor memorial wall on Piazza del Nettuno, next to Piazza Maggiore. Photographs and names of nearly 2,000 Bolognese partisans killed in the Italian Resistance (1943–45). One of the most visible Resistance memorials in Italy — open to the street, never closed." },
+
+  { id:"b3", name:"Bologna Rossa Walking Tour", city:"Bologna", category:"activity", lat:44.4938, lng:11.3426,
+    description:"Political walking tour of Bologna's left-wing history — the Resistance, the postwar Communist municipal governments, the 1977 student movements, the 1980 bombing. Typically starts at Piazza Maggiore. Book in advance; meeting points and schedules vary by operator." },
+
+  { id:"b4", name:"Quadrilatero Market", city:"Bologna", category:"dining", lat:44.4946, lng:11.3450,
+    description:"Medieval market quarter just east of Piazza Maggiore — a dense grid of streets lined with salumi shops, fresh pasta makers, cheese counters, fish stalls, and small eateries. Liveliest at lunch. Walking it is itself the experience; pick a counter that smells right." },
+
+  { id:"b5", name:"Tamburini", city:"Bologna", category:"dining", lat:44.4948, lng:11.3445,
+    description:"Bolognese institution at Via Caprarie, 1, in the heart of the Quadrilatero. Salumi counter since 1932, plus a sit-down trattoria upstairs serving tortellini in brodo, tagliatelle al ragù, and other Bolognese classics. A natural tortellini lunch stop before the train back to Florence.",
+    notes:"Tortellini-on-the-way-out lunch — close to the train station via taxi or 15-min walk." },
 ];
 
 // ═══════════════════════════════════════

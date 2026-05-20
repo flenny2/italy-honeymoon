@@ -23,17 +23,20 @@ const TRIP = {
     { date: '2026-06-26', city: 'Venice', day: 14 },
   ],
   dayTrips: {
+    '2026-06-19': { label: 'Bologna half-day', from: 'Florence', emoji: '🟥' },
     '2026-06-21': { label: 'Tuscany / Chianti day trip', from: 'Florence', emoji: '🍷' },
     '2026-06-24': { label: 'Verona stopover en route to Venice', from: 'Lake Como', emoji: '💌' },
   }
 };
 
-// Cities in travel order
-const CITIES = ['Rome', 'Florence', 'Tuscany', 'Lake Como', 'Verona', 'Venice'];
+// Cities in travel order (Bologna inserted as Florence day-trip — TRIP.schedule
+// for Jun 19 stays 'Florence'; dayTrips is additive).
+const CITIES = ['Rome', 'Florence', 'Bologna', 'Tuscany', 'Lake Como', 'Verona', 'Venice'];
 
 const CITY_EMOJI = {
   'Rome': '🏛️',
   'Florence': '🌻',
+  'Bologna': '🟥',
   'Tuscany': '🍷',
   'Lake Como': '⛰️',
   'Venice': '🚣',
@@ -44,6 +47,7 @@ const CITY_EMOJI = {
 const CITY_VIEWS = {
   'Rome':      { center: [41.8975, 12.4800], zoom: 13 },
   'Florence':  { center: [43.7710, 11.2540], zoom: 14 },
+  'Bologna':   { center: [44.4949, 11.3426], zoom: 14 },
   'Tuscany':   { center: [43.5100, 11.1500], zoom: 10 },
   'Lake Como': { center: [45.8700, 9.1500], zoom: 11 },
   'Verona':    { center: [45.4410, 10.9970], zoom: 15 },
