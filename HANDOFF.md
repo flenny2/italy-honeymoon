@@ -4,8 +4,17 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-05-19 (session close)
+**Last updated:** 2026-05-20
 **Branch:** `main`, in sync with `origin/main` (just pushed)
+
+---
+
+## 2026-05-20 — Bologna editorial copy (b1–b5)
+
+- Filled `verdict` / `honest_summary` / `best_for` on all five Bologna places in `data-places.js`.
+- Verdict spread: **b2 Sacrario dei Partigiani → `essential`**; **b1 / b3 / b4 / b5 → `worth-it`** (hyphenated to match the `VERDICTS` keys in `data-trip.js`; Dylan's draft used `"worth it"` with a space — normalized).
+- Removed the stale "verdict / honest_summary / best_for left empty pending Dylan's editorial pass" comment above b1.
+- `CACHE_NAME` bumped v6 → v7 per CLAUDE.md cache-busting convention.
 
 ---
 
