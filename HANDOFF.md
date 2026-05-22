@@ -21,6 +21,16 @@
 
 ---
 
+## 2026-05-22 — Session ended
+
+- **Shipped this session:** Verona drop (commit `ab111d9`). Verified in Chrome after hard refresh and confirmed deployed on Netlify.
+- **Queued for next session:**
+  - Bologna food expansion: `b6` Anna Maria, `b7` Da Me, `b8` Sorbetteria Castiglione (prompt drafted in chat).
+  - Optional: regenerate `APP-ARCHITECTURE.md` for fresh project-knowledge upload.
+  - Stage 5 — Today screen wireframes (happening in chat, not in Claude Code).
+
+---
+
 ## 2026-05-21 — Session ended
 
 - **Shipped this session:** Bologna editorial copy for b1–b5 (verdict / honest_summary / best_for). `CACHE_NAME` bumped v6 → v7. Pushed in commit `ae4cd4f`.
