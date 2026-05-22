@@ -227,7 +227,5 @@ function slugToCity(slug) {
   if (!slug) return null;
   var map = {};
   CITIES.forEach(function(c) { map[cityToSlug(c)] = c; });
-  // Also handle Verona
-  map['verona'] = 'Verona';
   return map[slug] || null;
 }

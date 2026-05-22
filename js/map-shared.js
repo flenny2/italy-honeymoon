@@ -7,11 +7,11 @@
 // ═══════════════════════════════════════
 
 // Hardcoded day-trip route polylines (Rome→Amalfi/Pompeii, Florence→Tuscany,
-// Como→Verona→Venice). Could move into a data file later.
+// Como→Venice). Could move into a data file later.
 var DAY_TRIP_LINE_COORDS = [
   [[41.8975, 12.4800], [40.6880, 14.4849]],
   [[43.7710, 11.2540], [43.55, 11.25]],
-  [[45.8100, 9.0800], [45.4391, 10.9946], [45.4400, 12.3350]]
+  [[45.8100, 9.0800], [45.4400, 12.3350]]
 ];
 
 // Draw the main route polyline + day-trip polylines + day-trip markers.

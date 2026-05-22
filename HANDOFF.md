@@ -4,8 +4,20 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-05-21
+**Last updated:** 2026-05-22
 **Branch:** `main`, in sync with `origin/main` (just pushed)
+
+---
+
+## 2026-05-22 — Verona dropped from itinerary
+
+- Verona dropped from itinerary — coworker flagged as overhyped tourist trap. Como → Venice now direct on Jun 24.
+- Removed from `CITIES`, `CITY_EMOJI`, `CITY_VIEWS`, `TRIP.dayTrips`, `ROUTE_COORDS.dayTrips`, and the day-trip polyline in `map-shared.js`.
+- Hard-deleted places `ver1`–`ver5` in `data-places.js`; updated `tr3` transit note to "Arrive from Lake Como June 24".
+- Dropped Juliet's balcony option from the "Sealed With a Kiss" achievement.
+- Removed redundant Verona slug fallback in `city.js`.
+- Updated `CLAUDE.md` Cities spec line.
+- `CACHE_NAME` bumped v7 → v8.
 
 ---
 

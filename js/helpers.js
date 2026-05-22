@@ -32,7 +32,6 @@ var ROUTE_COORDS = {
   ],
   dayTrips: [
     { label: 'Tuscany',  lat: 43.55,   lng: 11.25,   emoji: '🍷' },
-    { label: 'Verona',   lat: 45.4391, lng: 10.9946, emoji: '💌' },
     { label: 'Amalfi',   lat: 40.6280, lng: 14.4850, emoji: '🏖️' },
     { label: 'Pompeii',  lat: 40.7484, lng: 14.4848, emoji: '🌋' }
   ]

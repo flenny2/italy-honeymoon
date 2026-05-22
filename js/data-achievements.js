@@ -128,7 +128,7 @@ var ACHIEVEMENTS = [
 
   { id: 'love-lock',        title: 'Sealed With a Kiss',   icon: '💕', category: 'experience',
     challenge: 'Share a kiss at a famous romantic spot',
-    howTo: 'Juliet\'s balcony in Verona, the Ponte Vecchio at sunset, a gondola in Venice, or Punta Spartivento on Lake Como. Pick your moment, and make it count.',
+    howTo: 'The Ponte Vecchio at sunset, a gondola in Venice, or Punta Spartivento on Lake Como. Pick your moment, and make it count.',
     rarity: 'common' },
 
   { id: 'seal-capsule',     title: 'Time Travelers',       icon: '🔮', category: 'experience',

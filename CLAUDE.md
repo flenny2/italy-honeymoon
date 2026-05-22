@@ -145,7 +145,7 @@ User interaction → Storage.savePlaces() / Storage.saveJournalEntry() / etc.
 Each place has: `id`, `name`, `city`, `category`, `lat`, `lng`, `description`, `source`, `verdict`, `honest_summary`, `best_for`. Optional: `notes` (small italic line shown under description in detail), `duration_min`, `cost`, `booking`, `best_time`, `transport`, `accessibility`, `hours_close`. Tags are computed at render time by `autoTag()`, not stored. `saved` is added at runtime.
 
 Categories: dining, landmark, hotel, activity, viewpoint, transit, pharmacy, restroom.
-Cities: Rome, Florence, Bologna, Tuscany, Lake Como, Verona, Venice. (Bologna, Tuscany, and Verona are day-trip cities — top-level entries in `CITIES` with `TRIP.dayTrips` mapping for the specific date. There is no `subCity` field.)
+Cities: Rome, Florence, Bologna, Tuscany, Lake Como, Venice. (Bologna and Tuscany are day-trip cities — top-level entries in `CITIES` with `TRIP.dayTrips` mapping for the specific date. There is no `subCity` field.)
 
 ## Design Principles
 
