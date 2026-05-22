@@ -4,8 +4,19 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-05-20
+**Last updated:** 2026-05-21
 **Branch:** `main`, in sync with `origin/main` (just pushed)
+
+---
+
+## 2026-05-21 — Session ended
+
+- **Shipped this session:** Bologna editorial copy for b1–b5 (verdict / honest_summary / best_for). `CACHE_NAME` bumped v6 → v7. Pushed in commit `ae4cd4f`.
+- **Queued for next session:**
+  - Verona drop (places, editorial, day-trip wiring).
+  - Bologna food expansion: `b6` Anna Maria, `b7` Da Me, `b8` Sorbetteria Castiglione.
+  - Stage 5 — Today screen wireframes (composed "Tonight" surface flagged in prior session's "What's next").
+- **Project knowledge:** `APP-ARCHITECTURE.md` in project knowledge is stale — regenerate next session for re-upload.
 
 ---
 
