@@ -9,6 +9,14 @@
 
 ---
 
+## 2026-05-22 — Bologna food expansion (b6–b8)
+
+- Bologna food expansion — added b6 Anna Maria (tortellini sit-down), b7 Da Me (tagliatelle al ragù), b8 Sorbetteria Castiglione (gelato). Half-day food angle now properly weighted.
+- Coordinates: user-supplied estimates were 75–400m off; corrected to OSM-geocoded values (b6 44.4976/11.3496, b7 44.4973/11.3325, b8 44.4878/11.3482).
+- `CACHE_NAME` bumped v8 → v9.
+
+---
+
 ## 2026-05-22 — Verona dropped from itinerary
 
 - Verona dropped from itinerary — coworker flagged as overhyped tourist trap. Como → Venice now direct on Jun 24.
@@ -25,7 +33,6 @@
 
 - **Shipped this session:** Verona drop (commit `ab111d9`). Verified in Chrome after hard refresh and confirmed deployed on Netlify.
 - **Queued for next session:**
-  - Bologna food expansion: `b6` Anna Maria, `b7` Da Me, `b8` Sorbetteria Castiglione (prompt drafted in chat).
   - Optional: regenerate `APP-ARCHITECTURE.md` for fresh project-knowledge upload.
   - Stage 5 — Today screen wireframes (happening in chat, not in Claude Code).
 
