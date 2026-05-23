@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-05-22 — Session ended
+
+- **Shipped this session:** Bologna food expansion (b6 Anna Maria, b7 Da Me, b8 Sorbetteria Castiglione). Coordinates corrected to OSM-geocoded values. `CACHE_NAME` bumped v8 → v9. Pushed in commit `8d2eeca` → Netlify auto-deploys.
+- **Side artifact (not in repo):** `design-handoff.md` generated at repo root as a design-brief addendum for Claude Design. Untracked; Dylan will copy out and delete.
+- **Queued for next session:**
+  - Optional: regenerate `APP-ARCHITECTURE.md` for fresh project-knowledge upload.
+  - Stage 5 — Today screen wireframes (happening in chat, not in Claude Code).
+
+---
+
 ## 2026-05-22 — Bologna food expansion (b6–b8)
 
 - Bologna food expansion — added b6 Anna Maria (tortellini sit-down), b7 Da Me (tagliatelle al ragù), b8 Sorbetteria Castiglione (gelato). Half-day food angle now properly weighted.
