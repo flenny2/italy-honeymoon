@@ -3,7 +3,7 @@
 // Caches all app assets + map tiles
 // ═══════════════════════════════════════
 
-var CACHE_NAME = 'italy-honeymoon-v9';
+var CACHE_NAME = 'italy-honeymoon-v10';
 
 // All app files to pre-cache on install
 var APP_FILES = [
@@ -15,6 +15,7 @@ var APP_FILES = [
   '/css/base.css',
   '/css/components.css',
   '/css/pages.css',
+  '/css/today.css',
   // Fonts
   '/fonts/fonts.css',
   '/fonts/files/font-0.ttf',
@@ -38,9 +39,13 @@ var APP_FILES = [
   '/js/data-hotels.js',
   '/js/data-trip.js',
   '/js/data-achievements.js',
+  '/js/data-today-plan.js',
   // JS core
   '/js/storage.js',
   '/js/helpers.js',
+  '/js/hero-images.js',
+  '/js/today-plan.js',
+  '/js/components/verdict-pill.js',
   '/js/router.js',
   '/js/map-shared.js',
   '/js/animations.js',

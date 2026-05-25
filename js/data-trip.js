@@ -59,6 +59,48 @@ const CAT_COLORS = {
   pharmacy: '#EC4899', restroom: '#6B7280'
 };
 
+// Per-city tint colors (Today screen Hairline Editorial pass).
+// Keys match phase.city / CITIES exactly. Italian display names live in `label`
+// and are used only as the Hero kicker eyebrow ("TODAY · ROMA"), never as data keys.
+// Each entry pairs an oklch() value with a hex fallback for iOS Safari 15.3 and older.
+const CITY_COLORS = {
+  'Rome':      { oklch: 'oklch(0.62 0.11 65)',  hex: '#B89358', label: 'Roma' },
+  'Florence':  { oklch: 'oklch(0.55 0.14 35)',  hex: '#A45B3D', label: 'Firenze' },
+  'Venice':    { oklch: 'oklch(0.55 0.07 215)', hex: '#5A7B92', label: 'Venezia' },
+  'Lake Como': { oklch: 'oklch(0.60 0.08 235)', hex: '#6585AB', label: 'Como' },
+  'Bologna':   { oklch: 'oklch(0.48 0.12 25)',  hex: '#92492A', label: 'Bologna' }
+};
+
+// Real Talk · Today — per-city evergreen essay.
+// Final fallback in getRealTalk()'s 3-step chain:
+//   1) TODAY_PLAN[date].headline.realTalk  (per-day override)
+//   2) headline place's honest_summary first sentence
+//   3) CITY_REAL_TALK[city]                  (this map)
+// Headline is rendered Playfair Display roman in the Real Talk tile;
+// body is DM Sans 15px below.
+const CITY_REAL_TALK = {
+  'Rome': {
+    headline: 'On not seeing everything.',
+    body: 'You will not see all of Rome. You will not see most of it. The city has 2,800 years of layers and you have five days, two of them already half-eaten by jet lag and gelato. The trick is to pick one thing each morning and walk slowly. Then sit in a piazza. Let the afternoon get long.'
+  },
+  'Florence': {
+    headline: 'On art fatigue.',
+    body: 'The Uffizi has 1,500 works and a half-mile of corridor. The Accademia has the David. The Duomo has 463 steps. You cannot do all three back to back without your eyes glazing over and your honeymoon turning into a punch list. Pick the one that matters and give it real attention. Then go drink wine.'
+  },
+  'Venice': {
+    headline: 'On getting lost on purpose.',
+    body: 'Venice has 400 bridges and no logic. Your phone map will lie to you — alleys end at canals, signs point in three directions, the same square shows up twice. That\'s the point. Put the phone away after sundown. The tourists thin out around 9 PM and the city you came for shows up.'
+  },
+  'Lake Como': {
+    headline: 'On the ferry, not the car.',
+    body: 'You are not here to drive. Como has one road around the lake and it is slow, narrow, and lined with cars. The ferries are the actual transit — Bellagio, Varenna, Menaggio, Tremezzo, all linked by boat. Buy the day pass, get the upper deck, drink an Aperol. The view does the work for you.'
+  },
+  'Bologna': {
+    headline: 'On the day-trip you weren\'t planning.',
+    body: 'Bologna is half a day on the train from Florence and worth every minute of it. The food is what people show up for — tortellini, mortadella, tagliatelle the way it\'s supposed to taste. The Resistance Wall in Piazza del Nettuno is what makes you stay. Quadrilatero for lunch, Sorbetteria Castiglione before the train home.'
+  }
+};
+
 const CAT_ICONS = {
   dining: '🍝', landmark: '🏛️', hotel: '🏨',
   activity: '🎯', viewpoint: '👁️', transit: '🚂',

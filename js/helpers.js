@@ -74,3 +74,62 @@ function addDaysISO(iso, n) {
 function addTileLayer(map) {
   return L.tileLayer(CONFIG.MAP_TILE_URL, { maxZoom: CONFIG.MAP_MAX_ZOOM }).addTo(map);
 }
+
+// ── Today-screen time helpers (Up Next tile + Tonight mode) ──
+// CITY_COLORS lives in data-trip.js alongside CAT_COLORS — peer data, not a helper.
+
+// Parses 'HH:MM' as today in the user's local timezone and returns
+// minute diff from `now` (defaults to new Date()). Negative if past.
+// Returns null on parse failure.
+function minutesUntil(hhmm, now) {
+  if (!hhmm || typeof hhmm !== 'string') return null;
+  var parts = hhmm.split(':');
+  if (parts.length !== 2) return null;
+  var h = parseInt(parts[0], 10);
+  var m = parseInt(parts[1], 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  now = now || new Date();
+  var target = new Date(now);
+  target.setHours(h, m, 0, 0);
+  return Math.round((target - now) / 60000);
+}
+
+// 'in 1h 40m' / 'in 25 min' / 'now' / '40 min ago'
+function formatRelativeTime(minutes) {
+  if (minutes === null || minutes === undefined) return '';
+  if (minutes === 0) return 'now';
+  var past = minutes < 0;
+  var abs = Math.abs(minutes);
+  var suffix = past ? ' ago' : '';
+  var prefix = past ? '' : 'in ';
+  if (abs < 60) return prefix + abs + ' min' + suffix;
+  var h = Math.floor(abs / 60);
+  var m = abs % 60;
+  if (m === 0) return prefix + h + 'h' + suffix;
+  return prefix + h + 'h ' + m + 'm' + suffix;
+}
+
+// Returns { hour, minute } in Europe/Rome regardless of the user's clock.
+// Used for Tonight-mode trigger so the app doesn't flip at the wrong time
+// when QA'd from a US timezone.
+function getRomeNow(now) {
+  now = now || new Date();
+  var parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Rome',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).formatToParts(now);
+  var h = 0, m = 0;
+  parts.forEach(function(p) {
+    if (p.type === 'hour') h = parseInt(p.value, 10);
+    if (p.type === 'minute') m = parseInt(p.value, 10);
+  });
+  // Dev escape hatch — append ?tonight=1 to force evening mode on localhost.
+  if (typeof location !== 'undefined' &&
+      /[?&]tonight=1\b/.test(location.search) &&
+      (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    return { hour: 21, minute: 0 };
+  }
+  return { hour: h, minute: m };
+}

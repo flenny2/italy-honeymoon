@@ -26,8 +26,42 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/today.css">
 </head>
 <body>
+
+<!-- ═══════════════════════════════════ -->
+<!-- ICON SPRITE (Tabler-style outline)  -->
+<!-- Referenced by Hero placeholder      -->
+<!-- gradient when no photo is mapped.   -->
+<!-- ═══════════════════════════════════ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="icon-monument" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l5 8v10H7V11z"/><path d="M5 21h14"/>
+    </symbol>
+    <symbol id="icon-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 21h18M5 21V7l7-4 7 4v14"/>
+      <path d="M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/>
+    </symbol>
+    <symbol id="icon-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7"/>
+      <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7"/>
+    </symbol>
+    <symbol id="icon-train" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="3" width="16" height="16" rx="2"/>
+      <path d="M4 11h16M8 19l-2 3M16 19l2 3"/>
+      <circle cx="9" cy="15" r="0.5" fill="currentColor"/>
+      <circle cx="15" cy="15" r="0.5" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </symbol>
+    <symbol id="icon-mountain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 21l9-15 9 15z"/><path d="M8 13l4-6 4 6"/>
+    </symbol>
+  </defs>
+</svg>
 
 <!-- ═══════════════════════════════════ -->
 <!-- PAGE: TODAY                         -->
@@ -303,8 +337,12 @@
 <script src="js/data-hotels.js"></script>
 <script src="js/data-trip.js"></script>
 <script src="js/data-achievements.js"></script>
+<script src="js/data-today-plan.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/helpers.js"></script>
+<script src="js/hero-images.js"></script>
+<script src="js/today-plan.js"></script>
+<script src="js/components/verdict-pill.js"></script>
 <script src="js/router.js"></script>
 <script src="js/map-shared.js"></script>
 <script src="js/animations.js"></script>

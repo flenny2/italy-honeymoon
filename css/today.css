@@ -1,0 +1,187 @@
+/* ═══════════════════════════════════════ */
+/* Today screen — Hairline Editorial        */
+/* Tile primitive system + VerdictPill.     */
+/* Hero, status strip, plan tile, etc.      */
+/* land in subsequent stages (v11–v14).     */
+/* ═══════════════════════════════════════ */
+
+/* ── Surface + tile tokens (Today-scoped aliases for clarity) ── */
+:root {
+  --cream-surface: #FAF9F6;
+  --ink-warm:      #1A1410;
+  --hairline:      rgba(45, 41, 38, 0.10);
+  --tile-radius:   14px;
+  --tile-gap:      10px;
+  --shadow-tile:   0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Grid container ── */
+.today-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tile-gap);
+  padding: 12px;
+  background: var(--cream-surface);
+}
+
+.today-row--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--tile-gap);
+}
+
+.today-row--triple {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--tile-gap);
+}
+
+/* ── Tile base (orthogonal modifiers — never combine flat + image) ── */
+.tile {
+  border-radius: var(--tile-radius);
+  overflow: hidden;
+  position: relative;
+}
+
+.tile--flat {
+  border: 1px solid var(--hairline);
+  background: var(--cream-surface);
+  padding: 14px;
+}
+
+.tile--image {
+  box-shadow: var(--shadow-tile);
+  background-size: cover;
+  background-position: center;
+  background-color: #d4cab8;
+  color: #fff;
+}
+
+/* Bottom-up gradient on every image tile (0 → 55% black) */
+.tile--image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+}
+
+/* Inner content sits above the gradient */
+.tile--image > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Hero variants ── */
+.tile--hero {
+  min-height: 132px; /* slim default */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.tile--hero-tall {
+  min-height: 240px;
+}
+
+.tile--span-2 {
+  grid-column: 1 / -1;
+}
+
+/* ── Tonight mode (theme flip via class on .today-grid) ── */
+.today-grid--tonight {
+  background: var(--ink-warm);
+}
+
+.today-grid--tonight .tile--flat {
+  background: #251D17;
+  border-color: rgba(255, 240, 220, 0.08);
+  color: #EDE6DC;
+}
+
+/* Image tiles get an extra dim layer in Tonight mode */
+.today-grid--tonight .tile--image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 20, 16, 0.35);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════ */
+/* VerdictPill                              */
+/* ═══════════════════════════════════════ */
+
+.vp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.vp--sm {
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.vp--md {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.vp__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--warm-gray);
+}
+
+/* Ghost variant — transparent bg, dot carries the color, label inherits text */
+.vp--ghost {
+  background: transparent;
+  color: var(--espresso);
+  border: 1px solid var(--hairline);
+}
+
+/* Subtle variant — light tinted bg matching the dot hue */
+.vp--subtle {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--espresso);
+  border: 1px solid transparent;
+}
+
+/* Filled variant — solid color, white label (loud — use sparingly) */
+.vp--filled {
+  color: #fff;
+}
+
+/* Dot color per (normalized) verdict key */
+.vp--essential       .vp__dot { background: var(--rosso); }
+.vp--worth-it        .vp__dot { background: var(--verde); }
+.vp--nice-if-nearby  .vp__dot { background: var(--giallo); }
+.vp--overhyped       .vp__dot { background: var(--warm-gray); }
+.vp--hidden-gem      .vp__dot { background: var(--espresso); }
+
+/* Filled-variant background mirrors the dot */
+.vp--filled.vp--essential      { background: var(--rosso); }
+.vp--filled.vp--worth-it       { background: var(--verde); }
+.vp--filled.vp--nice-if-nearby { background: var(--giallo); color: #1A1410; }
+.vp--filled.vp--overhyped      { background: var(--warm-gray); }
+.vp--filled.vp--hidden-gem     { background: var(--espresso); }
+
+/* Tonight-mode pill tweaks — invert ghost outline + bump label brightness */
+.today-grid--tonight .vp--ghost {
+  border-color: rgba(255, 240, 220, 0.18);
+  color: #EDE6DC;
+}
+.today-grid--tonight .vp--subtle {
+  background: rgba(255, 240, 220, 0.06);
+  color: #EDE6DC;
+}

@@ -4,8 +4,36 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-05-22
-**Branch:** `main`, in sync with `origin/main` (just pushed)
+**Last updated:** 2026-05-24
+**Branch:** `main`, **v10 foundations STAGED** (not yet committed at the time of this write — Dylan to review CITY_REAL_TALK drafts in chat before commit lands).
+
+---
+
+## 2026-05-24 — Today rewrite Stage 1 / v10 (foundations)
+
+- **Locked in chat-only session before this:** Direction C (status-first dense, tile inventory) + Treatment A (Hairline Editorial — cream surface, 1px hairlines, restrained flag accents). Plan at `~/.claude/plans/foamy-foraging-candle.md` — 5 staged commits (v10–v14). User amended plan with two changes: image downscale moved into Stage 1; CITY_REAL_TALK drafted by Claude with chat preview before commit.
+- **v10 — foundations only, zero rendering change:**
+  - 11 hero photos downscaled in-place via PIL (1600px wide, JPEG q80, target <300KB): **159 MB → 2.3 MB total**. Originals backed up to `/tmp/heroes-original-backup-20260524/`. Script at `/tmp/downscale_heroes.py` (re-runnable for new sources).
+  - **New files:** `js/data-today-plan.js` (TODAY_PLAN map, starter entry Jun 15 Vatican = mockup Day 5), `js/today-plan.js` (consumers: `getTodayHeadlinePlace`, `getUpNext`, `getTomorrowHeadlinePlace`, `getPhraseOfDay`, `getTonightMode`, `getRealTalk`), `js/hero-images.js` (HERO_IMAGES registry + `getHeroBackground` resolver + placeholder fallback), `js/components/verdict-pill.js` (`renderVerdictPill` with `nice→nice-if-nearby`/`overrated→overhyped` legacy normalization at the boundary — no data migration), `css/today.css` (tile primitives + VerdictPill + `.today-grid--tonight` theme flip), `TODO-photos.md` (slot-coverage source of truth, 11 filled / 16+ missing).
+  - **Modified:** `helpers.js` (+`minutesUntil`, `formatRelativeTime`, `getRomeNow` with `?tonight=1` localhost escape hatch — leaves CITY_COLORS comment pointing to data-trip.js). `data-trip.js` (+`CITY_COLORS` with oklch+hex fallbacks alongside CAT_COLORS; +`CITY_REAL_TALK` 5-city essay map). `data-hotels.js` (+`neighborhood`, +`walk_time_min` on all 4 hotels). `data-places.js` (+optional `scheduled_time` on l1 Colosseum 09:00, l2 Vatican 08:00, l5 Pantheon 11:00, f1 Florence Duomo 09:00, f2 Uffizi 08:15 — `buildPlaceCard` ignores it). `index.html` (+inline Tabler-style SVG sprite with 6 outline icons, +`css/today.css` link, +4 new script tags in correct dependency order). `sw.js` (CACHE_NAME → v10, +5 new APP_FILES; **hero images deferred to v11** APP_FILES jump alongside Hero tile rewrite).
+- **Schema additions are non-breaking:** all new fields optional. BEFORE-phase Today still renders identically. DURING/AFTER untouched.
+- **Decisions locked this session worth remembering** (not obvious from diff):
+  - **CITY_COLORS lives in `data-trip.js`** alongside CAT_COLORS as peer data, not in helpers.js. Plan agent flagged that helpers.js is the wrong layer for trip data.
+  - **Verdict key normalization at the pill boundary, not the data layer.** 83 places keep their existing `nice`/`overrated` keys; the pill maps to `nice-if-nearby`/`overhyped` for display. Bidirectional-safe — `VERDICTS[p.verdict]` lookups everywhere else still work unchanged. Echoes [[feedback_no_schema_drift]] — retrofit at the consumer rather than mutate 83 records.
+  - **Hybrid TODAY_PLAN over pure-manual or pure-derive.** Sparse map of curated days; missing days fall through gift > venue > first-essential-in-city. No empty placeholders to manage. Echoes [[feedback_state_machine_closure]] — every state has a derivation path out.
+  - **Lookbehind regex removed** from `getRealTalk` first-sentence pull — older iOS Safari (≤16.3) chokes on `(?<=...)`. Used `match(/^[^.!?]*[.!?]/)` instead.
+  - **CITY_REAL_TALK essays drafted by Claude** (5×~55 words) and presented in chat preview before commit per Dylan's amendment. Voice modeled on Roscioli/Bologna `honest_summary` register (concrete, honest, "skip the X / this is the move").
+  - **SVG sprite inlined in index.html** rather than Tabler CDN. Offline-first promise of the PWA matters more than icon polish. 6 outline symbols (monument, building, gift, train, moon, mountain).
+- **Hero-image SW pre-cache deferred to v11 by design.** Image background-image references won't pre-cache in v10. The v11 commit adds all 11 hero images to APP_FILES alongside the Hero tile rewrite. Until then, first DURING-phase render needs network for hero images (but DURING phase is 20 days away — fine).
+- **iPhone PWA:** delete + re-add in Safari to pick up v9 → v10 cache jump.
+- **Queued — Stage 2 / v11 next session:**
+  - Hero tile rewrite — 5 states (normal slim 132, gift-day tall 240, move-day AM/PM tall 240, tonight)
+  - Priority resolver (gift today > gift tomorrow > move day > first/last in city > headline place)
+  - Italian flag 3-line stripe under city-tinted Day numeral
+  - Split `renderToday()` → `renderTodayDuring()` / `renderTodayBeforeAfter()` to bypass `.today-section` margin wrapper for the tile grid
+  - Scope `.stagger` animation to BEFORE/AFTER only
+  - Add 11 hero images to APP_FILES (`sw.js` CACHE → v11)
+- **Plan file:** `~/.claude/plans/foamy-foraging-candle.md`
 
 ---
 
@@ -111,25 +139,26 @@ Bologna ships as a separate commit on top of Path B (per Dylan's "ship Path B fi
 
 ---
 
-## What's next — Stage 5: Tonight surface (Item 10)
+## What's next
 
-**PROCESS GATE — do not skip:** start with a proposal, never implementation.
+See **2026-05-24 — Today rewrite Stage 1 / v10** above for the active staging — v11 Hero tile is next.
 
-Stage 5 builds a composed "Tonight" surface for DURING phase that consolidates current Smart Suggestion + Don't Miss picks into a single richer block. Today drops from ~11 sections to ~6 during the trip.
-
-Why this is next: it's the single highest-leverage trip-readiness item remaining; was the candidate for #1 at session open, demoted only because Path B gift work was more time-sensitive (gift dates have real-world deadlines that the Tonight surface doesn't).
-
-Files likely to touch: `today.js` (new `renderTodayTonight(phase, city)` composite + section reshuffle), `suggestions.js` (may absorb or be obsoleted), `pages.css` (new Tonight surface styling), possibly `data-trip.js` (per-day theming). Bump `CACHE_NAME` v6 → v7 on the resulting commit.
+The earlier-planned "Stage 5 Tonight surface (Item 10)" composite for DURING phase is no longer a standalone task; Tonight mode is now Stage 5 / v14 of the Today rewrite (theme flip + Tomorrow's Plan + amber pill, sharing the same DOM as the new tile grid).
 
 ---
 
-## Stages queued (revised order from this session)
+## Stages queued
 
-1. **Stage 5 — Item 10 Tonight surface** (next). See "What's next" above.
-2. **Offline / PWA reliability check** — verify v6 cache, all 7 cities' map tiles pre-cache pre-trip, fonts/CSS load in airplane mode. Target: ~7–10 days pre-departure.
-3. **Dylan's editorial pass on Bologna places** — fill in `verdict`, `honest_summary`, `best_for` for `b1`-`b5` in `data-places.js`. Manual edit; no CC dependency.
-4. **Dylan's `data-places.js` dedupe homework** (21 entries, Nathan-rec pattern). Manual edit; no CC dependency.
-5. (Defer to post-trip) **Stage 4 Dark/light theme toggle**, **Stage 6 Italian-flag color sweep**, **Stage 7 Imagery sweep**, **Item 8 Lucide icon swap**, **Item 9 place-card noise reduction**, **Item 11 Saved Places view**, **Item 12 strip multi-trip support**.
+1. **Today rewrite v10 / Stage 1** — ✅ STAGED 2026-05-24 (this session). Foundations only.
+2. **Today rewrite v11 / Stage 2 — Hero tile** (next). See top entry for scope.
+3. **Today rewrite v12 / Stage 3** — Status strip (Day X · Weather · Up Next) + Today's Plan tile + kicker composer + Day numeral. Minute-tick interval cleanup added to Router.
+4. **Today rewrite v13 / Stage 4** — Real Talk Today + Home Base + Phrasebook (🇮🇹 stamp) + Saved Places footer. Gate legacy DURING render paths.
+5. **Today rewrite v14 / Stage 5** — Tonight mode theme flip + Tomorrow's Plan derivation + amber TONIGHT pill.
+6. **Offline / PWA reliability check** — verify v14 cache, all 6 cities' map tiles pre-cache pre-trip, fonts/CSS/hero images load in airplane mode. Target ~7–10 days pre-departure (~Jun 3–6).
+7. **Dylan's `data-places.js` dedupe homework** (21 entries, Nathan-rec pattern). Manual edit; no CC dependency.
+8. (Defer to post-trip) **Image WebP encoding** (would shave another 30-40% on top of current JPEG q80 — skip until post-trip), **Item 9 place-card noise reduction**, **Item 12 strip multi-trip support**.
+
+**Obsoleted by the Hairline Editorial pass:** Stage 4 dark/light toggle (Tonight mode replaces), Stage 6 Italian-flag color sweep (architectural-only flag usage replaces), Stage 7 Imagery sweep (rolled into v10 photo work + v11 hero), Item 8 Lucide icon swap (SVG sprite + Tabler-style outline icons inlined for hero placeholders), Item 11 Saved Places view (replaced by Today footer tile in v13).
 
 **Refusal pattern if Dylan says "ok start [stage]" without seeing the plan:** push back with "let me show you the plan first."
 
