@@ -10,13 +10,29 @@ function renderToday() {
   var phase = getTripPhase();
   var city = getTodayCity();
 
+  content.innerHTML = (phase.phase === 'during')
+    ? renderTodayDuring(phase, city)
+    : renderTodayBeforeAfter(phase, city);
+}
+
+// ── DURING (Hairline Editorial tile grid — v11 Hero only; v12–v14 fill the rest) ──
+function renderTodayDuring(phase, city) {
+  return '<div class="today-grid">' +
+           renderTodayHeroDuring(phase, city) +
+           // Status strip, Today's Plan, Real Talk, Home Base, Phrasebook,
+           // Saved Places footer all land in subsequent commits.
+         '</div>';
+}
+
+// ── BEFORE / AFTER (legacy section list — unchanged) ──
+function renderTodayBeforeAfter(phase, city) {
   var sections = [
     renderTodayHero(phase, city),
     renderTodayLetter(),
     renderTodayCapsuleNudge(),
     renderTodayBooking(phase),
-    renderTodayGiftCallout(phase),
-    renderTodayCounters(phase),
+    renderTodayGiftCallout(phase),  // self-guards: '' if not DURING
+    renderTodayCounters(phase),     // self-guards: '' if not DURING
     renderTodayPhrase(),
     renderTodayGifts(city),
     renderTodayHotel(city, phase),
@@ -24,14 +40,15 @@ function renderToday() {
     renderTodayPicks(city)
   ];
 
-  content.innerHTML = '<div class="stagger">' +
+  return '<div class="stagger">' +
     sections.map(function(html) {
       return html ? '<div class="today-section">' + html + '</div>' : '';
     }).join('') + '</div>';
 }
 
-// Hero composite: typography-led for BEFORE/AFTER (names + flag stripe +
-// countdown + optional wedding pill), city-photo backdrop for DURING.
+// Hero composite — typography-led for BEFORE/AFTER (names + flag stripe +
+// countdown + optional wedding pill). DURING is now handled by
+// renderTodayHeroDuring (Hairline Editorial tile, v11+).
 // No couple photo — "more pictures = locations, not us."
 function renderTodayHero(phase, city) {
   var s = Storage.getSettings();
@@ -50,20 +67,6 @@ function renderTodayHero(phase, city) {
     '<span class="hero-flag-bar-w"></span>' +
     '<span class="hero-flag-bar-g"></span>' +
     '</div>';
-
-  // DURING — current-city photo as backdrop (Stage 6 swaps gradient for real photo)
-  if (phase.phase === 'during') {
-    var dt = phase.dayTrip;
-    var emoji = CITY_EMOJI[phase.city] || '';
-    var cityTag = emoji + ' ' + phase.city + ' · Day ' + phase.day;
-    var orientation = dt ? dt.emoji + ' ' + dt.label : 'Today in ' + phase.city;
-    return '<div class="hero-during anim-bounce-in" data-city="' + phase.city + '">' +
-      '<div class="hero-during-bg"></div>' +
-      '<div class="hero-during-overlay">' +
-      '<span class="hero-city-tag">' + cityTag + '</span>' +
-      '<div class="hero-day-orientation">' + orientation + '</div>' +
-      '</div></div>';
-  }
 
   // BEFORE / AFTER — typography-led
   var phaseClass = phase.phase === 'after' ? 'hero-type after' : 'hero-type';
@@ -367,4 +370,177 @@ function toggleSave(id, evt) {
   }
 
   showToast(p.saved ? '⭐ Saved!' : 'Unsaved');
+}
+
+// ═══════════════════════════════════════
+// DURING HERO — Hairline Editorial tile (v11)
+// Priority resolver: gift today > gift tomorrow > move day > normal headline.
+// Tonight-mode rerouting lands v14.
+// ═══════════════════════════════════════
+
+function renderTodayHeroDuring(phase, city) {
+  var state = _pickHeroState(phase);
+  switch (state.kind) {
+    case 'gift-today':    return _heroGiftToday(state.gift, city);
+    case 'gift-tomorrow': return _heroGiftTomorrow(state.gift, city);
+    case 'move-am':       return _heroMoveAM(state.from, state.to, state.transit);
+    case 'move-pm':       return _heroMovePM(state.from, state.to, state.transit);
+    default:              return _heroNormal(state.headline, city);
+  }
+}
+
+function _pickHeroState(phase) {
+  var today = phase.date;
+  var tomorrow = (typeof addDaysISO === 'function') ? addDaysISO(today, 1) : '';
+  var gifts = (typeof GIFTED_EXPERIENCES !== 'undefined') ? GIFTED_EXPERIENCES : [];
+
+  // 1. Gift today
+  for (var i = 0; i < gifts.length; i++) {
+    if (gifts[i].date === today && gifts[i].bookingStatus === 'scheduled') {
+      return { kind: 'gift-today', gift: gifts[i] };
+    }
+  }
+  // 2. Gift tomorrow
+  for (var j = 0; j < gifts.length; j++) {
+    if (gifts[j].date === tomorrow && gifts[j].bookingStatus === 'scheduled') {
+      return { kind: 'gift-tomorrow', gift: gifts[j] };
+    }
+  }
+
+  // 3. Move day — today equals a hotel's checkOut AND another hotel's checkIn.
+  // Cutoff between AM (last morning in departure) and PM (welcome to arrival)
+  // is 12:00 Europe/Rome. Hotels with adjacent stays both fire on this date.
+  var depart = null, arrive = null;
+  if (typeof HOTELS !== 'undefined') {
+    for (var cityName in HOTELS) {
+      var h = HOTELS[cityName];
+      if (h.checkOut === today) depart = cityName;
+      if (h.checkIn === today) arrive = cityName;
+    }
+  }
+  if (depart && arrive && depart !== arrive) {
+    var rome = (typeof getRomeNow === 'function') ? getRomeNow() : { hour: 12 };
+    var transit = (typeof TRANSITS !== 'undefined') ? TRANSITS[today] : null;
+    return rome.hour < 12
+      ? { kind: 'move-am', from: depart, to: arrive, transit: transit }
+      : { kind: 'move-pm', from: depart, to: arrive, transit: transit };
+  }
+
+  // 4. Normal — headline place via TODAY_PLAN > derived fallback chain.
+  var headline = (typeof getTodayHeadlinePlace === 'function') ? getTodayHeadlinePlace(today) : null;
+  return { kind: 'normal', headline: headline };
+}
+
+// ── Hero builders ──
+
+function _heroBgStyle(bgState) {
+  var bg = (typeof getHeroBackground === 'function') ? getHeroBackground(bgState) : null;
+  if (bg && bg.url) return 'background-image: url(\'' + bg.url + '\')';
+  if (bg && bg.gradient) return 'background-color: ' + bg.gradient;
+  return 'background-color: #7D7882';
+}
+
+function _heroPlaceholderIcon(bgState) {
+  var bg = (typeof getHeroBackground === 'function') ? getHeroBackground(bgState) : null;
+  if (!bg || bg.url) return '';
+  return '<svg class="hero-placeholder-icon" aria-hidden="true"><use href="#' + bg.icon + '"/></svg>';
+}
+
+function _cityLabel(city) {
+  return _cityLabelMixed(city).toUpperCase();
+}
+
+// Italian display name in title case ('Firenze' not 'Florence'). Used for
+// move-day PM "Benvenuti a Firenze" title where the kicker is uppercased
+// but the title needs proper-case Italian.
+function _cityLabelMixed(city) {
+  return (typeof CITY_COLORS !== 'undefined' && CITY_COLORS[city] && CITY_COLORS[city].label)
+    ? CITY_COLORS[city].label
+    : (city || '');
+}
+
+function _heroNormal(headline, city) {
+  var bgState = headline && headline.place
+    ? { kind: 'place', id: headline.id, city: city, category: headline.place.category }
+    : { kind: 'place', id: '', city: city, category: 'landmark' };
+  var title = (headline && headline.place) ? headline.place.name : 'Today in ' + city;
+  return '<div class="tile tile--image tile--hero" style="' + _heroBgStyle(bgState) + '">' +
+           _heroPlaceholderIcon(bgState) +
+           '<div class="hero-kicker">TODAY · ' + _cityLabel(city) + '</div>' +
+           '<h1 class="hero-title">' + title + '</h1>' +
+         '</div>';
+}
+
+function _heroGiftToday(gift, city) {
+  // gift.id is already namespaced ('gift-1'). Strip the 'gift-' prefix before
+  // passing so getHeroBackground composes 'gift-1' (matches HERO_IMAGES key),
+  // not 'gift-gift-1' (double-prefix miss → falls through to city-default).
+  var bareId = (gift.id || '').replace(/^gift-/, '');
+  var bgState = { kind: 'gift', id: bareId, city: city };
+  var title = gift.heroTitle || gift.title;
+  var subtitle = gift.heroSubtitle || '';
+  var kicker = 'A GIFT' + (gift.time ? ' · OPENS ' + gift.time : ' · TODAY');
+  return '<div class="tile tile--image tile--hero tile--hero-tall" style="' + _heroBgStyle(bgState) + '">' +
+           _heroPlaceholderIcon(bgState) +
+           '<div class="hero-kicker">' + kicker + '</div>' +
+           '<h1 class="hero-title">' + title + '</h1>' +
+           (subtitle ? '<div class="hero-body">' + subtitle + '</div>' : '') +
+         '</div>';
+}
+
+function _heroGiftTomorrow(gift, city) {
+  // See _heroGiftToday — same prefix-strip rationale.
+  var bareId = (gift.id || '').replace(/^gift-/, '');
+  var bgState = { kind: 'gift', id: bareId, city: city };
+  var title = 'Tomorrow: ' + (gift.heroTitle || gift.title);
+  var kicker = 'A GIFT' + (gift.time ? ' · TOMORROW ' + gift.time : ' · TOMORROW');
+  return '<div class="tile tile--image tile--hero" style="' + _heroBgStyle(bgState) + '">' +
+           _heroPlaceholderIcon(bgState) +
+           '<div class="hero-kicker">' + kicker + '</div>' +
+           '<h1 class="hero-title">' + title + '</h1>' +
+         '</div>';
+}
+
+// Slug for HERO_IMAGES move-day keys: Italian lowercase city name.
+// 'Rome' → 'roma', 'Florence' → 'firenze', 'Lake Como' → 'como', etc.
+function _moveSlug(city) {
+  return _cityLabelMixed(city).toLowerCase();
+}
+
+function _heroMoveAM(from, to, transit) {
+  // move-{from-slug}-{to-slug}-am, e.g. 'move-roma-firenze-am'.
+  // city = `from` so city-default fallback shows departure (we're leaving Rome).
+  var bgState = {
+    kind: 'move',
+    id: _moveSlug(from) + '-' + _moveSlug(to) + '-am',
+    city: from,
+    category: 'landmark'
+  };
+  var kicker = 'MOVE DAY · ' + _cityLabel(from) + ' → ' + _cityLabel(to);
+  var body = (transit && transit.train) ? transit.train : '';
+  return '<div class="tile tile--image tile--hero tile--hero-tall" style="' + _heroBgStyle(bgState) + '">' +
+           _heroPlaceholderIcon(bgState) +
+           '<div class="hero-kicker">' + kicker + '</div>' +
+           '<h1 class="hero-title">Last morning in ' + from + '</h1>' +
+           (body ? '<div class="hero-body">' + body + '</div>' : '') +
+         '</div>';
+}
+
+function _heroMovePM(from, to, transit) {
+  // move-{from-slug}-{to-slug}-pm. city = `to` so city-default fallback
+  // shows arrival (we're now in Florence).
+  var bgState = {
+    kind: 'move',
+    id: _moveSlug(from) + '-' + _moveSlug(to) + '-pm',
+    city: to,
+    category: 'landmark'
+  };
+  var kicker = 'WELCOME · ' + _cityLabel(to);
+  var body = (transit && transit.arrivalNote) ? transit.arrivalNote : '';
+  return '<div class="tile tile--image tile--hero tile--hero-tall" style="' + _heroBgStyle(bgState) + '">' +
+           _heroPlaceholderIcon(bgState) +
+           '<div class="hero-kicker">' + kicker + '</div>' +
+           '<h1 class="hero-title">Benvenuti a ' + _cityLabelMixed(to) + '</h1>' +
+           (body ? '<div class="hero-body">' + body + '</div>' : '') +
+         '</div>';
 }

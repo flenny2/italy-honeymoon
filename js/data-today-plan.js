@@ -35,3 +35,22 @@ var TODAY_PLAN = {
   }
   // Additional curated days — add as you confirm bookings + the per-day plan.
 };
+
+// ═══════════════════════════════════════
+// TRANSITS — move-day train logistics + arrival guidance.
+// Sparse map keyed by ISO date. Move-day Hero (v11+) pulls
+// `train` for AM (before 12:00 Europe/Rome) and `arrivalNote`
+// for PM. Empty values render the Hero without the body line.
+//
+// Shape:
+//   TRANSITS['YYYY-MM-DD'] = {
+//     train:       'Frecciarossa 9012 · 11:20 Termini · Plat. 4 · coach 4, seats 8A/8B',
+//     arrivalNote: 'Drop bags at Hotel X. Trattoria Y for late lunch — N min walk.'
+//   };
+// ═══════════════════════════════════════
+
+var TRANSITS = {
+  // '2026-06-18': { train: '', arrivalNote: '' },  // Rome → Florence
+  // '2026-06-22': { train: '', arrivalNote: '' },  // Florence → Lake Como
+  // '2026-06-24': { train: '', arrivalNote: '' }   // Lake Como → Venice
+};

@@ -5,7 +5,41 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-24
-**Branch:** `main`, **v10 foundations STAGED** (not yet committed at the time of this write — Dylan to review CITY_REAL_TALK drafts in chat before commit lands).
+**Branch:** `main`. v10 shipped (commit `30e529a`). **v11 staged** at the time of this write — Dylan to approve commit + push.
+
+---
+
+## 2026-05-24 — Today rewrite Stage 2 / v11 (Hero tile)
+
+- **v11 — Hero tile lands for DURING phase.** State matrix renders all 5 daytime states. Tonight-mode flip deferred to v14.
+- **`renderToday()` split:**
+  - `renderTodayDuring(phase, city)` composes the new `.today-grid` wrapper (v11: Hero tile only; v12–v14 fill the rest).
+  - `renderTodayBeforeAfter(phase, city)` keeps the legacy 11-section `.stagger`/`.today-section` composition unchanged. DURING-guarded renderers (counters, gift callout) self-quiet for BEFORE/AFTER.
+  - **No regression** to BEFORE/AFTER paths — verified via smoke test + structural check.
+- **`renderTodayHeroDuring(phase, city)`** dispatches to one of 5 builders via `_pickHeroState(phase)` priority resolver:
+  1. **Gift today** (scheduled gift with date === today) → tall 240, kicker "A GIFT · OPENS HH:MM", title from `gift.heroTitle || gift.title`, optional `heroSubtitle`.
+  2. **Gift tomorrow** → slim 132, kicker "A GIFT · TOMORROW HH:MM", title "Tomorrow: {gift}".
+  3. **Move day AM** (today equals some hotel's checkOut AND another's checkIn; Europe/Rome hour < 12) → tall 240, kicker "MOVE DAY · ROMA → FIRENZE", title "Last morning in [English departure]", optional body from `TRANSITS[date].train`.
+  4. **Move day PM** (same conditions, hour ≥ 12) → tall 240, kicker "WELCOME · FIRENZE", title "Benvenuti a [Italian arrival]" (uses `CITY_COLORS[city].label`), optional body from `TRANSITS[date].arrivalNote`.
+  5. **Normal day** → slim 132, kicker "TODAY · ROMA", title from `getTodayHeadlinePlace(date)` (manual `TODAY_PLAN` > derived fallback chain).
+- **CSS in `css/today.css`:** `.hero-kicker` (12px DM Sans uppercase letter-spacing +0.12em), `.hero-title` (Playfair 32px roman with text-shadow), `.hero-body` (14px light), `.hero-placeholder-icon` (only when no photo mapped). Plus Day numeral typography (`.day-numeral-*`) staged for v12 DOM consumption. Plus `.flag-stripe-3` 3-line Italian flag.
+- **`TRANSITS` const added** to `data-today-plan.js` — sparse map keyed by ISO date. Empty by default; Dylan fills in train numbers + arrival notes as confirmations land. Move-day Hero renders without the body line if absent.
+- **Removed:** DURING branch from legacy `renderTodayHero`. Now only handles BEFORE/AFTER typography hero. Legacy `.hero-during*` CSS in `pages.css` becomes orphan — left in place, removed in a later cleanup pass.
+- **Italian display names:** kicker uses `CITY_COLORS[city].label.toUpperCase()` (ROMA, FIRENZE, COMO, VENEZIA, BOLOGNA). "Benvenuti a {city}" title uses the mixed-case label (Firenze, not Florence). "Last morning in {city}" stays English on purpose — editorial asymmetry (English farewell, Italian welcome).
+- **`sw.js` CACHE → v11**, +11 hero photos in APP_FILES so first DURING render works offline.
+- **Decisions worth remembering** (not obvious from the diff):
+  - **Asymmetric move-day language** (English on AM departure title, Italian on PM arrival title) is intentional editorial. Don't normalize.
+  - **`gift.heroTitle` / `gift.heroSubtitle` are optional schema additions** — non-breaking. Default to `gift.title` if absent. Adds room for the curated "Buon anniversario, amore" tagline the mockup shows without forcing it.
+  - **Move-day cutoff is hard 12:00 Europe/Rome.** Could be parameterized later via `TRANSITS[date].departHour`. For now, noon is reasonable for the 3 Frecciarossa transitions on this trip.
+  - **Day numeral CSS in v11, Day numeral DOM in v12.** Splitting CSS from DOM lets v11 ship cleanly and v12 just wire the markup.
+- **State matrix verified end-to-end** via `/tmp/v11_smoke.js` — all 5 Hero states render correct photo/kicker/title/body. BEFORE-phase regression check passes.
+- **iPhone PWA:** delete + re-add in Safari to pick up v10 → v11 cache jump.
+- **Queued — Stage 3 / v12 next session:**
+  - Status strip: Day X / 14 tile (consumes the Day numeral CSS from v11) + Weather tile + Up Next tile (live "in 1h 40m" counter)
+  - Today's Plan tile with image background + kicker composer (`OPEN · ENTRY · PRE-BOOKED` from hours_close + booking + getEntryStatus)
+  - VerdictPill renders in Today's Plan tile when headline place has a verdict
+  - Minute-tick `setInterval(renderToday, 60000)` with Router cleanup hook for Up Next live count
+- **Plan file:** `~/.claude/plans/foamy-foraging-candle.md`
 
 ---
 
@@ -149,8 +183,8 @@ The earlier-planned "Stage 5 Tonight surface (Item 10)" composite for DURING pha
 
 ## Stages queued
 
-1. **Today rewrite v10 / Stage 1** — ✅ STAGED 2026-05-24 (this session). Foundations only.
-2. **Today rewrite v11 / Stage 2 — Hero tile** (next). See top entry for scope.
+1. **Today rewrite v10 / Stage 1** — ✅ SHIPPED 2026-05-24 (commit `30e529a`). Foundations only.
+2. **Today rewrite v11 / Stage 2 — Hero tile** — ✅ STAGED 2026-05-24 (this session). DURING-phase Hero with 5-state matrix.
 3. **Today rewrite v12 / Stage 3** — Status strip (Day X · Weather · Up Next) + Today's Plan tile + kicker composer + Day numeral. Minute-tick interval cleanup added to Router.
 4. **Today rewrite v13 / Stage 4** — Real Talk Today + Home Base + Phrasebook (🇮🇹 stamp) + Saved Places footer. Gate legacy DURING render paths.
 5. **Today rewrite v14 / Stage 5** — Tonight mode theme flip + Tomorrow's Plan derivation + amber TONIGHT pill.

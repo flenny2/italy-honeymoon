@@ -36,10 +36,16 @@ These slots will render the gradient placeholder until photos drop in.
 - ⊘ `gift-2` — Venice gondola serenade. Suggest: gondola at dusk on a quiet canal, lantern lit.
 - ⊘ `gift-3` — Rome pasta-making class. Suggest: hands working dough on a wooden counter, warm kitchen light.
 
-### Move days (one per cross-city transit)
-- ⊘ `move-2026-06-18` — Rome → Florence (Jun 18). Frecciarossa interior or Termini platform morning shot.
-- ⊘ `move-2026-06-22` — Florence → Lake Como (Jun 22). Train carriage with countryside, or Como ferry terminal.
-- ⊘ `move-2026-06-24` — Lake Como → Venice (Jun 24). Venice arrival — Santa Lucia bridge view onto canal.
+### Move days (AM departure + PM arrival pair per cross-city transit)
+
+Slot key convention: `move-{italian-from}-{italian-to}-{am|pm}` (Italian lowercase city slugs — `roma`, `firenze`, `como`, `venezia`, `bologna`). Until supplied, AM falls back to the departure city's default photo and PM falls back to the arrival city's default — acceptable but not ideal.
+
+- ⊘ `move-roma-firenze-am` — Rome → Florence morning (Jun 18). Suggest: Termini platform morning light, Frecciarossa exterior, or Rome streetscape from cab window.
+- ⊘ `move-roma-firenze-pm` — Florence arrival (Jun 18). Suggest: Florence Duomo morning, S.M.N. concourse exit, or Oltrarno alley heading to the hotel.
+- ⊘ `move-firenze-como-am` — Florence → Lake Como morning (Jun 22). Suggest: S.M.N. departure, Tuscan countryside through the train window.
+- ⊘ `move-firenze-como-pm` — Lake Como arrival (Jun 22). Suggest: Como Centrale exit, first lake view from the funicular or hotel terrace.
+- ⊘ `move-como-venezia-am` — Lake Como → Venice morning (Jun 24). Suggest: Como Centrale platform, last lake glimpse from train.
+- ⊘ `move-como-venezia-pm` — Venice arrival (Jun 24). Suggest: Santa Lucia bridge view onto the Grand Canal, vaporetto approach to Dorsoduro.
 
 ### City defaults — additional cities
 - ⊘ `city-default-Bologna` — Bologna porticoes or Piazza Maggiore. Used on Jun 19 day-trip.

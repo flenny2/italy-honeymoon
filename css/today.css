@@ -185,3 +185,130 @@
   background: rgba(255, 240, 220, 0.06);
   color: #EDE6DC;
 }
+
+/* ═══════════════════════════════════════ */
+/* Hero tile content (v11)                  */
+/* Kicker (eyebrow) + title + optional body */
+/* All on image background, light text.     */
+/* ═══════════════════════════════════════ */
+
+.hero-kicker {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.92);
+  margin-bottom: 6px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 400;  /* roman per spec, not italic */
+  line-height: 1.1;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.01em;
+  max-width: 92%;
+}
+
+.hero-body {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.88);
+  margin-top: 10px;
+  line-height: 1.45;
+  max-width: 92%;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Placeholder icon shown only when no hero photo is mapped. */
+.hero-placeholder-icon {
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.28);
+}
+
+/* ═══════════════════════════════════════ */
+/* Day numeral typography (v11 CSS, v12     */
+/* DOM). Playfair italic, city-tinted on    */
+/* cream surface, 4px color bar underneath. */
+/* ═══════════════════════════════════════ */
+
+.day-numeral-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.day-numeral-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--warm-gray);
+}
+
+.day-numeral-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.day-numeral-big {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 1;
+  color: var(--espresso);
+}
+
+.day-numeral-of {
+  font-size: 13px;
+  color: var(--warm-gray);
+  font-weight: 500;
+}
+
+.day-numeral-city {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 2px;
+  /* city tint applied inline via style="color:..." */
+}
+
+.day-numeral-bar {
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  margin-top: 4px;
+  /* city color applied inline via style="background:..." */
+}
+
+/* ═══════════════════════════════════════ */
+/* 3-line Italian flag stripe (Day tile     */
+/* and other flag-architectural use sites). */
+/* ═══════════════════════════════════════ */
+
+.flag-stripe-3 {
+  display: flex;
+  flex-direction: column;
+  width: 28px;
+  margin-top: 6px;
+}
+.flag-stripe-3 > span {
+  display: block;
+  height: 2px;
+  width: 100%;
+}
+.flag-stripe-3-r { background: var(--rosso); }
+.flag-stripe-3-w { background: #FAF7F0; }
+.flag-stripe-3-g { background: var(--verde); }

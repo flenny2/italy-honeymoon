@@ -3,7 +3,7 @@
 // Caches all app assets + map tiles
 // ═══════════════════════════════════════
 
-var CACHE_NAME = 'italy-honeymoon-v10';
+var CACHE_NAME = 'italy-honeymoon-v11';
 
 // All app files to pre-cache on install
 var APP_FILES = [
@@ -62,6 +62,18 @@ var APP_FILES = [
   '/js/settings.js',
   '/js/counters.js',
   '/js/app.js',
+  // Hero photos (pre-cache so first DURING-phase render works offline).
+  '/img/heroes/colosseum.jpg',
+  '/img/heroes/sistine-chapel.jpg',
+  '/img/heroes/st-peters-basilica.jpg',
+  '/img/heroes/pantheon.jpg',
+  '/img/heroes/roman-forum.jpg',
+  '/img/heroes/rome-skyline.jpg',
+  '/img/heroes/florence-duomo.jpg',
+  '/img/heroes/lake-como.jpg',
+  '/img/heroes/venice-grand-canal.jpg',
+  '/img/heroes/palatine-hill.jpg',
+  '/img/heroes/vatican-statue.jpg',
 ];
 
 // Install: pre-cache all app files
