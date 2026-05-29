@@ -46,6 +46,12 @@ var Router = (function() {
       route = routes['today'];
     }
 
+    // Tear down Today's live Up Next minute-tick when leaving the page, so it
+    // doesn't keep firing while on Map/Journal/etc. renderToday reinstalls it.
+    if (page !== 'today' && typeof _clearTodayTick === 'function') {
+      _clearTodayTick();
+    }
+
     // Hide all pages
     var pages = document.querySelectorAll('.page');
     for (var i = 0; i < pages.length; i++) {

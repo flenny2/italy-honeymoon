@@ -4,8 +4,39 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-05-24
-**Branch:** `main`. v10 shipped (commit `30e529a`). **v11 staged** at the time of this write — Dylan to approve commit + push.
+**Last updated:** 2026-05-28
+**Branch:** `main`. v10 (`30e529a`) + v11 (`1912528`) shipped. **v12 staged** at the time of this write — Status strip + Today's Plan + minute-tick + URL-param mock harness. Manual v11 visual QA was skipped; a single combined v11+v12 pass runs next, driven by the new `?date=` params.
+
+---
+
+## 2026-05-28 — Today rewrite Stage 3 / v12 (Status strip + Today's Plan + mock harness)
+
+- **`renderTodayDuring` now composes 3 tiles:** Hero → Status strip → Today's Plan. Real Talk / Home Base / Phrasebook / Saved footer still land in v13. Hero state is resolved **once** (`_pickHeroState(phase)`) and threaded into both the Hero builder and the Plan tile so they never disagree.
+- **URL-param mock harness (new scope, localhost-only — like `?tonight=1`):** `?date=YYYY-MM-DD[THH:MM]&phase=during`.
+  - `_readMockParams()` (helpers.js) — hostname-gated (`localhost`/`127.0.0.1`), returns `{date, rome, forcePhase}`. Off-localhost → all null, so production is untouched.
+  - `getTripPhase()` (data-trip.js) — uses the mock date when present; `?phase=during` forces a DURING object even for an out-of-window date (forward-mocking before the trip).
+  - `getRomeNow()` (helpers.js) — the `THH:MM` suffix becomes the Rome clock, so `?date=2026-06-18T09:00` deterministically hits move-AM and `T15:00` hits move-PM. `?tonight=1` still works as a quick force-evening toggle.
+  - **This retires the lossy 3-file-edit QA dance.** Use it for every remaining stage and to preview tomorrow's hero during the trip.
+- **Status strip** (`renderTodayStatusStrip` → `.today-row--triple`, 3 flat tiles):
+  - **Day** tile — consumes the `.day-numeral-*` + `.flag-stripe-3` CSS staged in v11. `phase.day` over `TRIP.totalDays` (dynamic). City label tinted via `CITY_COLORS[city].hex`; day-trip days show the day-trip label.
+  - **Weather** tile — **offline stub**, NOT a live forecast: new `WEATHER_TYPICAL` map in data-trip.js (per-city June climatology), labeled `TYPICAL JUNE` so it never reads as real-time. A real forecast stays out of scope (needs an API → breaks offline-first).
+  - **Up Next** tile — `getUpNext(date, _todayNow())` → time + `formatRelativeTime` ("in 1h 40m"); null → "Free time". Wrapper carries `id="today-upnext"` for the minute-tick.
+- **Today's Plan** tile (`renderTodayPlanTile`, `.tile--span-2`) — **conditional image (Dylan-confirmed):**
+  - **Normal day** → flat (no photo): the Hero already shows this place. Renders eyebrow + VerdictPill + name + time + composed kicker + `best_for`.
+  - **Gift/move day** → image of the day's first *real place to visit* (`_planPlaceGiftMove`, excludes the gift's `linkedPlaces`), so two identical photos never stack.
+  - **Kicker composer** (`_composePlanKicker`): `OPEN`/`OPENS HH:MM`/`CLOSED` (from `hours_open`/`hours_close` vs the Rome clock) · category word (`_kickerFromCategory`) · `PRE-BOOKED` (`isPlaceBooked`). A manual `TODAY_PLAN[date].headline.kicker` wins **verbatim**.
+- **Minute-tick** — `_installTodayTick()` runs `_refreshUpNext()` every 60s, rewriting **only** `#today-upnext` (no full re-render → scroll position + in-place star-save survive). Installed only on the DURING path; `_clearTodayTick()` fires on BEFORE/AFTER render and in `Router.handleRoute` when leaving Today (no leak onto Map/Journal).
+- **Plan name is DM Sans, not Playfair** — Playfair stays reserved for Hero title / Real Talk headline / Day numeral per the locked type discipline.
+- **`sw.js` CACHE → v12.** No new files this stage (JS/CSS edits only) — no APP_FILES change.
+- **Verified:** `/tmp/v12_smoke.js` — 22/22 (mock-param parse + gating, getTripPhase mock/force, getUpNext future/past edge, open-segment OPEN/OPENS/CLOSED, kicker composer manual + derived, relative-time format). `node --check` on all 4 edited JS files; local server serves all assets 200. **Real-browser visual QA still pending** (Dylan's combined v11+v12 pass via the new params).
+- **Decisions worth remembering** (not obvious from the diff):
+  - **Plan name deliberately NOT Playfair** — keeps the ≥22px Playfair allowance to Hero/Real-Talk/Day-numeral only.
+  - **Place hours store single-digit** (`"8:00"`), so the kicker reads `OPENS 8:00` — intentional, matches the source data; don't zero-pad.
+  - **`_todayNow()` honors the mock clock** so Up Next math matches the previewed scenario in QA; real usage (device in Rome TZ) is unaffected.
+  - **Conditional-image rule** keys on Hero kind: normal → flat, gift/move → image of a *distinct* place. Avoids the same-photo stack the locked inventory would otherwise produce.
+- **iPhone PWA:** delete + re-add in Safari to pick up v11 → v12 cache jump.
+- **Queued — Stage 4 / v13 next session:** Real Talk tile (`getRealTalk` 3-step fallback) + Home Base + Phrasebook (🇮🇹 stamp) + Saved Places footer; gate any remaining legacy DURING paths to BEFORE/AFTER only.
+- **Plan file:** `~/.claude/plans/foamy-foraging-candle.md` (v12 detail section appended).
 
 ---
 

@@ -312,3 +312,146 @@
 .flag-stripe-3-r { background: var(--rosso); }
 .flag-stripe-3-w { background: #FAF7F0; }
 .flag-stripe-3-g { background: var(--verde); }
+
+/* ═══════════════════════════════════════ */
+/* Status strip (v12) — Day · Weather ·     */
+/* Up Next. Three equal flat tiles.         */
+/* ═══════════════════════════════════════ */
+
+/* Equal-height tiles, content stacked from the top. */
+.today-row--triple > .tile {
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Shared small eyebrow label for weather + up-next tiles. */
+.status-tile-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--warm-gray);
+}
+
+/* Weather (offline stub — typical-June climatology, never Playfair) */
+.weather-temp {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--espresso);
+  margin-top: auto;
+}
+.weather-lo {
+  font-size: 11px;
+  color: var(--warm-gray);
+}
+
+/* Up Next — live counter (refreshed in place by the minute-tick) */
+.upnext-time {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--espresso);
+  margin-top: auto;
+}
+.upnext-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-warm);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.upnext-rel {
+  font-size: 11px;
+  color: var(--warm-gray);
+}
+.upnext-empty {
+  font-size: 13px;
+  color: var(--warm-gray);
+  margin-top: auto;
+}
+
+/* ═══════════════════════════════════════ */
+/* Today's Plan tile (v12) — full-width.    */
+/* Flat on normal days, image on gift/move. */
+/* ═══════════════════════════════════════ */
+
+.plan-tile .plan-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--warm-gray);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-headline-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* Plan name is NOT Playfair (Playfair is reserved for Hero/Real Talk/Day numeral). */
+.plan-name {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.2;
+  color: var(--ink-warm);
+  margin: 0;
+}
+
+.plan-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warm-gray);
+  white-space: nowrap;
+}
+
+.plan-kicker {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--espresso);
+}
+
+.plan-bestfor {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--warm-gray);
+}
+
+/* Image variant — content bottom-aligned over the gradient, light text. */
+.plan-tile--image {
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+}
+.plan-tile--image .plan-name {
+  color: #fff;
+}
+.plan-tile--image .plan-eyebrow,
+.plan-tile--image .plan-kicker,
+.plan-tile--image .plan-time {
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.plan-tile--image .plan-name {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}

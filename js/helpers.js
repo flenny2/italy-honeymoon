@@ -109,11 +109,39 @@ function formatRelativeTime(minutes) {
   return prefix + h + 'h ' + m + 'm' + suffix;
 }
 
+// Localhost-only mock harness for visual QA (and trip-time "preview tomorrow").
+//   ?date=YYYY-MM-DD[THH:MM]&phase=during
+// Only honored when served from localhost/127.0.0.1, so production traffic is
+// never affected. Drives getTripPhase() (mock date + forced phase) and
+// getRomeNow() (the optional THH:MM clock, which decides move-AM vs move-PM and
+// Tonight mode). Supersedes the older ?tonight=1 flag for everything except a
+// quick force-evening toggle. Returns all-null off-localhost or on no/garbled input.
+function _readMockParams() {
+  var off = { date: null, rome: null, forcePhase: null };
+  if (typeof location === 'undefined') return off;
+  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return off;
+  var sp;
+  try { sp = new URLSearchParams(location.search); } catch (e) { return off; }
+  var raw = sp.get('date');
+  var date = null, rome = null;
+  if (raw) {
+    var m = raw.match(/^(\d{4}-\d{2}-\d{2})(?:T(\d{1,2}):(\d{2}))?$/);
+    if (m) {
+      date = m[1];
+      if (m[2] !== undefined) rome = { hour: parseInt(m[2], 10), minute: parseInt(m[3], 10) };
+    }
+  }
+  return { date: date, rome: rome, forcePhase: (sp.get('phase') === 'during') ? 'during' : null };
+}
+
 // Returns { hour, minute } in Europe/Rome regardless of the user's clock.
 // Used for Tonight-mode trigger so the app doesn't flip at the wrong time
 // when QA'd from a US timezone.
 function getRomeNow(now) {
   now = now || new Date();
+  // Localhost mock clock (?date=…THH:MM) wins so move-AM/PM + Tonight are deterministic in QA.
+  var mock = (typeof _readMockParams === 'function') ? _readMockParams() : null;
+  if (mock && mock.rome) return mock.rome;
   var parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/Rome',
     hour: '2-digit',

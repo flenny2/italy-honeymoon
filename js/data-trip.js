@@ -71,6 +71,20 @@ const CITY_COLORS = {
   'Bologna':   { oklch: 'oklch(0.48 0.12 25)',  hex: '#92492A', label: 'Bologna' }
 };
 
+// Typical-June climatology per city — an OFFLINE STUB for the Status strip
+// weather tile, NOT a live forecast (a real forecast needs an API, which breaks
+// the offline-first promise). Labeled "TYPICAL JUNE" in the UI so it never reads
+// as a real-time reading. Keys match phase.city / day-trip labels exactly.
+// Temps are °C seasonal averages.
+const WEATHER_TYPICAL = {
+  'Rome':      { hi: 28, lo: 17, icon: '☀️' },
+  'Florence':  { hi: 29, lo: 16, icon: '☀️' },
+  'Bologna':   { hi: 28, lo: 17, icon: '⛅' },
+  'Tuscany':   { hi: 28, lo: 15, icon: '☀️' },
+  'Lake Como': { hi: 26, lo: 15, icon: '⛅' },
+  'Venice':    { hi: 26, lo: 18, icon: '⛅' }
+};
+
 // Real Talk · Today — per-city evergreen essay.
 // Final fallback in getRealTalk()'s 3-step chain:
 //   1) TODAY_PLAN[date].headline.realTalk  (per-day override)
@@ -187,23 +201,37 @@ const GIFTED_EXPERIENCES = [
 // ═══════════════════════════════════════
 
 function getTripPhase() {
-  const now = new Date();
+  // Localhost ?date= override (see _readMockParams in helpers.js) lets QA jump to
+  // any trip day; null/off-localhost falls back to the real clock.
+  const mock = (typeof _readMockParams === 'function') ? _readMockParams() : null;
+  const now = (mock && mock.date) ? new Date(mock.date + 'T00:00:00') : new Date();
   now.setHours(0, 0, 0, 0);
   const start = new Date(TRIP.startDate);
   const end = new Date(TRIP.endDate);
 
+  let result;
   if (now < start) {
     const diff = Math.ceil((start - now) / (1000 * 60 * 60 * 24));
-    return { phase: 'before', daysUntil: diff };
+    result = { phase: 'before', daysUntil: diff };
   } else if (now <= end) {
     const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
     const today = TRIP.schedule[diff] || TRIP.schedule[TRIP.schedule.length - 1];
     const dayTrip = TRIP.dayTrips[today.date] || null;
-    return { phase: 'during', day: today.day, city: today.city, date: today.date, dayTrip: dayTrip };
+    result = { phase: 'during', day: today.day, city: today.city, date: today.date, dayTrip: dayTrip };
   } else {
     const diff = Math.ceil((now - end) / (1000 * 60 * 60 * 24));
-    return { phase: 'after', daysSince: diff };
+    result = { phase: 'after', daysSince: diff };
   }
+
+  // Localhost ?phase=during override — force a DURING object even when the date
+  // lands outside the trip window, for forward-mocking before the trip starts.
+  if (mock && mock.forcePhase === 'during' && result.phase !== 'during') {
+    const iso = mock.date || TRIP.schedule[0].date;
+    const entry = TRIP.schedule.find(s => s.date === iso) || TRIP.schedule[0];
+    result = { phase: 'during', day: entry.day, city: entry.city, date: entry.date,
+               dayTrip: TRIP.dayTrips[entry.date] || null };
+  }
+  return result;
 }
 
 function getTodayCity() {

@@ -10,17 +10,25 @@ function renderToday() {
   var phase = getTripPhase();
   var city = getTodayCity();
 
-  content.innerHTML = (phase.phase === 'during')
-    ? renderTodayDuring(phase, city)
-    : renderTodayBeforeAfter(phase, city);
+  if (phase.phase === 'during') {
+    content.innerHTML = renderTodayDuring(phase, city);
+    _installTodayTick();              // live Up Next counter (during only)
+  } else {
+    content.innerHTML = renderTodayBeforeAfter(phase, city);
+    _clearTodayTick();                // no tick on before/after
+  }
 }
 
-// ── DURING (Hairline Editorial tile grid — v11 Hero only; v12–v14 fill the rest) ──
+// ── DURING (Hairline Editorial tile grid — v11 Hero + v12 status strip & plan) ──
 function renderTodayDuring(phase, city) {
+  // Resolve the Hero state ONCE so the Plan tile knows what the Hero already
+  // shows (avoids stacking two identical photos on a normal day).
+  var heroState = _pickHeroState(phase);
   return '<div class="today-grid">' +
-           renderTodayHeroDuring(phase, city) +
-           // Status strip, Today's Plan, Real Talk, Home Base, Phrasebook,
-           // Saved Places footer all land in subsequent commits.
+           renderTodayHeroDuring(phase, city, heroState) +
+           renderTodayStatusStrip(phase, city) +
+           renderTodayPlanTile(phase, city, heroState) +
+           // Real Talk, Home Base, Phrasebook, Saved Places footer land in v13.
          '</div>';
 }
 
@@ -378,8 +386,8 @@ function toggleSave(id, evt) {
 // Tonight-mode rerouting lands v14.
 // ═══════════════════════════════════════
 
-function renderTodayHeroDuring(phase, city) {
-  var state = _pickHeroState(phase);
+function renderTodayHeroDuring(phase, city, state) {
+  state = state || _pickHeroState(phase);
   switch (state.kind) {
     case 'gift-today':    return _heroGiftToday(state.gift, city);
     case 'gift-tomorrow': return _heroGiftTomorrow(state.gift, city);
@@ -543,4 +551,205 @@ function _heroMovePM(from, to, transit) {
            '<h1 class="hero-title">Benvenuti a ' + _cityLabelMixed(to) + '</h1>' +
            (body ? '<div class="hero-body">' + body + '</div>' : '') +
          '</div>';
+}
+
+// ═══════════════════════════════════════
+// STATUS STRIP (v12) — Day · Weather · Up Next, 3 equal flat tiles.
+// ═══════════════════════════════════════
+
+function renderTodayStatusStrip(phase, city) {
+  return '<div class="today-row--triple">' +
+           _statusDayTile(phase) +
+           _statusWeatherTile(phase) +
+           _statusUpNextTile(phase) +
+         '</div>';
+}
+
+// Day X / N — Playfair italic numeral, city-tinted label, 3-line flag stripe.
+function _statusDayTile(phase) {
+  var tint = (typeof CITY_COLORS !== 'undefined' && CITY_COLORS[phase.city])
+    ? CITY_COLORS[phase.city].hex : '#42404B';
+  var total = (typeof TRIP !== 'undefined')
+    ? (TRIP.totalDays || (TRIP.schedule ? TRIP.schedule.length : '')) : '';
+  var cityLine = phase.dayTrip ? phase.dayTrip.label : phase.city;
+  return '<div class="tile tile--flat day-numeral-tile">' +
+           '<div class="day-numeral-label">DAY</div>' +
+           '<div class="day-numeral-row">' +
+             '<span class="day-numeral-big">' + phase.day + '</span>' +
+             '<span class="day-numeral-of">/ ' + total + '</span>' +
+           '</div>' +
+           '<div class="day-numeral-city" style="color:' + tint + '">' + cityLine + '</div>' +
+           '<div class="flag-stripe-3">' +
+             '<span class="flag-stripe-3-r"></span>' +
+             '<span class="flag-stripe-3-w"></span>' +
+             '<span class="flag-stripe-3-g"></span>' +
+           '</div>' +
+         '</div>';
+}
+
+// Weather — OFFLINE STUB (typical June climatology, not a live forecast).
+function _statusWeatherTile(phase) {
+  var w = (typeof WEATHER_TYPICAL !== 'undefined') ? WEATHER_TYPICAL[phase.city] : null;
+  // Day-trip days (Bologna/Tuscany) keep phase.city = Florence — try the day-trip label.
+  if (!w && phase.dayTrip && typeof WEATHER_TYPICAL !== 'undefined') {
+    var lbl = phase.dayTrip.label || '';
+    for (var k in WEATHER_TYPICAL) {
+      if (lbl.indexOf(k) !== -1) { w = WEATHER_TYPICAL[k]; break; }
+    }
+  }
+  if (!w) w = { hi: '—', lo: '—', icon: '' };
+  return '<div class="tile tile--flat weather-tile">' +
+           '<div class="status-tile-label">TYPICAL JUNE</div>' +
+           '<div class="weather-temp">' + (w.icon ? w.icon + ' ' : '') + w.hi + '°</div>' +
+           '<div class="weather-lo">low ' + w.lo + '°</div>' +
+         '</div>';
+}
+
+// Up Next — live counter; id lets the minute-tick refresh just this tile.
+function _statusUpNextTile(phase) {
+  return '<div class="tile tile--flat upnext-tile" id="today-upnext">' +
+           _upNextInner(phase) +
+         '</div>';
+}
+
+function _upNextInner(phase) {
+  var next = (typeof getUpNext === 'function') ? getUpNext(phase.date, _todayNow()) : null;
+  if (!next) {
+    return '<div class="status-tile-label">UP NEXT</div>' +
+           '<div class="upnext-empty">Free time</div>';
+  }
+  var name = next.place ? next.place.name : (next.kind === 'gift' ? 'Your gift' : 'Next stop');
+  var rel = (typeof formatRelativeTime === 'function') ? formatRelativeTime(next.minutesUntil) : '';
+  return '<div class="status-tile-label">UP NEXT</div>' +
+         '<div class="upnext-time">' + next.time + '</div>' +
+         '<div class="upnext-name">' + name + '</div>' +
+         '<div class="upnext-rel">' + rel + '</div>';
+}
+
+// Real wall clock by default; on localhost honor the ?date=…THH:MM mock so Up
+// Next math matches the previewed scenario.
+function _todayNow() {
+  var mock = (typeof _readMockParams === 'function') ? _readMockParams() : null;
+  if (mock && mock.date) {
+    var d = new Date(mock.date + 'T00:00:00');
+    if (mock.rome) d.setHours(mock.rome.hour, mock.rome.minute, 0, 0);
+    return d;
+  }
+  return new Date();
+}
+
+// ═══════════════════════════════════════
+// TODAY'S PLAN tile (v12) — .tile--span-2, conditional image.
+//   normal day → flat (no photo): the Hero already shows this place.
+//   gift/move  → image of the day's first real place to visit (distinct from
+//                the gift/move Hero), so two identical photos never stack.
+// ═══════════════════════════════════════
+
+function renderTodayPlanTile(phase, city, heroState) {
+  var isNormal = (heroState.kind === 'normal');
+  var plan = isNormal
+    ? (heroState.headline || (typeof getTodayHeadlinePlace === 'function' ? getTodayHeadlinePlace(phase.date) : null))
+    : _planPlaceGiftMove(phase, heroState);
+  if (!plan || !plan.place) return '';
+
+  var p = plan.place;
+  var kicker = _composePlanKicker(plan);
+  var time = plan.time ? '<span class="plan-time">' + plan.time + '</span>' : '';
+
+  if (isNormal) {
+    var pill = p.verdict ? renderVerdictPill(p.verdict) : '';
+    var bestFor = p.best_for ? '<div class="plan-bestfor">' + p.best_for + '</div>' : '';
+    return '<div class="tile tile--flat tile--span-2 plan-tile plan-tile--flat">' +
+             '<div class="plan-eyebrow">TODAY’S PLAN' + (pill ? ' ' + pill : '') + '</div>' +
+             '<div class="plan-headline-row"><h2 class="plan-name">' + p.name + '</h2>' + time + '</div>' +
+             (kicker ? '<div class="plan-kicker">' + kicker + '</div>' : '') +
+             bestFor +
+           '</div>';
+  }
+
+  var bgState = { kind: 'place', id: p.id, city: city, category: p.category };
+  return '<div class="tile tile--image tile--span-2 plan-tile plan-tile--image" style="' + _heroBgStyle(bgState) + '">' +
+           _heroPlaceholderIcon(bgState) +
+           '<div class="plan-eyebrow">TODAY’S PLAN</div>' +
+           '<div class="plan-headline-row"><h2 class="plan-name">' + p.name + '</h2>' + time + '</div>' +
+           (kicker ? '<div class="plan-kicker">' + kicker + '</div>' : '') +
+         '</div>';
+}
+
+// On gift/move-Hero days, surface the day's first real place to visit, excluding
+// any place the gift Hero already represents (so the photos differ).
+function _planPlaceGiftMove(phase, heroState) {
+  var exclude = (heroState.gift && heroState.gift.linkedPlaces)
+    ? heroState.gift.linkedPlaces.slice() : [];
+  var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
+  var pick = places.find(function(p) {
+    return p.city === phase.city && p.verdict === 'essential' && p.category === 'landmark'
+           && exclude.indexOf(p.id) === -1;
+  }) || places.find(function(p) {
+    return p.city === phase.city && exclude.indexOf(p.id) === -1;
+  });
+  if (!pick) return null;
+  return { kind: 'place', id: pick.id, time: pick.scheduled_time || null, kicker: null, place: pick };
+}
+
+// 'OPEN · ENTRY · PRE-BOOKED' from hours + category + booking state.
+// A manual TODAY_PLAN[date].headline.kicker wins verbatim.
+function _composePlanKicker(plan) {
+  if (plan.kicker) return plan.kicker;
+  var p = plan.place;
+  if (!p) return '';
+  var segs = [];
+  var open = _openSegment(p);
+  if (open) segs.push(open);
+  if (typeof _kickerFromCategory === 'function' && p.category) segs.push(_kickerFromCategory(p.category));
+  if (typeof isPlaceBooked === 'function' && isPlaceBooked(p.id)) segs.push('PRE-BOOKED');
+  return segs.join(' · ');
+}
+
+// OPEN / OPENS HH:MM / CLOSED from hours_open/hours_close vs the Rome clock.
+function _openSegment(p) {
+  if (!p.hours_open && !p.hours_close) return '';
+  var rome = (typeof getRomeNow === 'function') ? getRomeNow() : { hour: 12, minute: 0 };
+  var nowMin = rome.hour * 60 + rome.minute;
+  var o = _hhmmToMin(p.hours_open), c = _hhmmToMin(p.hours_close);
+  if (o !== null && nowMin < o) return 'OPENS ' + p.hours_open;
+  if (c !== null && nowMin >= c) return 'CLOSED';
+  return 'OPEN';
+}
+
+function _hhmmToMin(s) {
+  if (!s || typeof s !== 'string') return null;
+  var parts = s.split(':');
+  if (parts.length !== 2) return null;
+  var h = parseInt(parts[0], 10), m = parseInt(parts[1], 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+// ═══════════════════════════════════════
+// Minute-tick (v12) — refresh only the Up Next tile so scroll position and
+// in-place star-save state survive. Self-clears when the user leaves Today.
+// ═══════════════════════════════════════
+
+function _refreshUpNext() {
+  var el = document.getElementById('today-upnext');
+  if (!el) return;
+  var phase = getTripPhase();
+  if (phase.phase !== 'during') return;
+  el.innerHTML = _upNextInner(phase);
+}
+
+function _installTodayTick() {
+  _clearTodayTick();
+  window._todayTick = setInterval(function() {
+    if (typeof Router !== 'undefined' && Router.getCurrentPage && Router.getCurrentPage() === 'today') {
+      _refreshUpNext();
+    } else {
+      _clearTodayTick();
+    }
+  }, 60000);
+}
+
+function _clearTodayTick() {
+  if (window._todayTick) { clearInterval(window._todayTick); window._todayTick = null; }
 }
