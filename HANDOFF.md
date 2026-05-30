@@ -4,8 +4,29 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-05-29
-**Branch:** `main`. v10–v13 + Favorites + polish shipped. **v14 (Tonight mode) staged — final stage of the Today redesign.** After this, the full Today-screen rewrite is complete; `design-handoff.md` (still untracked) can be deleted.
+**Last updated:** 2026-05-30
+**Branch:** `main`. **Today-screen redesign (v10–v14) COMPLETE and live on origin/main.** `design-handoff.md` removed (v14 trigger met). Next: offline-queued data work — Florence hotel, photos, gift dates, iOS PWA reinstall + airplane-mode test.
+
+---
+
+## 2026-05-30 — Today rewrite COMPLETE (v10–v14 closeout) + housekeeping
+
+The five-stage Today-screen redesign (Direction C / Hairline Editorial) is **done and live** — all of v10–v14 on `origin/main`, Netlify auto-deployed. This entry closes the arc and clears the trigger to remove `design-handoff.md`.
+
+- **The five stages, all shipped:**
+  - **v10 Foundations** (`30e529a`) — schema additions, `css/today.css` tile primitives, VerdictPill, HERO_IMAGES registry, CITY_REAL_TALK essays. Zero rendering change.
+  - **v11 Hero** (`1912528`) — DURING-phase Hero tile, 5-state priority resolver, Italian flag stripe, city-color theming.
+  - **v12 Status strip + Today's Plan** (`e89d2c7`, `ef41de3`) — Day/Weather/Up Next triple, kicker composer, minute-tick with Router cleanup, `?date=` URL-param mock harness.
+  - **v13 Editorial tiles + Favorites** (`9a1e0c1`, `59401dc`) — Real Talk + Home Base + Phrasebook + Saved footer; Saved→Favorites rename + dedicated ⭐ `#favorites` view.
+  - **v14 Polish + Tonight mode** (`ea7e444`, `0bf9030`) — in-place unstar, real side-by-side Italian flag bands, counter steppers on Stats, and the 19:00 Europe/Rome ink-theme flip with Tomorrow's Plan + amber TONIGHT pill. Final stage.
+- **`design-handoff.md` removed.** The untracked design-brief addendum at repo root (generated 2026-05-22 for Claude Design) was kept until the redesign shipped; v14 was the agreed trigger. Deleted with a plain `rm` — never tracked, so nothing to stage. This HANDOFF entry is the only thing committed.
+- **No code touched** — docs/housekeeping only. **`sw.js` CACHE not bumped** (no JS/CSS change).
+- **Offline-queued work (next session, priority order):**
+  1. **Florence hotel** — pick + book, fill the `HOTELS['Florence']` entry (Home Base tile renders real data for the other 3 cities; Florence is the gap).
+  2. **Photos** per `TODO-photos.md` — most slots still unfilled (move-day photos, Venice/Bologna heroes, key place photos).
+  3. **Gift dates** — set `date`/`time` + `bookingStatus: 'scheduled'` on `gift-1` (Colosseum tour), `gift-2` (Venice gondola), `gift-3` (pasta class) in `GIFTED_EXPERIENCES`. Lights up the Hero gift states + Today gift callout, silent until set.
+  4. **iOS PWA install + offline test** — delete + re-add the home-screen icon in Safari to pick up the full v9 → v14 cache jump; confirm tiles/fonts/CSS/hero images load in airplane mode.
+  5. **Lower priority:** move-AM plan-city decision (Hero "Last morning in Rome" vs Plan tile Florence Duomo — revisit now the whole screen is in context); Italian phrasebook page rebuild (`#phrasebook`); `APP-ARCHITECTURE.md` regen for project-knowledge re-upload.
 
 ---
 
