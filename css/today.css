@@ -300,20 +300,26 @@
 }
 
 /* ═══════════════════════════════════════ */
-/* 3-line Italian flag stripe (Day tile     */
-/* and other flag-architectural use sites). */
+/* Mini Italian flag (Day tile + other      */
+/* flag-architectural use sites). Three      */
+/* side-by-side vertical bands, 3:2 ratio,   */
+/* hoist→fly order green · white · red.      */
 /* ═══════════════════════════════════════ */
 
 .flag-stripe-3 {
   display: flex;
-  flex-direction: column;
-  width: 28px;
+  flex-direction: row;
+  width: 27px;
+  height: 18px;
   margin-top: 6px;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--hairline);   /* defines the white band on cream */
 }
 .flag-stripe-3 > span {
   display: block;
-  height: 2px;
-  width: 100%;
+  flex: 1;
+  height: 100%;
 }
 .flag-stripe-3-r { background: var(--rosso); }
 .flag-stripe-3-w { background: #FAF7F0; }
@@ -541,7 +547,7 @@
   color: var(--warm-gray);
 }
 
-/* ── Saved Places footer ── */
+/* ── Favorites list (Today footer + #favorites page) ── */
 .saved-list {
   display: flex;
   flex-direction: column;
@@ -550,21 +556,28 @@
 .saved-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 0;
-  background: none;
-  border: none;
+  gap: 6px;
   border-top: 1px solid var(--hairline);
-  text-align: left;
-  cursor: pointer;
-  font-family: var(--font-body);
 }
 .saved-row:first-child {
   border-top: none;
 }
+.saved-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
 .saved-row-name {
   flex: 1;
+  min-width: 0;
   font-size: 14px;
   font-weight: 500;
   color: var(--ink-warm);
@@ -573,6 +586,23 @@
   font-size: 11px;
   color: var(--warm-gray);
   white-space: nowrap;
+}
+.saved-row-remove {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: none;
+  color: var(--warm-gray);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.saved-row-remove:hover,
+.saved-row-remove:active {
+  background: var(--rosso-light);
+  color: var(--rosso);
 }
 
 /* ── Counter chip row (editorial wrapper; chip buttons styled elsewhere) ── */

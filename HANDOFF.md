@@ -5,7 +5,20 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-29
-**Branch:** `main`. v10–v13 shipped + visually QA'd (v13 full screen confirmed in-browser). **Favorites feature staged** on top of v13 (rename "Saved"→"Favorites" + new #favorites view). Only v14 (Tonight mode) of the Today redesign remains.
+**Branch:** `main`. v10–v13 + Favorites shipped + QA'd. **Post-v13 polish staged** (in-place unstar + real Italian flag + counter decrement steppers). Next: v14 Tonight mode (final stage).
+
+---
+
+## 2026-05-29 — Post-v13 polish (unstar + flag + counter decrement)
+
+QA feedback batch from Dylan, three small fixes shipped together:
+
+- **In-place unstar on favorite rows** (`today.js`) — `buildFavoriteRow` restructured from a single navigating `<button>` to a `<div class="saved-row">` holding a `.saved-row-main` button (taps → detail) + a `.saved-row-remove` ✕ button. New `removeFavorite(id, evt)` sets `p.saved=false`, toasts, and re-renders the active surface (`#favorites` or `#today`). Applies to BOTH the Today footer and the #favorites page (shared builder). Removes the old 4-tap remove flow.
+- **Real Italian flag** (`today.css` `.flag-stripe-3` + `today.js` `_statusDayTile`) — was 3 stacked horizontal lines (read as vertical); now three **side-by-side vertical bands**, 27×18 (3:2), hoist→fly order **green · white · red** (markup reordered g/w/r). `box-shadow: 0 0 0 1px var(--hairline)` defines the white band on cream.
+- **Counter decrement** — `Storage.decrementCounter(type)` (`storage.js`): floors at 0, splices the most-recent matching `history` entry (keeps By-City consistent), **does NOT revoke achievements** (once earned, kept). `#stats` tiles gained a `[−] n [+]` stepper (`stats-stepper`/`stats-step` CSS in pages.css) wired to new `stepCounter(type, delta)` in counters.js (+ re-renders the page). Today chips stay tap-only (celebratory +1). Confirmed via AskUserQuestion: steppers on Stats, not chip long-press/visible-minus.
+- **`sw.js` CACHE → v13-2.** No new files.
+- **Verified:** `/tmp/polish_smoke.js` — 13/13 (decrement floor + history splice + most-recent removal, achievement-retention, removeFavorite clears saved, row structure div+2 buttons, flag g<w<r order). `node --check`; server 200s.
+- **Decisions:** decrement keeps achievements unlocked (no un-toast); flag is the one architectural flag now correct; ✕ remove shared by both favorite surfaces via the one row-builder.
 
 ---
 

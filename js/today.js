@@ -589,9 +589,9 @@ function _statusDayTile(phase) {
            '</div>' +
            '<div class="day-numeral-city" style="color:' + tint + '">' + cityLine + '</div>' +
            '<div class="flag-stripe-3">' +
-             '<span class="flag-stripe-3-r"></span>' +
-             '<span class="flag-stripe-3-w"></span>' +
              '<span class="flag-stripe-3-g"></span>' +
+             '<span class="flag-stripe-3-w"></span>' +
+             '<span class="flag-stripe-3-r"></span>' +
            '</div>' +
          '</div>';
 }
@@ -837,14 +837,35 @@ function getFavoritePlaces() {
   return fav;
 }
 
-// One favorite row — tappable to the place detail, with a VerdictPill.
+// One favorite row — a flex container (NOT a button, so it can hold a nested
+// remove button): the main area taps through to detail; the ✕ unfavorites
+// in place. Shared by the Today footer and the #favorites page.
 function buildFavoriteRow(p) {
   var pill = (typeof renderVerdictPill === 'function' && p.verdict) ? renderVerdictPill(p.verdict) : '';
-  return '<button class="saved-row" onclick="Router.navigate(\'#place/' + p.id + '\')">' +
-           '<span class="saved-row-name">' + p.name + '</span>' +
-           '<span class="saved-row-city">' + p.city + '</span>' +
-           pill +
-         '</button>';
+  return '<div class="saved-row">' +
+           '<button class="saved-row-main" onclick="Router.navigate(\'#place/' + p.id + '\')">' +
+             '<span class="saved-row-name">' + p.name + '</span>' +
+             '<span class="saved-row-city">' + p.city + '</span>' +
+             pill +
+           '</button>' +
+           '<button class="saved-row-remove" aria-label="Remove from favorites" ' +
+             'onclick="removeFavorite(\'' + p.id + '\', event)">✕</button>' +
+         '</div>';
+}
+
+// Unfavorite in place from a favorite row, then re-render the active surface
+// (Favorites page or Today) so the row disappears immediately.
+function removeFavorite(id, evt) {
+  if (evt) { evt.stopPropagation(); evt.preventDefault(); }
+  var places = Storage.getPlaces();
+  var p = places.find(function(x) { return x.id === id; });
+  if (!p) return;
+  p.saved = false;
+  Storage.savePlaces(places);
+  showToast('Removed from favorites');
+  var page = (typeof Router !== 'undefined' && Router.getCurrentPage) ? Router.getCurrentPage() : '';
+  if (page === 'favorites' && typeof renderFavorites === 'function') renderFavorites();
+  else if (page === 'today' && typeof renderToday === 'function') renderToday();
 }
 
 // Full-width flat tile, CONDITIONAL (absent if nothing favorited). Lists ALL

@@ -231,6 +231,20 @@ var Storage = (function() {
     return counters;
   }
 
+  // Step a counter down by one (undo a tap / remove a mis-click). Floors at 0
+  // and removes the most-recent matching history entry so By-City stats stay
+  // consistent. Does NOT revoke achievements — once earned, they're kept.
+  function decrementCounter(type) {
+    var counters = getCounters();
+    if (typeof counters[type] !== 'number' || counters[type] <= 0) return counters;
+    counters[type] = counters[type] - 1;
+    for (var i = counters.history.length - 1; i >= 0; i--) {
+      if (counters.history[i].type === type) { counters.history.splice(i, 1); break; }
+    }
+    write(KEYS.counters, counters);
+    return counters;
+  }
+
   function resetCounters() {
     localStorage.removeItem(KEYS.counters);
   }
@@ -280,6 +294,7 @@ var Storage = (function() {
 
     getCounters: getCounters,
     incrementCounter: incrementCounter,
+    decrementCounter: decrementCounter,
     resetCounters: resetCounters,
 
     getBookings: getBookings,

@@ -46,6 +46,19 @@ function tapCounter(type) {
   }
 }
 
+// Stats-page stepper: ±1 a counter, then re-render the page. Increment carries
+// the current trip city (matches tapCounter); decrement floors at 0.
+function stepCounter(type, delta) {
+  if (delta > 0) {
+    var phase = (typeof getTripPhase === 'function') ? getTripPhase() : { city: '' };
+    var city = phase.phase === 'during' ? phase.city : '';
+    Storage.incrementCounter(type, city);
+  } else {
+    Storage.decrementCounter(type);
+  }
+  if (typeof renderStats === 'function') renderStats();
+}
+
 function getStatsSummary() {
   var counters = Storage.getCounters();
   var total = 0;
@@ -93,7 +106,13 @@ function renderStats() {
     var n = counters[t.key] || 0;
     gridHTML += '<div class="stats-tile">' +
       '<div class="stats-tile-emoji">' + t.icon + '</div>' +
-      '<div class="stats-tile-count">' + n + '</div>' +
+      '<div class="stats-stepper">' +
+        '<button class="stats-step" aria-label="Remove one ' + t.label + '"' +
+          (n <= 0 ? ' disabled' : '') + ' onclick="stepCounter(\'' + t.key + '\',-1)">−</button>' +
+        '<span class="stats-tile-count">' + n + '</span>' +
+        '<button class="stats-step" aria-label="Add one ' + t.label + '"' +
+          ' onclick="stepCounter(\'' + t.key + '\',1)">+</button>' +
+      '</div>' +
       '<div class="stats-tile-label">' + t.label + '</div>' +
       '</div>';
   });

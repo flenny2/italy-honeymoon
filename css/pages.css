@@ -1242,6 +1242,39 @@
   line-height: 1;
 }
 
+/* ± stepper on each stats tile (undo a tap / remove a mis-click) */
+.stats-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.stats-stepper .stats-tile-count {
+  min-width: 28px;
+}
+.stats-step {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--light-gray);
+  background: var(--bianco);
+  color: var(--espresso);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.stats-step:active {
+  background: var(--faint-gray);
+}
+.stats-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .stats-tile-label {
   font-size: var(--text-2xs);
   text-transform: uppercase;
