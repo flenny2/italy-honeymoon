@@ -11,6 +11,7 @@ var Router = (function() {
   var routes = {
     'today':       { render: 'renderToday',       tab: 'today' },
     'explore':     { render: 'renderExplore',     tab: 'more' },
+    'favorites':   { render: 'renderFavorites',   tab: 'more' },
     'city':        { render: 'renderCity',        tab: 'more' },
     'place':       { render: 'renderDetail',      tab: 'more' },
     'phrasebook':  { render: 'renderPhrasebook',  tab: 'more' },

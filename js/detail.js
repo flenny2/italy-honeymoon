@@ -125,10 +125,10 @@ function renderDetail(id) {
   }
   visitHTML += '</div>';
 
-  // Save button
+  // Favorite button
   var saveHTML = '<div class="detail-actions">' +
     '<button class="btn ' + (p.saved ? 'btn-verde' : 'btn-outline') + '" onclick="toggleSave(\'' + p.id + '\', event)">' +
-    (p.saved ? '⭐ Saved' : '☆ Save') +
+    (p.saved ? '⭐ Favorited' : '☆ Favorite') +
     '</button>' +
     '</div>';
 

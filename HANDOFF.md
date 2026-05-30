@@ -5,7 +5,27 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-29
-**Branch:** `main`. v10 (`30e529a`) + v11 (`1912528`) + v12 (`e89d2c7`, max-width fix `ef41de3`) shipped and visually QA'd (normal + move-AM/PM states confirmed in-browser). **v13 staged** at the time of this write — Real Talk + Home Base + Phrasebook + Saved footer + counter chip row. Only v14 (Tonight mode) remains.
+**Branch:** `main`. v10–v13 shipped + visually QA'd (v13 full screen confirmed in-browser). **Favorites feature staged** on top of v13 (rename "Saved"→"Favorites" + new #favorites view). Only v14 (Tonight mode) of the Today redesign remains.
+
+---
+
+## 2026-05-29 — Favorites (Saved→Favorites rename + dedicated view)
+
+Post-v13 QA feedback: Dylan couldn't find an entry point for starred places (only the Today footer showed them, during-trip only), and noted "Saved" doesn't match the ⭐ icon as well as "Favorites" would. Both confirmed via AskUserQuestion.
+
+- **Terminology rename (user-facing strings only — `p.saved` data key UNCHANGED, no migration):**
+  - Detail button (`detail.js`): `☆ Save`/`⭐ Saved` → `☆ Favorite`/`⭐ Favorited`.
+  - `toggleSave` toast (`today.js`): `⭐ Saved!`/`Unsaved` → `Added to favorites`/`Removed from favorites`.
+  - Today footer eyebrow: `SAVED PLACES` → `FAVORITES`.
+  - Place-card ⭐/☆ stars (icon-only, no text) untouched. `renderTodayPicks` "Don't Miss" header is essentials, not favorites — left as-is.
+- **New #favorites view (More tab) + Today footer, one shared builder:**
+  - `getFavoritePlaces()` + `buildFavoriteRow(p)` extracted in `today.js` — the single source for both surfaces (rows stay visually identical).
+  - `renderFavorites()` in `app.js` — page grouped by trip-city order (`CITIES`), each city a `section-header` + `.tile--flat` of rows; empty state ("No favorites yet. Tap the ☆ …"); standard `back-btn` → `#more`.
+  - Route `'favorites' → renderFavorites` (router.js), `page-favorites` shell (index.html), `⭐ Favorites` entry in the More hub (`renderMore`, 2nd item, with live count desc).
+  - `toggleSave` now re-renders the Favorites page in place when it's the current page (so unfavoriting from a detail reached via Favorites reflects on return).
+- **No new JS file** (renderFavorites in app.js, builders in today.js — both already cached). `sw.js` CACHE → `v13-1`.
+- **Verified:** `/tmp/fav_smoke.js` — 12/12 (filter/trip-sort, row markup, grouped page, empty state, footer reuse + FAVORITES eyebrow). `node --check` on all 4 edited JS; stale-string grep clean; server 200s incl. `#favorites`.
+- **Decisions worth remembering:** data key stays `saved` (rename is display-only — [[feedback_no_schema_drift]]); both surfaces share one row-builder so they never diverge; Favorites entry placed 2nd in More for discoverability.
 
 ---
 

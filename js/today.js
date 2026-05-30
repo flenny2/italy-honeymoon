@@ -375,11 +375,18 @@ function toggleSave(id, evt) {
     } else if (el.classList.contains('btn')) {
       el.classList.toggle('btn-verde', p.saved);
       el.classList.toggle('btn-outline', !p.saved);
-      el.textContent = p.saved ? '⭐ Saved' : '☆ Save';
+      el.textContent = p.saved ? '⭐ Favorited' : '☆ Favorite';
     }
   }
 
-  showToast(p.saved ? '⭐ Saved!' : 'Unsaved');
+  showToast(p.saved ? 'Added to favorites' : 'Removed from favorites');
+
+  // If the Favorites page is currently open, re-render it so the list reflects
+  // the change immediately (toggleSave is also reachable from there via detail).
+  if (typeof Router !== 'undefined' && Router.getCurrentPage &&
+      Router.getCurrentPage() === 'favorites' && typeof renderFavorites === 'function') {
+    renderFavorites();
+  }
 }
 
 // ═══════════════════════════════════════
@@ -815,30 +822,39 @@ function renderTodayPhrasebook(phase) {
          '</div>';
 }
 
-// Full-width flat tile, CONDITIONAL (absent if nothing starred). Lists ALL
-// saved places across the trip, ordered by trip-city order, each a tappable
-// row with a VerdictPill.
-function renderTodaySavedFooter() {
+// All favorited (starred) places across the trip, ordered by trip-city order
+// then name. Shared by the Today footer and the #favorites page (one builder).
+function getFavoritePlaces() {
   var places = (typeof Storage !== 'undefined') ? Storage.getPlaces() : [];
-  var saved = places.filter(function(p) {
+  var fav = places.filter(function(p) {
     return p.saved && (typeof isVisiblePlace !== 'function' || isVisiblePlace(p));
   });
-  if (!saved.length) return '';
   var order = (typeof CITIES !== 'undefined') ? CITIES : [];
-  saved.sort(function(a, b) {
+  fav.sort(function(a, b) {
     var d = order.indexOf(a.city) - order.indexOf(b.city);
     return d !== 0 ? d : a.name.localeCompare(b.name);
   });
-  var rows = saved.map(function(p) {
-    var pill = (typeof renderVerdictPill === 'function' && p.verdict) ? renderVerdictPill(p.verdict) : '';
-    return '<button class="saved-row" onclick="Router.navigate(\'#place/' + p.id + '\')">' +
-             '<span class="saved-row-name">' + p.name + '</span>' +
-             '<span class="saved-row-city">' + p.city + '</span>' +
-             pill +
-           '</button>';
-  }).join('');
+  return fav;
+}
+
+// One favorite row — tappable to the place detail, with a VerdictPill.
+function buildFavoriteRow(p) {
+  var pill = (typeof renderVerdictPill === 'function' && p.verdict) ? renderVerdictPill(p.verdict) : '';
+  return '<button class="saved-row" onclick="Router.navigate(\'#place/' + p.id + '\')">' +
+           '<span class="saved-row-name">' + p.name + '</span>' +
+           '<span class="saved-row-city">' + p.city + '</span>' +
+           pill +
+         '</button>';
+}
+
+// Full-width flat tile, CONDITIONAL (absent if nothing favorited). Lists ALL
+// favorites across the trip. Mirrors the #favorites page (More tab) via the
+// shared getFavoritePlaces()/buildFavoriteRow() builders.
+function renderTodaySavedFooter() {
+  var fav = getFavoritePlaces();
+  if (!fav.length) return '';
   return '<div class="tile tile--flat saved-tile">' +
-           '<div class="tile-eyebrow">SAVED PLACES</div>' +
-           '<div class="saved-list">' + rows + '</div>' +
+           '<div class="tile-eyebrow">FAVORITES</div>' +
+           '<div class="saved-list">' + fav.map(buildFavoriteRow).join('') + '</div>' +
          '</div>';
 }

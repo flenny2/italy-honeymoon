@@ -48,8 +48,14 @@ function renderMore() {
 
   var statsDesc = getStatsSummary();
 
+  var favCount = (typeof getFavoritePlaces === 'function') ? getFavoritePlaces().length : 0;
+  var favDesc = favCount > 0
+    ? favCount + ' place' + (favCount > 1 ? 's' : '') + ' starred'
+    : 'Tap ☆ on any place to add';
+
   var linksHTML = '<div class="content-wrap stagger">' +
     buildMoreLink('#explore', '🔍', 'Explore Cities', CITIES.length + ' cities to discover', '') +
+    buildMoreLink('#favorites', '⭐', 'Favorites', favDesc, '') +
     buildMoreLink('#phrasebook', '🇮🇹', 'Italian Phrases', 'Essential phrases & tips', '') +
     buildMoreLink('#bookings', '📋', 'Booking Checklist', bookingDesc, '') +
     buildMoreLink('#achievements', '🏆', 'Achievements', counts.unlocked + ' / ' + counts.total + ' unlocked', '') +
@@ -73,6 +79,50 @@ function buildMoreLink(href, icon, title, desc) {
     '</div>' +
     '<div class="more-link-arrow">→</div>' +
     '</a>';
+}
+
+// ── Favorites (starred places), grouped by trip-city order ──
+// Reuses getFavoritePlaces()/buildFavoriteRow() from today.js — the same row
+// the Today footer renders, so the two surfaces stay visually identical.
+function renderFavorites() {
+  var content = document.getElementById('favorites-content');
+  if (!content) return;
+
+  var headerHTML = '<div class="page-header">' +
+    '<button class="back-btn" onclick="Router.navigate(\'#more\')">← More</button>' +
+    '<h1>⭐ Favorites</h1>' +
+    '</div>';
+
+  var fav = (typeof getFavoritePlaces === 'function') ? getFavoritePlaces() : [];
+
+  if (!fav.length) {
+    content.innerHTML = headerHTML +
+      '<div class="content-wrap" style="text-align:center;padding:40px 24px;color:var(--warm-gray);">' +
+      '<div style="font-size:40px;margin-bottom:12px;">☆</div>' +
+      '<p>No favorites yet.<br>Tap the ☆ on any place to add it here.</p>' +
+      '</div>';
+    return;
+  }
+
+  // Group by trip-city order.
+  var order = (typeof CITIES !== 'undefined') ? CITIES : [];
+  var byCity = {};
+  fav.forEach(function(p) { (byCity[p.city] = byCity[p.city] || []).push(p); });
+  var cityKeys = Object.keys(byCity).sort(function(a, b) {
+    return order.indexOf(a) - order.indexOf(b);
+  });
+
+  var bodyHTML = '<div class="content-wrap">';
+  cityKeys.forEach(function(city) {
+    var emoji = (typeof CITY_EMOJI !== 'undefined' && CITY_EMOJI[city]) ? CITY_EMOJI[city] + ' ' : '';
+    bodyHTML += '<div class="section-header">' + emoji + city + '</div>' +
+      '<div class="tile tile--flat" style="margin-bottom:14px;">' +
+      '<div class="saved-list">' + byCity[city].map(buildFavoriteRow).join('') + '</div>' +
+      '</div>';
+  });
+  bodyHTML += '</div>';
+
+  content.innerHTML = headerHTML + bodyHTML;
 }
 
 // ── Time Capsule ──
