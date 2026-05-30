@@ -6,8 +6,8 @@
 var BOOKINGS = [
   // 🔴 BOOK NOW — these sell out weeks ahead in June
   { id: 'bk-vatican', placeId: 'l2', urgency: 'now',
-    title: 'Vatican Museums & Sistine Chapel',
-    city: 'Rome', when: 'June 18',
+    title: 'Vatican Museums, Sistine Chapel & St Peter\'s Basilica',
+    city: 'Rome', when: 'June 18, 8:00 AM',
     what: 'Timed entry tickets online',
     why: 'Sells out weeks ahead in June. Book 8am slot for smallest crowds.',
     tip: 'Skip the audio guide — a human guide is worth the extra cost.',

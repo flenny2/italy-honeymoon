@@ -5,7 +5,32 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-30
-**Branch:** `main`. **Schedule data populated** — 3 registry gifts now `scheduled` with real dates/times; Pantheon + Vatican booking `when` dates set; **Tuscany day trip confirmed Jun 20 and reconciled across all refs.** Still open: Florence hotel unbooked; photos mostly unfilled.
+**Branch:** `main`. **Pre-trip data audit done + Vatican/Pantheon reconciled.** Vatican tour confirmed Jun 18 @ 8 AM (move-day morning); stale Jun-15 demo plan removed; Pantheon scheduled_time fixed to 10:00. Still open: Florence hotel unbooked; photos mostly unfilled; **move-day Vatican-tour visibility (feature gap, see below)**.
+
+---
+
+## 2026-05-30 — Pre-trip audit fixes: Vatican/Pantheon time reconciliation
+
+Read-only multi-agent audit (find → independently verify → validator draft) flagged a cluster of time/date inconsistencies among four independent sources (`place.scheduled_time`, `TODAY_PLAN`, `BOOKINGS.when`, gift `date/time`). Dylan confirmed the ground truth and we applied the safe data fixes. JS data-only — `sw.js` CACHE **v16 → v17**.
+
+- **Vatican tour is June 18 @ 8 AM** (confirmed by Dylan): morning of the Rome→Florence move day — tour, back to the Rome Hilton for bags, then train. So the booking date was correct; the audit's "Jun 18 is outside the Rome stay" flag was a **false alarm, retracted**.
+  - `bk-vatican` (`bookings.js`): `when` `'June 18'` → `'June 18, 8:00 AM'`; title now includes **St Peter's Basilica** (`'Vatican Museums, Sistine Chapel & St Peter's Basilica'`) to match the actual guided tour.
+  - `l2` `scheduled_time:"08:00"` was already correct — left as-is.
+- **Removed stale `TODAY_PLAN['2026-06-15']`** (`data-today-plan.js`): it headlined the Vatican on Jun 15 @ 09:30 — wrong date (it's the 18th) and wrong time, and it never rendered anyway (gift-3 pasta forces the gift Hero on the 15th, and the Plan tile re-derives to the Colosseum). It was leftover "Treatment A mockup" demo config. `TODAY_PLAN` is now empty (all days derive).
+- **Pantheon time fixed** (`l5`, `data-places.js`): `scheduled_time` `"11:00"` → `"10:00"` to match the `bk-pantheon` `'June 15, 10:00 AM'` timed-entry reservation.
+- **Verified:** `node --check` clean on all 3 JS files; CACHE → v17. **iPhone PWA:** delete + re-add for v16 → v17.
+
+### Audit results (read-only; no other fixes applied this commit)
+- **Clean (challenged adversarially, held):** verdict-key integrity (all 81 verdicts valid base keys), reference integrity (all placeId/linkedPlaces resolve, all 86 coords valid), schema correctness (no BOOKINGS drift, gifts valid), Tuscany date consistency, content completeness (all 81 visible places have summary/verdict/best-for).
+- **3 findings refuted** by independent verification (data inconsistent but inert — no user-facing surface reads the conflicting value): Jun-14 Colosseum 09:00-vs-10:45, Jun-15 Vatican "triple-time" (the plan tile actually picks Colosseum, not Vatican), Jun-18 "move day buries Vatican" (BOOKINGS never feed Hero/Plan).
+- **A proposed `validate-data.js` invariant checker** was drafted (loads the browser globals via Node `vm`, asserts all 7 dimensions, errors fail / warnings don't). Not added to the repo — available to drop in when wanted.
+
+### Open — queued, NOT yet done
+- **Move-day Vatican-tour visibility (feature gap):** on Jun 18 the Today screen shows move-day Hero ("Last morning in Rome") + train logistics but **nothing about the 8 AM Vatican tour** — BOOKINGS don't feed the Hero/Plan surfaces, and move-day logic overrides the normal headline. Most logistically loaded morning of the trip. Needs a small feature (e.g. surface a same-day timed booking on the move-day Plan tile or Hero body), not a data edit.
+- **Up Next blind to `place.scheduled_time`** (`getUpNext`, today-plan.js): only TODAY_PLAN + scheduled gifts feed it, so most trip days show "Free time" despite a timed headline place. Confirmed; deferred.
+- **Bologna b1–b5 missing `source`** (data-places.js) while b6–b8 have it — detail-page source line blank for those five.
+- **Stale count:** `data-places.js:2` header says "83 curated places"; actual is **86** (81 visible). CLAUDE.md also says 83. Cosmetic.
+- **PWA icons not pre-cached:** `icon-192/512.png` referenced by index.html + manifest but absent from `APP_FILES` (self-heal online; cosmetic). 2 hero JPGs (`palatine-hill`, `vatican-statue`) pre-cached but unreferenced (dead weight).
 
 ---
 

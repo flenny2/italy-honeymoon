@@ -24,16 +24,10 @@
 // non-default headline. Leave the rest undefined.
 
 var TODAY_PLAN = {
-  // Day 5 (Rome, Jun 15) — Vatican morning, matches Treatment A mockup
-  '2026-06-15': {
-    headline: {
-      kind: 'place',
-      id: 'l2',
-      time: '09:30',
-      kicker: 'OPEN · ENTRY · PRE-BOOKED'
-    }
-  }
-  // Additional curated days — add as you confirm bookings + the per-day plan.
+  // Curated days — add as you confirm bookings + the per-day plan.
+  // (The June 15 Vatican demo entry was removed 2026-05-30: the Vatican tour is
+  //  actually June 18 @ 8 AM, and the entry never rendered anyway because gift-3
+  //  forces the gift Hero on the 15th.)
 };
 
 // ═══════════════════════════════════════
