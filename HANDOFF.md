@@ -5,7 +5,24 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-29
-**Branch:** `main`. v10–v13 + Favorites shipped + QA'd. **Post-v13 polish staged** (in-place unstar + real Italian flag + counter decrement steppers). Next: v14 Tonight mode (final stage).
+**Branch:** `main`. v10–v13 + Favorites + polish shipped. **v14 (Tonight mode) staged — final stage of the Today redesign.** After this, the full Today-screen rewrite is complete; `design-handoff.md` (still untracked) can be deleted.
+
+---
+
+## 2026-05-29 — Today rewrite Stage 5 / v14 (Tonight mode) — FINAL
+
+The Today redesign's last stage. Evening theme flip + tomorrow preview.
+
+- **Trigger:** `getTonightMode(_todayNow())` (today-plan.js, ≥19:00 Europe/Rome). Computed once in `renderTodayDuring`. Mockable via `?date=…T21:00` or `?tonight=1` (localhost).
+- **Theme flip:** `today-grid--tonight` class on the grid (cream→ink #1A1410, flat tiles dark, image tiles dimmed — base CSS was staged back in v10). v14 adds the text-relight overrides so the v12/v13 tile content (Day numeral, weather, Up Next, plan, Real Talk, Home Base, Phrasebook, Saved) stays legible on dark, plus dark hairlines.
+- **Amber TONIGHT pill:** `_injectTonightPill(heroHtml)` inserts `<span class="tonight-pill">` just inside the hero tile's opening tag; `renderTodayHeroDuring(phase, city, state, tonight)` now takes the flag. CSS pins it top-right, `--giallo` bg.
+- **Tomorrow's Plan:** `renderTomorrowsPlan(phase, city)` — rendered only in tonight mode, after Today's Plan. Flat `.tile--span-2`, eyebrow "TOMORROW'S PLAN", uses `getTomorrowHeadlinePlace(phase.date)`. Kicker **omits the live OPEN/CLOSED segment** (it's not today) — category + PRE-BOOKED only, unless a manual `TODAY_PLAN` kicker exists.
+- **Mid-session 19:00 flip (Dylan's addition):** `_refreshUpNext` now compares `getTonightMode(_todayNow())` against the live `.today-grid--tonight` class; on mismatch it calls full `renderToday()` (one-time scroll jump at the boundary is acceptable) instead of only patching `#today-upnext`. Closes the "screen doesn't flip at 7pm without navigating away" gap.
+- **`sw.js` CACHE → v14.** No new files.
+- **Verified:** `/tmp/v14_smoke.js` — 17/17 (getTonightMode at 21:00/10:00/19:00/?tonight=1, pill injection + preservation, hero tonight flag on/off, Tomorrow tile renders w/o open-segment kicker, full grid wires class+pill+tomorrow at night and none in daytime). `node --check`; server 200s.
+- **Real-browser QA pending** (Dylan): `?date=2026-06-15T21:00` → ink theme, amber pill, Tomorrow tile, legible text. `?tonight=1` also forces it.
+- **iPhone PWA:** delete + re-add in Safari for the v13-2 → v14 cache jump.
+- **Redesign complete.** Remaining ideas (not scheduled): per-day `realTalk` overrides for terse single-sentence days; gift-date population to light up gift Hero states; the deferred move-AM plan-city question (revisit "now that the full screen is in context").
 
 ---
 

@@ -612,3 +612,63 @@
   gap: 8px;
   padding: 4px 2px 0;
 }
+
+/* ═══════════════════════════════════════ */
+/* Tonight mode (v14) — ≥19:00 Europe/Rome. */
+/* Theme flip base is staged above; these   */
+/* re-light the v12/v13 text + add the pill. */
+/* ═══════════════════════════════════════ */
+
+/* Amber TONIGHT pill, top-right of the hero. */
+.tile--image .tonight-pill {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  background: var(--giallo);
+  color: #2A2114;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Primary text → light on the ink surface. */
+.today-grid--tonight .day-numeral-big,
+.today-grid--tonight .weather-temp,
+.today-grid--tonight .upnext-time,
+.today-grid--tonight .upnext-name,
+.today-grid--tonight .plan-name,
+.today-grid--tonight .homebase-name,
+.today-grid--tonight .phrasebook-it,
+.today-grid--tonight .saved-row-name,
+.today-grid--tonight .realtalk-headline,
+.today-grid--tonight .realtalk-body {
+  color: #F3ECE2;
+}
+
+/* Secondary / eyebrow text → muted light. */
+.today-grid--tonight .tile-eyebrow,
+.today-grid--tonight .status-tile-label,
+.today-grid--tonight .day-numeral-label,
+.today-grid--tonight .day-numeral-of,
+.today-grid--tonight .weather-lo,
+.today-grid--tonight .upnext-rel,
+.today-grid--tonight .upnext-empty,
+.today-grid--tonight .homebase-where,
+.today-grid--tonight .phrasebook-pr,
+.today-grid--tonight .phrasebook-en,
+.today-grid--tonight .saved-row-city,
+.today-grid--tonight .plan-kicker,
+.today-grid--tonight .plan-bestfor,
+.today-grid--tonight .plan-time {
+  color: rgba(237, 230, 220, 0.66);
+}
+
+/* Hairline separators on dark. */
+.today-grid--tonight .saved-row {
+  border-color: rgba(255, 240, 220, 0.10);
+}

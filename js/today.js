@@ -19,15 +19,18 @@ function renderToday() {
   }
 }
 
-// ── DURING (Hairline Editorial tile grid — full inventory as of v13) ──
+// ── DURING (Hairline Editorial tile grid — full inventory as of v13; v14 Tonight) ──
 function renderTodayDuring(phase, city) {
   // Resolve the Hero state ONCE so the Plan tile knows what the Hero already
   // shows (avoids stacking two identical photos on a normal day).
   var heroState = _pickHeroState(phase);
-  return '<div class="today-grid">' +
-           renderTodayHeroDuring(phase, city, heroState) +
+  // Tonight mode (≥19:00 Europe/Rome) — theme flip + amber pill + Tomorrow's Plan.
+  var tonight = (typeof getTonightMode === 'function') && getTonightMode(_todayNow());
+  return '<div class="today-grid' + (tonight ? ' today-grid--tonight' : '') + '">' +
+           renderTodayHeroDuring(phase, city, heroState, tonight) +
            renderTodayStatusStrip(phase, city) +
            renderTodayPlanTile(phase, city, heroState) +
+           (tonight ? renderTomorrowsPlan(phase, city) : '') +
            renderTodayRealTalk(phase) +
            '<div class="today-row--split">' +
              renderTodayHomeBase(phase) +
@@ -395,15 +398,24 @@ function toggleSave(id, evt) {
 // Tonight-mode rerouting lands v14.
 // ═══════════════════════════════════════
 
-function renderTodayHeroDuring(phase, city, state) {
+function renderTodayHeroDuring(phase, city, state, tonight) {
   state = state || _pickHeroState(phase);
+  var hero;
   switch (state.kind) {
-    case 'gift-today':    return _heroGiftToday(state.gift, city);
-    case 'gift-tomorrow': return _heroGiftTomorrow(state.gift, city);
-    case 'move-am':       return _heroMoveAM(state.from, state.to, state.transit);
-    case 'move-pm':       return _heroMovePM(state.from, state.to, state.transit);
-    default:              return _heroNormal(state.headline, city);
+    case 'gift-today':    hero = _heroGiftToday(state.gift, city); break;
+    case 'gift-tomorrow': hero = _heroGiftTomorrow(state.gift, city); break;
+    case 'move-am':       hero = _heroMoveAM(state.from, state.to, state.transit); break;
+    case 'move-pm':       hero = _heroMovePM(state.from, state.to, state.transit); break;
+    default:              hero = _heroNormal(state.headline, city);
   }
+  return tonight ? _injectTonightPill(hero) : hero;
+}
+
+// Insert the amber TONIGHT pill just inside the hero tile's opening tag.
+function _injectTonightPill(heroHtml) {
+  var i = heroHtml.indexOf('>');
+  if (i === -1) return heroHtml;
+  return heroHtml.slice(0, i + 1) + '<span class="tonight-pill">TONIGHT</span>' + heroHtml.slice(i + 1);
 }
 
 function _pickHeroState(phase) {
@@ -735,6 +747,30 @@ function _hhmmToMin(s) {
   return h * 60 + m;
 }
 
+// Tomorrow's Plan tile — only shown in Tonight mode (v14). Flat, full-width.
+// Uses tomorrow's headline place; kicker OMITS the live OPEN/CLOSED segment
+// (it's not today, so the Rome-clock open-check would be wrong) — category +
+// PRE-BOOKED only, unless a manual TODAY_PLAN kicker exists.
+function renderTomorrowsPlan(phase, city) {
+  var tm = (typeof getTomorrowHeadlinePlace === 'function') ? getTomorrowHeadlinePlace(phase.date) : null;
+  if (!tm || !tm.place) return '';
+  var p = tm.place;
+  var kicker = tm.kicker;
+  if (!kicker) {
+    var segs = [];
+    if (typeof _kickerFromCategory === 'function' && p.category) segs.push(_kickerFromCategory(p.category));
+    if (typeof isPlaceBooked === 'function' && isPlaceBooked(p.id)) segs.push('PRE-BOOKED');
+    kicker = segs.join(' · ');
+  }
+  var time = tm.time ? '<span class="plan-time">' + tm.time + '</span>' : '';
+  var pill = p.verdict ? renderVerdictPill(p.verdict) : '';
+  return '<div class="tile tile--flat tile--span-2 plan-tile plan-tile--flat">' +
+           '<div class="plan-eyebrow">TOMORROW’S PLAN' + (pill ? ' ' + pill : '') + '</div>' +
+           '<div class="plan-headline-row"><h2 class="plan-name">' + p.name + '</h2>' + time + '</div>' +
+           (kicker ? '<div class="plan-kicker">' + kicker + '</div>' : '') +
+         '</div>';
+}
+
 // ═══════════════════════════════════════
 // Minute-tick (v12) — refresh only the Up Next tile so scroll position and
 // in-place star-save state survive. Self-clears when the user leaves Today.
@@ -745,6 +781,17 @@ function _refreshUpNext() {
   if (!el) return;
   var phase = getTripPhase();
   if (phase.phase !== 'during') return;
+  // Mid-session Tonight flip: if the ≥19:00 boundary was crossed since the last
+  // full render, the theme class is stale — do a full re-render (a one-time
+  // scroll jump at the boundary is acceptable).
+  var grid = document.querySelector('.today-grid');
+  if (grid && typeof getTonightMode === 'function') {
+    var isTonight = !!getTonightMode(_todayNow());
+    if (isTonight !== grid.classList.contains('today-grid--tonight')) {
+      renderToday();
+      return;
+    }
+  }
   el.innerHTML = _upNextInner(phase);
 }
 
