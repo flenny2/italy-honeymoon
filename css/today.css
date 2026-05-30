@@ -16,11 +16,17 @@
 }
 
 /* ── Grid container ── */
+/* Constrained to the app-wide --max-width and centered, matching .content-wrap
+   on every other page. Without this the Today grid (the only screen not wrapped
+   in .content-wrap) stretches edge-to-edge on desktop and stops resembling the
+   phone-width layout it's designed for. */
 .today-grid {
   display: flex;
   flex-direction: column;
   gap: var(--tile-gap);
   padding: 12px;
+  max-width: var(--max-width);
+  margin: 0 auto;
   background: var(--cream-surface);
 }
 
