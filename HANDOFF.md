@@ -5,7 +5,19 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-30
-**Branch:** `main`. **Schedule data populated** — 3 registry gifts now `scheduled` with real dates/times; Pantheon + Vatican booking `when` dates set. **Open:** Tuscany Jun 20-vs-21 to reconcile (see open-questions); Florence hotel still unbooked; photos still mostly unfilled.
+**Branch:** `main`. **Schedule data populated** — 3 registry gifts now `scheduled` with real dates/times; Pantheon + Vatican booking `when` dates set; **Tuscany day trip confirmed Jun 20 and reconciled across all refs.** Still open: Florence hotel unbooked; photos mostly unfilled.
+
+---
+
+## 2026-05-30 — Tuscany day trip reconciled to Jun 20
+
+Dylan confirmed the Tuscany/Chianti day trip is **June 20** (Florence stay Jun 18–22, so it checks out). Resolved the prior commit's open question — moved every Tuscany day-trip date ref from Jun 21 → Jun 20 in one pass so the app and bookings stay consistent:
+
+- `TRIP.dayTrips` key `'2026-06-21'` → `'2026-06-20'` (`data-trip.js`) — this is what drives the Today-screen day-trip detection.
+- `bk-antinori` `when: 'June 21'` → `'June 20'` (`bookings.js`).
+- `t1` Chianti Wine Region note + `tr2` Firenze S.M.N. note "June 21" → "June 20" (`data-places.js`).
+- `TRIP.schedule` unchanged — Jun 20 is still a Florence day (day 8); day trips are additive, no schedule edit needed.
+- `sw.js` CACHE → **v16**. `node --check` clean. **iPhone PWA:** delete + re-add for v15 → v16.
 
 ---
 

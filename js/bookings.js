@@ -106,7 +106,7 @@ var BOOKINGS = [
 
   { id: 'bk-antinori', placeId: 't3', urgency: 'soon',
     title: 'Antinori Winery Tasting + Lunch',
-    city: 'Tuscany', when: 'June 21',
+    city: 'Tuscany', when: 'June 20',
     what: 'Wine tasting reservation + lunch at Rinuccio 1180',
     why: 'The best winery near Florence. Book the tasting and lunch together for the full experience.',
     tip: 'Book lunch at Rinuccio 1180 too — vineyard views and excellent food. Worth combining.',
