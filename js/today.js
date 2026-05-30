@@ -19,7 +19,7 @@ function renderToday() {
   }
 }
 
-// ── DURING (Hairline Editorial tile grid — v11 Hero + v12 status strip & plan) ──
+// ── DURING (Hairline Editorial tile grid — full inventory as of v13) ──
 function renderTodayDuring(phase, city) {
   // Resolve the Hero state ONCE so the Plan tile knows what the Hero already
   // shows (avoids stacking two identical photos on a normal day).
@@ -28,7 +28,13 @@ function renderTodayDuring(phase, city) {
            renderTodayHeroDuring(phase, city, heroState) +
            renderTodayStatusStrip(phase, city) +
            renderTodayPlanTile(phase, city, heroState) +
-           // Real Talk, Home Base, Phrasebook, Saved Places footer land in v13.
+           renderTodayRealTalk(phase) +
+           '<div class="today-row--split">' +
+             renderTodayHomeBase(phase) +
+             renderTodayPhrasebook(phase) +
+           '</div>' +
+           renderTodaySavedFooter() +
+           (typeof renderCounterChips === 'function' ? renderCounterChips() : '') +
          '</div>';
 }
 
@@ -40,7 +46,6 @@ function renderTodayBeforeAfter(phase, city) {
     renderTodayCapsuleNudge(),
     renderTodayBooking(phase),
     renderTodayGiftCallout(phase),  // self-guards: '' if not DURING
-    renderTodayCounters(phase),     // self-guards: '' if not DURING
     renderTodayPhrase(),
     renderTodayGifts(city),
     renderTodayHotel(city, phase),
@@ -141,11 +146,8 @@ function renderTodayLetter() {
     '</div>';
 }
 
-function renderTodayCounters(phase) {
-  if (!phase || phase.phase !== 'during') return '';
-  if (typeof renderCounterChips !== 'function') return '';
-  return renderCounterChips();
-}
+// (renderTodayCounters removed in v13 — counters now render as an editorial chip
+// row inside the DURING grid via renderCounterChips(); see counters.js.)
 
 // ── Capsule nudge on the last night + departure day, only if unsealed ──
 function renderTodayCapsuleNudge() {
@@ -752,4 +754,91 @@ function _installTodayTick() {
 
 function _clearTodayTick() {
   if (window._todayTick) { clearInterval(window._todayTick); window._todayTick = null; }
+}
+
+// ═══════════════════════════════════════
+// REAL TALK · HOME BASE · PHRASEBOOK · SAVED (v13)
+// ═══════════════════════════════════════
+
+// Full-width flat tile, no photo. Headline (Playfair, a sanctioned ≥22px use)
+// + body, via the 3-step getRealTalk fallback (day override → place
+// honest_summary 1st sentence → CITY_REAL_TALK).
+function renderTodayRealTalk(phase) {
+  var headline = (typeof getTodayHeadlinePlace === 'function') ? getTodayHeadlinePlace(phase.date) : null;
+  var rt = (typeof getRealTalk === 'function') ? getRealTalk(phase.date, headline, phase.city) : null;
+  if (!rt || !rt.text) return '';
+  return '<div class="tile tile--flat realtalk-tile">' +
+           '<div class="tile-eyebrow">REAL TALK · TODAY</div>' +
+           (rt.headline ? '<h2 class="realtalk-headline">' + rt.headline + '</h2>' : '') +
+           '<p class="realtalk-body">' + rt.text + '</p>' +
+         '</div>';
+}
+
+// 2-col flat tile. Editorial/compact — name + "{neighborhood} · {N} min to
+// center". Stays present with a "Hotel TBD" placeholder if the city has no
+// booked hotel yet (consistency: the tile never disappears).
+function renderTodayHomeBase(phase) {
+  var hotel = (typeof HOTELS !== 'undefined') ? HOTELS[phase.city] : null;
+  var name, where;
+  if (!hotel) {
+    name = 'Hotel TBD';
+    where = 'Booking pending';
+  } else {
+    name = hotel.name || 'Hotel TBD';
+    if (hotel.neighborhood && hotel.walk_time_min) {
+      where = hotel.neighborhood + ' · ' + hotel.walk_time_min + ' min to center';
+    } else if (hotel.neighborhood) {
+      where = hotel.neighborhood;
+    } else if (hotel.walk_time_min) {
+      where = hotel.walk_time_min + ' min to center';
+    } else {
+      where = 'Neighborhood TBD';
+    }
+  }
+  return '<div class="tile tile--flat homebase-tile">' +
+           '<div class="tile-eyebrow">HOME BASE</div>' +
+           '<div class="homebase-name">' + name + '</div>' +
+           '<div class="homebase-where">' + where + '</div>' +
+         '</div>';
+}
+
+// 2-col flat tile, tappable → #phrasebook (route confirmed to exist).
+// Deterministic phrase-of-day; 🇮🇹 stamp is sanctioned architectural flag use.
+function renderTodayPhrasebook(phase) {
+  var ph = (typeof getPhraseOfDay === 'function') ? getPhraseOfDay(phase.date) : null;
+  if (!ph) return '';
+  return '<div class="tile tile--flat phrasebook-tile" onclick="Router.navigate(\'#phrasebook\')">' +
+           '<div class="tile-eyebrow">PHRASEBOOK <span class="flag-stamp">🇮🇹</span></div>' +
+           '<div class="phrasebook-it">' + ph.it + '</div>' +
+           '<div class="phrasebook-pr">/' + ph.pr + '/</div>' +
+           '<div class="phrasebook-en">' + ph.en + '</div>' +
+         '</div>';
+}
+
+// Full-width flat tile, CONDITIONAL (absent if nothing starred). Lists ALL
+// saved places across the trip, ordered by trip-city order, each a tappable
+// row with a VerdictPill.
+function renderTodaySavedFooter() {
+  var places = (typeof Storage !== 'undefined') ? Storage.getPlaces() : [];
+  var saved = places.filter(function(p) {
+    return p.saved && (typeof isVisiblePlace !== 'function' || isVisiblePlace(p));
+  });
+  if (!saved.length) return '';
+  var order = (typeof CITIES !== 'undefined') ? CITIES : [];
+  saved.sort(function(a, b) {
+    var d = order.indexOf(a.city) - order.indexOf(b.city);
+    return d !== 0 ? d : a.name.localeCompare(b.name);
+  });
+  var rows = saved.map(function(p) {
+    var pill = (typeof renderVerdictPill === 'function' && p.verdict) ? renderVerdictPill(p.verdict) : '';
+    return '<button class="saved-row" onclick="Router.navigate(\'#place/' + p.id + '\')">' +
+             '<span class="saved-row-name">' + p.name + '</span>' +
+             '<span class="saved-row-city">' + p.city + '</span>' +
+             pill +
+           '</button>';
+  }).join('');
+  return '<div class="tile tile--flat saved-tile">' +
+           '<div class="tile-eyebrow">SAVED PLACES</div>' +
+           '<div class="saved-list">' + rows + '</div>' +
+         '</div>';
 }

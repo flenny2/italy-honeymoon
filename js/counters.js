@@ -3,10 +3,13 @@
 // Stats dashboard + one-sentence summary for the More tab
 // ═══════════════════════════════════════
 
-// Row of tap-chips on Today (during-trip only)
+// Editorial tap-chip row for the DURING Today grid (v13). Borderless wrapper +
+// "THIS TRIP" eyebrow; the .counter-chip / #chip-<key> markup and tapCounter
+// onclick are unchanged so in-place +1 updates and achievement unlocks still work.
 function renderCounterChips() {
   var counters = Storage.getCounters();
-  var html = '<div class="section-header">🍽️ Trip Counters</div>' +
+  var html = '<div class="today-counter-row">' +
+    '<div class="tile-eyebrow">THIS TRIP</div>' +
     '<div class="counter-chips">';
   COUNTER_TYPES.forEach(function(t) {
     var n = counters[t.key] || 0;
@@ -19,7 +22,7 @@ function renderCounterChips() {
       '<span class="counter-chip-label">' + t.label + '</span>' +
       '</button>';
   });
-  html += '</div>';
+  html += '</div></div>';   // close .counter-chips + .today-counter-row
   return html;
 }
 

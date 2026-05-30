@@ -4,8 +4,29 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-05-28
-**Branch:** `main`. v10 (`30e529a`) + v11 (`1912528`) shipped. **v12 staged** at the time of this write — Status strip + Today's Plan + minute-tick + URL-param mock harness. Manual v11 visual QA was skipped; a single combined v11+v12 pass runs next, driven by the new `?date=` params.
+**Last updated:** 2026-05-29
+**Branch:** `main`. v10 (`30e529a`) + v11 (`1912528`) + v12 (`e89d2c7`, max-width fix `ef41de3`) shipped and visually QA'd (normal + move-AM/PM states confirmed in-browser). **v13 staged** at the time of this write — Real Talk + Home Base + Phrasebook + Saved footer + counter chip row. Only v14 (Tonight mode) remains.
+
+---
+
+## 2026-05-29 — Today rewrite Stage 4 / v13 (Real Talk + Home Base + Phrasebook + Saved + counters)
+
+- **DURING grid is now the full locked inventory.** `renderTodayDuring` order: Hero → Status strip → Today's Plan → **Real Talk** → **Home Base | Phrasebook** (`.today-row--split`) → **Saved footer** (conditional) → **counter chip row**.
+- **Real Talk Today** (`renderTodayRealTalk`, full-width `.tile--flat`, no photo) — `getRealTalk(date, getTodayHeadlinePlace(date), city)` 3-step fallback (day override → place `honest_summary` 1st sentence → `CITY_REAL_TALK`). Headline in Playfair roman 22px (a sanctioned ≥22px use); body DM Sans 15px/1.55. Headline line omitted when the source is a day-override (null headline).
+- **Home Base** (`renderTodayHomeBase`, 2-col `.tile--flat`) — editorial/compact, NOT the legacy address dump: `HOME BASE` + hotel name + `{neighborhood} · {walk_time_min} min to center`. **Robust fallback (Dylan-requested):** missing `HOTELS[city]` → "Hotel TBD" + "Booking pending"; partial fields → best-available or "Neighborhood TBD". **Tile never hides, never crashes.** (All 4 hotels currently have full data — Florence's Oltrarno Splendid is booked.)
+- **Phrasebook** (`renderTodayPhrasebook`, 2-col `.tile--flat`) — `getPhraseOfDay(date)` → it / `/pr/` / en. 🇮🇹 flag stamp. **Tappable → `#phrasebook`** (route verified to exist: `router.js` → `renderPhrasebook` in `phrasebook.js`; no inline page built).
+- **Saved Places footer** (`renderTodaySavedFooter`, full-width `.tile--flat`, CONDITIONAL) — **all** starred places across the trip (`Storage.getPlaces().filter(p => p.saved && isVisiblePlace(p))`), sorted by `CITIES` trip order then name. Each row tappable → `#place/{id}`, with name + city label + `renderVerdictPill`. Absent (returns `''`) when nothing is starred.
+- **Counter chip row** — repurposed the previously-dead `renderCounterChips()` (counters.js): legacy `.section-header` → editorial `.today-counter-row` + `THIS TRIP` eyebrow. **Chip markup (`#chip-{key}`) + `tapCounter()` onclick unchanged** — in-place +1 animation and `Storage.incrementCounter` achievement path intact. Called directly at the bottom of `renderTodayDuring`. Removed the now-orphaned `renderTodayCounters` wrapper + its before/after list entry (was a during-guarded no-op there). `#stats` (`renderStats`) builds its own chips — untouched.
+- **Decisions worth remembering** (not obvious from the diff):
+  - **Counters kept on Today as a chip row** (not stats-only) — one-tap-from-home logging is the feature's whole point. Diverges slightly from the literal 7-tile inventory but Dylan confirmed.
+  - **Saved footer is all-trip, not current-city** — Dylan picked the complete "my saves" list over today's-city-only.
+  - **Home Base "Hotel TBD" placeholder** keeps the tile present if a city goes unbooked — consistency over conditional hiding (Dylan-requested).
+  - **Phrasebook tap shipped because the route already existed** — would have been made non-tappable otherwise (no inline-page scope creep).
+- **`sw.js` CACHE → v13.** No new files (JS/CSS edits only).
+- **Verified:** `/tmp/v13_smoke.js` — 16/16 (getRealTalk place/city/null branches, getPhraseOfDay determinism, Home Base full + TBD fallback, Phrasebook tap+stamp, Saved footer empty/exclude-unsaved/trip-order/pills/links/city-labels). `node --check` on today.js + counters.js; dead-ref check clean; server 200s. **Real-browser visual QA pending** (Dylan — full screen now in context for the first time).
+- **iPhone PWA:** delete + re-add in Safari to pick up v12 → v13 cache jump.
+- **Queued — Stage 5 / v14 (final):** Tonight mode — `getTonightMode()` (≥19:00 Europe/Rome, already in today-plan.js) drives a `.today-grid--tonight` class (theme flip CSS already staged in today.css), "Tomorrow's Plan" swap, amber TONIGHT pill, image-tile dim. `?tonight=1` + `?date=…T21:00` both force it for QA.
+- **Plan file:** `~/.claude/plans/foamy-foraging-candle.md` (v13 detail section).
 
 ---
 
