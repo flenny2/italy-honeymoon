@@ -7,7 +7,7 @@ var BOOKINGS = [
   // 🔴 BOOK NOW — these sell out weeks ahead in June
   { id: 'bk-vatican', placeId: 'l2', urgency: 'now',
     title: 'Vatican Museums & Sistine Chapel',
-    city: 'Rome', when: 'June 13–17',
+    city: 'Rome', when: 'June 18',
     what: 'Timed entry tickets online',
     why: 'Sells out weeks ahead in June. Book 8am slot for smallest crowds.',
     tip: 'Skip the audio guide — a human guide is worth the extra cost.',
@@ -90,7 +90,7 @@ var BOOKINGS = [
   // (Gondola Serenade is now owned by gift-2 — see GIFTED_EXPERIENCES.)
   { id: 'bk-pantheon', placeId: 'l5', urgency: 'soon',
     title: 'Pantheon',
-    city: 'Rome', when: 'June 13–17',
+    city: 'Rome', when: 'June 15, 10:00 AM',
     what: 'Timed entry reservation (€5)',
     why: 'Now requires reservation. Quick to book, unlikely to sell out, but don\'t forget.',
     tip: 'Takes 20-30 minutes. The oculus is mesmerizing.',

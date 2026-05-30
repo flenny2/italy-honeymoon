@@ -5,7 +5,29 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-30
-**Branch:** `main`. **Today-screen redesign (v10–v14) COMPLETE and live on origin/main.** `design-handoff.md` removed (v14 trigger met). Next: offline-queued data work — Florence hotel, photos, gift dates, iOS PWA reinstall + airplane-mode test.
+**Branch:** `main`. **Schedule data populated** — 3 registry gifts now `scheduled` with real dates/times; Pantheon + Vatican booking `when` dates set. **Open:** Tuscany Jun 20-vs-21 to reconcile (see open-questions); Florence hotel still unbooked; photos still mostly unfilled.
+
+---
+
+## 2026-05-30 — Schedule data population (gifts + venue dates)
+
+Itinerary confirmed; populated the schedule data. JS data-only change — `sw.js` CACHE bumped **v14 → v15**.
+
+- **3 registry gifts** (`GIFTED_EXPERIENCES`, `data-trip.js`) — set `date` + `time` (24h `HH:MM`) + `bookingStatus: 'scheduled'`:
+  - `gift-1` Colosseum/Roman Forum/Palatine — `2026-06-14` `10:45`.
+  - `gift-3` pasta-making class — `2026-06-15` `16:15` (existing `duration: '3 hours'` already encodes the 7:15 PM end — no end-time field in the schema).
+  - `gift-2` Venice gondola serenade — `2026-06-25` `17:50`.
+  - These now light up the Today/Hero gift states + day-of/day-before callouts, and read as scheduled on `#bookings`. Auto-flip to `completed` after each date passes (`getEntryStatus`).
+- **2 venue bookings** (`BOOKINGS`, `bookings.js`) — enriched the free-text `when` only. **BOOKINGS has no date/time/source/status fields** (those are a gift-only concept; `source:'venue'` is injected by `getAllEntries()` at render time), so dates live in `when`:
+  - `bk-pantheon` (placeId l5): `'June 13–17'` → `'June 15, 10:00 AM'`.
+  - `bk-vatican` (placeId l2): `'June 13–17'` → `'June 18'` (date-only — no start time on the voucher yet).
+  - **No new entries** — Pantheon and Vatican already existed as bookings; adding duplicates would re-break the Path B dedup. The itinerary's "Pantheon Guided Tour" / "Vatican Guided Tour" map to these existing entries.
+- **Did NOT touch** any place `scheduled_time` fields, and **did NOT** edit `bk-antinori` (Tuscany) — left at `'June 21'` (see open question).
+- **Verified:** all 3 gifts read `bookingStatus: 'scheduled'` with dates; `bk-pantheon`/`bk-vatican` `when` updated, no duplicate IDs; `CACHE_NAME` → v15; `node --check` clean on `data-trip.js`/`bookings.js`/`sw.js`.
+- **iPhone PWA:** delete + re-add in Safari for the v14 → v15 cache jump.
+
+### Open question — Tuscany date (Jun 20 voucher vs Jun 21 app)
+The Tuscany voucher reads **Jun 20**, but `TRIP.dayTrips` (`data-trip.js:27`) and `bk-antinori` (`bookings.js`) both place the Tuscany/Chianti day trip on **Jun 21** — and `TRIP.dayTrips` is what drives the app's day-trip detection on the Today screen (Jun 20 is otherwise a plain Florence day). **Left both at Jun 21 this commit** pending Dylan verifying the real date against the booking confirmation. Once confirmed: either move the `TRIP.dayTrips` key (and `bk-antinori` `when`) to Jun 20, or keep Jun 21 if the voucher was misread. Touch both together so the app and the booking stay consistent.
 
 ---
 
