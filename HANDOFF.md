@@ -5,7 +5,17 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-30
-**Branch:** `main`. **Pre-trip data audit done + Vatican/Pantheon reconciled.** Vatican tour confirmed Jun 18 @ 8 AM (move-day morning); stale Jun-15 demo plan removed; Pantheon scheduled_time fixed to 10:00. Still open: Florence hotel unbooked; photos mostly unfilled; **move-day Vatican-tour visibility (feature gap, see below)**.
+**Branch:** `main`. **Audit follow-ups shipping.** Added `validate-data.js` guardrail (manual `node validate-data.js`; 0 errors, 12 legit warnings). Cosmetic data corrections next. Still open: Florence hotel unbooked; photos mostly unfilled; **move-day Vatican-tour visibility (feature gap)**.
+
+---
+
+## 2026-05-30 — validate-data.js guardrail (manual data-invariant checker)
+
+Added `validate-data.js` at repo root so the audit's bug classes can't silently return. **Manual tool only** — run `node validate-data.js`; NOT wired into Netlify, git hooks, `APP_FILES`, or `sw.js`. **No `CACHE_NAME` bump** (not a served asset).
+
+- **Mechanism:** reads the data files as text, concatenates them in index.html `<script>` order (`data-places, data-hotels, data-trip, data-today-plan, hero-images, bookings`), evals once via `vm.runInNewContext`, and captures the globals with a trailing expression. Top-level eval only declares consts + functions (nothing is called) so no DOM/Storage stubs are needed. (Planning caught that a `CITY_COLORS` stub would collide with the real `const CITY_COLORS` in data-trip.js — omitted.)
+- **Severity:** ERROR (exit 1) = real contradiction / silent functional failure — invalid verdict key (check1), cross-file DATE disagreement + bad gift date/time (check2), schema drift (check3), dangling placeId/linkedPlaces ref or out-of-bbox coord (check4). WARNING (exit 0) = gap/judgment call — asset/precache gaps incl. PWA icons + dead hero JPGs (check5), scheduled-time-of-day disagreement (check6), missing source/editorial field + stale count (check7).
+- **First run: `0 errors, 12 warnings`, exit 0** — confirms the Vatican/Pantheon/Tuscany contradictions from the audit are resolved. The 12 warnings are all the known-deferred items: icon-192/512 not precached (3), 2 dead hero JPGs, Colosseum l1 09:00 vs gift-1 10:45 (inert), b1–b5 missing source (5), stale "83" count (clears after the cosmetic commit).
 
 ---
 
