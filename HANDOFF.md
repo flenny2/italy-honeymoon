@@ -5,7 +5,32 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-05-30
-**Branch:** `main`. **Audit follow-ups shipping.** Added `validate-data.js` guardrail (manual `node validate-data.js`; 0 errors, 12 legit warnings). Cosmetic data corrections next. Still open: Florence hotel unbooked; photos mostly unfilled; **move-day Vatican-tour visibility (feature gap)**.
+**Branch:** `main`. **Session closed — pre-trip audit fully actioned.** Vatican/Pantheon reconciled, `validate-data.js` guardrail added (0 errors), cosmetic count/date corrections done.
+**⚠️ 4 commits are LOCAL, NOT pushed to origin/main** — see "Unpushed" below. Next session: push (or not), then pick up the HELD items.
+
+### Unpushed local commits (newest first) — decide whether to `git push origin main`
+- `<this commit>` — cosmetic: place count 83→86 (data-places.js + CLAUDE.md), Amalfi/Pompeii "June 13-18"→"13-17", CACHE v17→v18
+- `1f9168e` — add `validate-data.js` (manual guardrail)
+- `dba38e6` — Vatican Jun 18 8AM + Pantheon 10:00 + drop stale Jun-15 plan (CACHE v17)
+- `1c21175`/`f09bba5`/`d7635a0` are already on origin (pushed earlier). **dba38e6 onward is local only.**
+
+### HELD — next-session work (in rough priority)
+1. **Move-day Today display** — on Jun 18 the screen shows move-day Hero + train logistics but **nothing about the 8 AM Vatican tour**; BOOKINGS don't feed Hero/Plan and move-day logic overrides the headline. Pair with **Up Next ignoring `place.scheduled_time`** (getUpNext only reads TODAY_PLAN + scheduled gifts). **One scoped design change** — surface same-day timed bookings on the move-day Plan tile / Up Next.
+2. **Bologna b1–b5 `source`** — missing while b6–b8 have `source:"Trip planning"` (needs real attribution values from Dylan).
+3. **PWA icon precache** — add `img/icon-192.png` + `img/icon-512.png` to `APP_FILES` (referenced by index.html + manifest, self-heal online); drop the 2 unreferenced hero JPGs (`palatine-hill.jpg`, `vatican-statue.jpg`) or wire them into HERO_IMAGES.
+4. **Florence hotel** still unbooked (HOTELS entry); **photos** per TODO-photos.md mostly unfilled.
+
+> `validate-data.js` (`node validate-data.js`) is the guardrail for items the audit fixed — run it after any data edit. Currently 0 errors; the remaining warnings are exactly the HELD items 2–3 above plus the inert Colosseum 09:00/gift-10:45 note.
+
+---
+
+## 2026-05-30 — Cosmetic data corrections (place count + Rome-stay window)
+
+Closes the last two audit findings. JS data touched → `sw.js` CACHE **v17 → v18**.
+
+- **Place count 83 → 86:** `data-places.js:2` header comment and `CLAUDE.md` file map (`DEFAULT_PLACES (86 entries)`). Actual array length is 86 (81 visible + 5 hidden transit/pharmacy).
+- **Amalfi/Pompeii notes** (`data-places.js`, a1/a2): "DAY TRIP from Rome during June 13-**18** stay" → "13-**17**". Rome stay is nights 13–17; the 18th is the Rome→Florence move day, so a Rome day trip can't land on it.
+- **Verified:** re-ran `node validate-data.js` → still **0 errors**, and the stale-count warning is now gone (11 warnings, all known-deferred HELD items).
 
 ---
 
