@@ -481,6 +481,8 @@ var FILTER_TESTS = {
   'worth-it':   function(p) { return p.verdict === 'worth-it'; },
   'nathan':     function(p) { return p.source && p.source.toLowerCase().indexOf('nathan') !== -1; },
   'goop':       function(p) { return p.source && p.source.toLowerCase().indexOf('goop') !== -1; },
+  'jacqueline': function(p) { return p.source && p.source.toLowerCase().indexOf('jacqueline') !== -1; },
+  'xio':        function(p) { return p.source && p.source.toLowerCase().indexOf('xio') !== -1; },
   'dining':     function(p) { return p.category === 'dining'; },
   'landmark':   function(p) { return p.category === 'landmark'; },
   'activity':   function(p) { return p.category === 'activity'; },

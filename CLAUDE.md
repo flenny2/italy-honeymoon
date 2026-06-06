@@ -49,7 +49,7 @@ css/
   pages.css             Page-specific styles (today, city, detail, phrasebook, settings, stats, etc.)
 
 js/
-  data-places.js        DEFAULT_PLACES (86 entries), autoTag(), distanceKm(), walkMinutes(), getNearbyPairings()
+  data-places.js        DEFAULT_PLACES (89 entries), autoTag(), distanceKm(), walkMinutes(), getNearbyPairings()
   data-trip.js          TRIP schedule, CITIES, CITY_EMOJI, CITY_VIEWS, CAT_COLORS/ICONS, MOODS, VERDICTS, GIFTED_EXPERIENCES, getTripPhase()
   data-hotels.js        HOTELS object keyed by city name
   data-phrases.js       Italian phrasebook data + JOURNAL_PROMPTS

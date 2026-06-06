@@ -24,6 +24,18 @@
 
 ---
 
+## 2026-06-03 — Add Jacqueline + Xio source recommenders
+
+Mirror the Nathan/Goop "By Source" map filters for two new recommenders. JS touched → `sw.js` CACHE **v18 → v19**.
+
+- **`index.html`** — two new `mfm-option` buttons under "By Source": 🍷 Jacqueline Recs (purple #F3E8FF/#9333EA), 🧭 Xio Guide (sky-blue #E0F2FE/#0EA5E9).
+- **`js/app.js`** — two new `FILTER_TESTS` matchers (`jacqueline`, `xio`), substring-match on `p.source` exactly like Nathan/Goop.
+- **Attribution convention for future places:** `source:"Jacqueline rec"` / `source:"Xio guide"` (filter keys on the lowercase name).
+- **Jacqueline's first 3 recs added** (`data-places.js`, count 86 → 89): `j1` La Piccola Cuccagna (Rome, off Piazza Navona, worth-it), `j2` Pane e Salame (Rome, by Trevi, hidden-gem), `j3` Gustarium (Florence, centro pizza al taglio, worth-it). Coords confirmed via web (Via della Cuccagna 14 / Via di Santa Maria in Via 19 / Via dei Cimatori 24r). `validate-data.js` → 0 errors.
+- **Xio Guide** filter is live but still matches nothing — no places carry `source:"Xio guide"` yet.
+
+---
+
 ## 2026-05-30 — Cosmetic data corrections (place count + Rome-stay window)
 
 Closes the last two audit findings. JS data touched → `sw.js` CACHE **v17 → v18**.
