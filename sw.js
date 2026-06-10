@@ -75,8 +75,6 @@ var APP_FILES = [
   '/img/heroes/florence-duomo.jpg',
   '/img/heroes/lake-como.jpg',
   '/img/heroes/venice-grand-canal.jpg',
-  '/img/heroes/palatine-hill.jpg',
-  '/img/heroes/vatican-statue.jpg',
 ];
 
 // Install: pre-cache all app files
