@@ -4,23 +4,43 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-05-30
-**Branch:** `main`. **Session closed — pre-trip audit fully actioned.** Vatican/Pantheon reconciled, `validate-data.js` guardrail added (0 errors), cosmetic count/date corrections done.
-**⚠️ 4 commits are LOCAL, NOT pushed to origin/main** — see "Unpushed" below. Next session: push (or not), then pick up the HELD items.
+**Last updated:** 2026-06-09
+**Branch:** `pre-trip-polish` (cut from `main` at `31cfad5`). **Pre-trip polish batch shipped — 5 commits.** June 16 Pompeii/Amalfi/Positano day trip added, PWA icons precached, dead hero JPGs dropped, CACHE v19 → v20. `validate-data.js`: 0 errors, 6 warnings (down from 11). See the 2026-06-09 entry below.
+**⚠️ 5 commits live on `pre-trip-polish` only — do NOT push yet** (held by instruction; design session follows, then Dylan pushes/merges). `main` is even with `origin/main` at `31cfad5`.
 
-### Unpushed local commits (newest first) — decide whether to `git push origin main`
-- `<this commit>` — cosmetic: place count 83→86 (data-places.js + CLAUDE.md), Amalfi/Pompeii "June 13-18"→"13-17", CACHE v17→v18
-- `1f9168e` — add `validate-data.js` (manual guardrail)
-- `dba38e6` — Vatican Jun 18 8AM + Pantheon 10:00 + drop stale Jun-15 plan (CACHE v17)
-- `1c21175`/`f09bba5`/`d7635a0` are already on origin (pushed earlier). **dba38e6 onward is local only.**
+### Unpushed batch commits on `pre-trip-polish` (newest first)
+- `<this commit>` — CACHE v19 → v20 + this HANDOFF entry
+- `83c0adf` — drop dead hero JPGs (palatine-hill, vatican-statue) from sw.js precache
+- `eb77255` — precache PWA icons (icon-192/512) in sw.js APP_FILES
+- `9b20b9d` — point Amalfi (a1) + Pompeii (a2) notes at the June 16 combined day trip
+- `8eee0d6` — add June 16 Pompeii/Amalfi/Positano day trip (TRIP.dayTrips + bk-amalfi booking)
 
 ### HELD — next-session work (in rough priority)
 1. **Move-day Today display** — on Jun 18 the screen shows move-day Hero + train logistics but **nothing about the 8 AM Vatican tour**; BOOKINGS don't feed Hero/Plan and move-day logic overrides the headline. Pair with **Up Next ignoring `place.scheduled_time`** (getUpNext only reads TODAY_PLAN + scheduled gifts). **One scoped design change** — surface same-day timed bookings on the move-day Plan tile / Up Next.
 2. **Bologna b1–b5 `source`** — missing while b6–b8 have `source:"Trip planning"` (needs real attribution values from Dylan).
-3. **PWA icon precache** — add `img/icon-192.png` + `img/icon-512.png` to `APP_FILES` (referenced by index.html + manifest, self-heal online); drop the 2 unreferenced hero JPGs (`palatine-hill.jpg`, `vatican-statue.jpg`) or wire them into HERO_IMAGES.
+3. ~~**PWA icon precache**~~ — ✅ **DONE 2026-06-09** (pre-trip-polish batch): `icon-192/512` added to `APP_FILES`; `palatine-hill.jpg` + `vatican-statue.jpg` dropped from precache.
 4. **Florence hotel** still unbooked (HOTELS entry); **photos** per TODO-photos.md mostly unfilled.
 
 > `validate-data.js` (`node validate-data.js`) is the guardrail for items the audit fixed — run it after any data edit. Currently 0 errors; the remaining warnings are exactly the HELD items 2–3 above plus the inert Colosseum 09:00/gift-10:45 note.
+
+---
+
+## 2026-06-09 — Pre-trip polish batch (5 commits, branch `pre-trip-polish`)
+
+Five atomic commits on `pre-trip-polish` (cut from `main` at `31cfad5`). **Not pushed** — held by instruction until after the design session. JS/data + `sw.js` touched → `sw.js` CACHE **v19 → v20**, bumped **once** for the whole batch in the final commit (not per-commit) since the five ship/deploy together.
+
+1. **`8eee0d6` — June 16 Pompeii/Amalfi/Positano day trip.** New `TRIP.dayTrips['2026-06-16'] = { label: 'Pompeii / Amalfi / Positano day trip', from: 'Rome', emoji: '🌊' }` — modeled on the Tuscany 2026-06-20 entry, only `label/from/emoji`, **no new schema field**. The 7:10 AM departure + ~13h length live in the booking `when` and place notes, not as dayTrips fields. Added `bk-amalfi` to `BOOKINGS` (urgency `now`, `placeId: 'a1'`, `when: 'June 16, 7:10 AM'`, standard venue shape — no forbidden source/date/time keys).
+   - **Booking anchor decision:** linked to **`a1`** (Amalfi/Positano — the "essential big wow") so the booking → detail link lands on the marquee stop. Flip to `a2` (Pompeii, the ticketed component) trivially if preferred — both pass `validate-data.js` identically.
+2. **`9b20b9d` — `a1`/`a2` notes → June 16.** Both now read "DAY TRIP from Rome on June 16 — departs ~7:10 AM", replacing the stale "June 13-17 stay" window and the now-false "separate day from Pompeii/Amalfi" lines (it's one combined trip now).
+   - **⚠️ Residual contradiction (out of scope — needs Dylan's call):** `a1.honest_summary` still ends "Do NOT combine with Pompeii in the same day" and `a1.best_for` still says "Keep a separate day from Pompeii." These editorial fields now contradict the combined June 16 trip. Left untouched (Task 2 scoped to `notes` only) — revise the voice copy when convenient.
+3. **`eb77255` — precache PWA icons.** `/img/icon-192.png` + `/img/icon-512.png` added to `APP_FILES` (referenced by index.html + manifest but 404'd on a cold offline install). Closes the icon half of old HELD item 3.
+4. **`83c0adf` — drop dead hero JPGs.** Removed `/img/heroes/palatine-hill.jpg` + `vatican-statue.jpg` from `APP_FILES` — no `HERO_IMAGES` slot referenced them (precache dead weight). Closes the dead-hero half of old HELD item 3.
+5. **`<this commit>` — CACHE v19 → v20 + this HANDOFF entry + header cursor refresh.**
+
+- **Validator:** `node validate-data.js` → **0 errors, 6 warnings** (was 11). Cleared: 3 icon + 2 dead-hero. **Remaining 6 are expected/deferred:** b1–b5 missing `source` (HELD item 2 — needs real attribution from Dylan) + the inert Colosseum `l1` 09:00 vs gift-1 10:45 sched-time note.
+- **`node --check`** clean on every touched JS file (`data-trip.js`, `bookings.js`, `data-places.js`, `sw.js`).
+- **iPhone PWA:** delete + re-add in Safari to pick up the v19 → v20 cache jump.
+- **Next:** design session (will bump CACHE **v20 → v21**), then push/merge `pre-trip-polish`.
 
 ---
 
