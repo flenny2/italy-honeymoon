@@ -10,6 +10,9 @@ var APP_FILES = [
   '/',
   '/index.html',
   '/manifest.json',
+  // PWA icons (referenced by index.html + manifest — precache for cold offline install)
+  '/img/icon-192.png',
+  '/img/icon-512.png',
   // CSS
   '/css/variables.css',
   '/css/base.css',
