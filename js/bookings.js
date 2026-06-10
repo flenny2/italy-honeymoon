@@ -21,6 +21,14 @@ var BOOKINGS = [
     tip: 'Walk through Villa Borghese park to get there — beautiful approach.',
     url: '' },
 
+  { id: 'bk-amalfi', placeId: 'a1', urgency: 'now',
+    title: 'Pompeii, Amalfi & Positano Day Trip',
+    city: 'Rome', when: 'June 16, 7:10 AM',
+    what: 'Full-day guided tour from Rome (Pompeii + Positano/Amalfi Coast)',
+    why: 'Long ~13-hour day departing 7:10 AM — guided tours with transport sell out in June. Book ahead.',
+    tip: 'Pompeii in the cooler morning, then a long terrace lunch on the coast. Bring water and comfortable shoes.',
+    url: '' },
+
   { id: 'bk-uffizi', placeId: 'f2', urgency: 'now',
     title: 'Uffizi Gallery',
     city: 'Florence', when: 'June 18–21',

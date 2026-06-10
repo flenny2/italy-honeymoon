@@ -23,6 +23,7 @@ const TRIP = {
     { date: '2026-06-26', city: 'Venice', day: 14 },
   ],
   dayTrips: {
+    '2026-06-16': { label: 'Pompeii / Amalfi / Positano day trip', from: 'Rome', emoji: '🌊' },
     '2026-06-19': { label: 'Bologna half-day', from: 'Florence', emoji: '🟥' },
     '2026-06-20': { label: 'Tuscany / Chianti day trip', from: 'Florence', emoji: '🍷' },
   }
