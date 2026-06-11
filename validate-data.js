@@ -14,9 +14,13 @@
 // SEVERITY:
 //   ERROR   (exit 1) — a real contradiction or silent functional failure:
 //                      cross-file DATE disagreement, broken placeId/linkedPlaces
-//                      ref, schema drift, invalid verdict key, bad coords/dates.
+//                      ref, schema drift, invalid verdict key, bad coords/dates,
+//                      scheduled_date/scheduled_time pairing violations, and any
+//                      date/time conflict between a date-anchored place and the
+//                      gift/booking that references it.
 //   WARNING (exit 0) — a gap or judgment call: asset/precache gaps (PWA icons,
-//                      dead hero images), scheduled-time-of-day disagreement,
+//                      dead hero images), time disagreement on an UNanchored
+//                      place, explicit-timed booking with no place anchor,
 //                      missing source / editorial field, stale place count.
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -271,10 +275,12 @@ function check5_assets() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// WARN 6 — scheduled-time-of-day agreement.
+// 6 — scheduled-time-of-day agreement.
 //   For any place referenced by a SCHEDULED gift (via linkedPlaces) or by a
-//   booking whose `when` carries an explicit HH:MM, warn if the place's own
-//   scheduled_time disagrees.
+//   booking whose `when` carries an explicit HH:MM, flag if the place's own
+//   scheduled_time disagrees. ERROR when the place is date-anchored to the
+//   same day as the other source (both then feed Up Next — a live functional
+//   contradiction); WARN when the place is unanchored (advisory only).
 // ═══════════════════════════════════════════════════════════════════════════
 function check6_scheduled_times() {
   for (const g of GIFTED_EXPERIENCES) {
@@ -282,7 +288,8 @@ function check6_scheduled_times() {
     for (const pid of (g.linkedPlaces || [])) {
       const p = placeById.get(pid);
       if (p && p.scheduled_time && p.scheduled_time !== g.time) {
-        warn('sched-time', `place ${pid} scheduled_time "${p.scheduled_time}" disagrees with scheduled gift ${g.id} time "${g.time}"`);
+        const report = (p.scheduled_date && p.scheduled_date === g.date) ? err : warn;
+        report('sched-time', `place ${pid} scheduled_time "${p.scheduled_time}" disagrees with scheduled gift ${g.id} time "${g.time}"`);
       }
     }
   }
@@ -292,7 +299,8 @@ function check6_scheduled_times() {
     if (!p || !p.scheduled_time) continue;
     const t = parseClock(b.when);
     if (t && t !== p.scheduled_time) {
-      warn('sched-time', `place ${b.placeId} scheduled_time "${p.scheduled_time}" disagrees with booking ${b.id} when-time "${t}" (from "${b.when}")`);
+      const report = (p.scheduled_date && p.scheduled_date === parseSingleDate(b.when)) ? err : warn;
+      report('sched-time', `place ${b.placeId} scheduled_time "${p.scheduled_time}" disagrees with booking ${b.id} when-time "${t}" (from "${b.when}")`);
     }
   }
 }
@@ -307,6 +315,85 @@ function parseClock(s) {
   if (mer === 'PM' && h !== 12) h += 12;
   if (mer === 'AM' && h === 12) h = 0;
   return String(h).padStart(2, '0') + ':' + m[2];
+}
+
+// Parse a SINGLE explicit "Month D" out of free text → ISO in the trip's year,
+// or null. Ranges ("June 18–21", "June 13–17 (dinner)") return null — a range
+// is a window, not a date claim, so it can't contradict a scheduled_date.
+const MONTHS = {
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+};
+function parseSingleDate(s) {
+  if (!s) return null;
+  if (/\d\s*[–—-]\s*\d/.test(String(s))) return null; // day range → not a single date
+  const m = String(s).match(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})\b/i);
+  if (!m) return null;
+  const year = TRIP.startDate.slice(0, 4);
+  const mo = String(MONTHS[m[1].toLowerCase()]).padStart(2, '0');
+  return `${year}-${mo}-${String(parseInt(m[2], 10)).padStart(2, '0')}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ERR 8 — date anchors (scheduled_date/scheduled_time) on places.
+//   - pairing rule: a place has BOTH scheduled_date and scheduled_time, or
+//     NEITHER (a dateless time is exactly the ambiguity that produced the
+//     phantom "Colosseum 09:00" on every Rome day).
+//   - scheduled_date must be valid ISO and match a TRIP.schedule date.
+//   - cross-source DATE agreement (ERROR — these all feed the Today screen):
+//       booking.when single explicit date  vs  place.scheduled_date
+//       gift.date                          vs  linked place.scheduled_date
+//   - WARN: a booking with an explicit date+time whose place is unanchored —
+//     legal (slot not confirmed yet), but it won't surface on Today, so flag
+//     the missing handoff. (e.g. bk-antinori once a tasting time is booked.)
+// ═══════════════════════════════════════════════════════════════════════════
+function check8_date_anchors() {
+  const scheduleDates = new Set(TRIP.schedule.map(s => s.date));
+  for (const p of DEFAULT_PLACES) {
+    const hasDate = p.scheduled_date != null && p.scheduled_date !== '';
+    const hasTime = p.scheduled_time != null && p.scheduled_time !== '';
+    if (hasDate !== hasTime) {
+      err('anchor-pair', `place ${p.id} (${p.name}): scheduled_date and scheduled_time must travel together ` +
+        `(date=${JSON.stringify(p.scheduled_date)}, time=${JSON.stringify(p.scheduled_time)})`);
+    }
+    if (hasDate) {
+      if (!ISO_RE.test(p.scheduled_date)) {
+        err('anchor-date', `place ${p.id}: scheduled_date "${p.scheduled_date}" is not ISO yyyy-mm-dd`);
+      } else if (!scheduleDates.has(p.scheduled_date)) {
+        err('anchor-date', `place ${p.id}: scheduled_date ${p.scheduled_date} is not a TRIP.schedule date`);
+      }
+    }
+    if (hasTime && !TIME_RE.test(p.scheduled_time)) {
+      err('anchor-time', `place ${p.id}: scheduled_time "${p.scheduled_time}" is not 24h HH:MM`);
+    }
+  }
+
+  for (const b of BOOKINGS) {
+    if (!b.placeId) continue;
+    const p = placeById.get(b.placeId);
+    if (!p) continue; // broken ref already reported by check4
+    const iso = parseSingleDate(b.when);
+    if (!iso) continue;
+    if (p.scheduled_date) {
+      if (p.scheduled_date !== iso) {
+        err('anchor-date', `booking ${b.id}: when ("${b.when}") cites ${iso} but place ${b.placeId} ` +
+          `scheduled_date is ${p.scheduled_date}`);
+      }
+    } else if (parseClock(b.when)) {
+      warn('anchor-date', `booking ${b.id} carries an explicit date+time ("${b.when}") but place ${b.placeId} ` +
+        `has no scheduled_date/scheduled_time anchor — it won't surface on Today's Plan / Up Next`);
+    }
+  }
+
+  for (const g of GIFTED_EXPERIENCES) {
+    if (!g.date) continue;
+    for (const pid of (g.linkedPlaces || [])) {
+      const p = placeById.get(pid);
+      if (p && p.scheduled_date && p.scheduled_date !== g.date) {
+        err('anchor-date', `gift ${g.id}: date ${g.date} disagrees with linked place ${pid} scheduled_date ${p.scheduled_date}`);
+      }
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -345,6 +432,7 @@ check4_refs_and_coords();
 check5_assets();
 check6_scheduled_times();
 check7_completeness();
+check8_date_anchors();
 
 // ── report ───────────────────────────────────────────────────────────────────
 console.log('\n══════════════════════════════════════════════════════');
