@@ -4,24 +4,43 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-06-09
-**Branch:** `pre-trip-polish` (cut from `main` at `31cfad5`). **Pre-trip polish batch shipped — 5 commits.** June 16 Pompeii/Amalfi/Positano day trip added, PWA icons precached, dead hero JPGs dropped, CACHE v19 → v20. `validate-data.js`: 0 errors, 6 warnings (down from 11). See the 2026-06-09 entry below.
-**⚠️ 5 commits live on `pre-trip-polish` only — do NOT push yet** (held by instruction; design session follows, then Dylan pushes/merges). `main` is even with `origin/main` at `31cfad5`.
+**Last updated:** 2026-06-11
+**Branch:** `pre-trip-polish` (cut from `main` at `31cfad5`). **Today-screen date-awareness batch shipped — 3 more commits (8 total unpushed).** Timed places are now date-anchored (`scheduled_date` + `scheduled_time` pair), `getTripPhase` is timezone-proof (was a day behind in Europe/Rome!), Jun 27 is Day 15/15, and Plan/Up Next derive from gifts + anchored places + day trips. CACHE v20 → v21. `validate-data.js`: 0 errors, 5 warnings. See the 2026-06-11 entry below.
+**⚠️ 8 commits live on `pre-trip-polish` only — do NOT push yet** (held by instruction; Dylan pushes/merges). `main` is even with `origin/main` at `31cfad5`.
 
 ### Unpushed batch commits on `pre-trip-polish` (newest first)
-- `<this commit>` — CACHE v19 → v20 + this HANDOFF entry
+- `<this commit>` — Today plan/Up Next derivation + move-day rule + CACHE v20 → v21 + this HANDOFF entry
+- `5f0fcc3` — TZ-proof getTripPhase day math + June 27 as Day 15
+- `e275379` — date-anchor timed places (scheduled_date) + validator date-contradiction errors
+- `bc9c657` — CACHE v19 → v20 + HANDOFF entry for the polish batch
 - `83c0adf` — drop dead hero JPGs (palatine-hill, vatican-statue) from sw.js precache
 - `eb77255` — precache PWA icons (icon-192/512) in sw.js APP_FILES
 - `9b20b9d` — point Amalfi (a1) + Pompeii (a2) notes at the June 16 combined day trip
 - `8eee0d6` — add June 16 Pompeii/Amalfi/Positano day trip (TRIP.dayTrips + bk-amalfi booking)
 
 ### HELD — next-session work (in rough priority)
-1. **Move-day Today display** — on Jun 18 the screen shows move-day Hero + train logistics but **nothing about the 8 AM Vatican tour**; BOOKINGS don't feed Hero/Plan and move-day logic overrides the headline. Pair with **Up Next ignoring `place.scheduled_time`** (getUpNext only reads TODAY_PLAN + scheduled gifts). **One scoped design change** — surface same-day timed bookings on the move-day Plan tile / Up Next.
+1. ~~**Move-day Today display / Up Next ignoring `place.scheduled_time`**~~ — ✅ **DONE 2026-06-11** (date-awareness batch below).
 2. **Bologna b1–b5 `source`** — missing while b6–b8 have `source:"Trip planning"` (needs real attribution values from Dylan).
-3. ~~**PWA icon precache**~~ — ✅ **DONE 2026-06-09** (pre-trip-polish batch): `icon-192/512` added to `APP_FILES`; `palatine-hill.jpg` + `vatican-statue.jpg` dropped from precache.
-4. **Florence hotel** still unbooked (HOTELS entry); **photos** per TODO-photos.md mostly unfilled.
+3. **Antinori tasting time** — `bk-antinori.when` is `'June 20'` with no slot. When Dylan books a time, add `scheduled_date:"2026-06-20"` + `scheduled_time` to **t3** so Jun 20's Up Next shows the departure the way Jun 16 shows 07:10 (the validator will WARN the moment `when` gains a time while t3 stays unanchored).
+4. **`a1` editorial copy contradiction** — honest_summary/best_for still say "Do NOT combine with Pompeii" (now-false; needs Dylan's voice pass).
+5. **Florence hotel** still unbooked (HOTELS entry); **photos** per TODO-photos.md mostly unfilled.
 
-> `validate-data.js` (`node validate-data.js`) is the guardrail for items the audit fixed — run it after any data edit. Currently 0 errors; the remaining warnings are exactly the HELD items 2–3 above plus the inert Colosseum 09:00/gift-10:45 note.
+> `validate-data.js` (`node validate-data.js`) is the guardrail — run it after any data edit. Currently 0 errors, 5 warnings (all = b1–b5 missing `source`, HELD item 2). Date/time contradictions across places/bookings/gifts are now ERRORs, not warnings.
+
+---
+
+## 2026-06-11 — Today-screen date awareness (3 commits, branch `pre-trip-polish`)
+
+The audit's core finding: `scheduled_time` had no date, `TODAY_PLAN` is empty by design, and BOOKINGS never fed Today — so Plan/Up Next couldn't map timed activities to days (phantom "Colosseum 09:00" on every Rome day, booked Pantheon invisible, move-day hero hiding the 8 AM Vatican). One CACHE bump (v20 → v21) in the final commit for the batch.
+
+1. **`e275379` — `scheduled_date` anchors + validator ERRORs.** New invariant: `scheduled_date` + `scheduled_time` travel together, both or neither. Anchored: l2 Vatican Jun 18 08:00, l5 Pantheon Jun 15 10:00, a1 Amalfi Jun 16 07:10. Removed stale times: l1 Colosseum 09:00 (gift-1 owns the slot), f1 Duomo + f2 Uffizi (not booked — re-add as a pair when a slot is confirmed). `validate-data.js` check8: ERRORs on pairing violations and any booking↔place / gift↔place date conflict; WARN when a booking gains an explicit date+time but its place is unanchored. check6 time conflicts upgrade WARN→ERROR when date-anchored to the same day. Schema documented in CLAUDE.md (same commit).
+2. **`5f0fcc3` — TZ-proof `getTripPhase` + Day 15.** `new Date('YYYY-MM-DD')` parses UTC, mock/now parsed local → counter ran **one day behind in any UTC+ timezone, including Europe/Rome where the phone will be** ("stuck at 3" reproduced under `TZ=Europe/Rome`), and Jun 27 flipped to the 'after' screen. Now pure ISO-string compare + schedule lookup by date. `addDaysISO` had the same UTC tail (+1 day returned the same day in Rome TZ — would have broken gift-tomorrow/Tonight lookups). Jun 27 added as Day 15, `totalDays` 15 (**Dylan-confirmed: 15 days / 14 nights, denominator 15**). check9 guards schedule contiguity + denominator drift.
+3. **`<this commit>` — derivation layer.** New `getTimedItemsForDate(date)` in today-plan.js merges TODAY_PLAN (manual layer, still wins) + scheduled gifts + date-anchored places, soonest-first, deduped. `getUpNext` reads it; `getTodayHeadlinePlace` chain is now manual → earliest timed item → untimed day-trip anchor (`TRIP.dayTrips[date].city`, new field — Jun 19 → b2, Jun 20 → t1) → null (free day; the phantom essential-place fallback is **gone**). Move-day rule (generalized, any move day): before 12:00 Rome, a timed morning item leads the Hero (kicker carries the time) and the Plan tile becomes the move-logistics surface; from noon, move-PM leads as before. Free days get a deliberate "Free day" Plan tile. `_planPlaceGiftMove` prefers the day's earliest timed item the hero doesn't show (Jun 15: Pantheon 10:00 under the pasta hero) and never attaches a time from another day.
+
+- **Verification:** `node validate-data.js` → 0 errors, 5 warnings (only b1–b5 source). Negative tests: flipped l5 date → ERROR exit 1; broke the pair → ERROR; bk-antinori with hypothetical "8:30 AM" → WARN not ERROR (no false-fire on the unanchored t3). vm harness: `getTripPhase` identical under Europe/Rome, America/Los_Angeles, Pacific/Auckland; 17/17 derivation assertions pass. **Headless-Chrome acceptance pass (21/21)** against `python3 -m http.server` with fresh profiles: Jun 14 gift hero 10:45 + zero "09:00"; Jun 15 Pantheon 10:00 in Plan/Up Next + pasta hero intact; Jun 16 Amalfi 07:10 + Day 4/15; Jun 17 free-day state; Jun 18 T09:00 Vatican leads + MOVE DAY tile secondary, T13:00 Benvenuti a Firenze; Jun 19 Day 7; Jun 27 Day 15 still DURING.
+- **Antinori decision:** `bk-antinori.when` is `'June 20'` — the audit's "8:30 AM" doesn't exist in the data, so t1/t3 stay unanchored on purpose (no fabricated time). See HELD item 3 for the handoff.
+- **Housekeeping:** RALPH-TASKS.md deleted (untracked, served its purpose).
+- **iPhone PWA:** delete + re-add in Safari to pick up v20 → v21 (or just push and reload twice — the SW update path works on Netlify).
 
 ---
 

@@ -2,8 +2,9 @@
 // TODAY_PLAN — per-day curated Today screen data
 // Consumed by today-plan.js. Entries are optional —
 // any date not present falls through to the derived
-// fallback chain (scheduled gift > pre-booked venue >
-// first essential place in today's city).
+// chain (earliest time-anchored item that day: scheduled
+// gifts + places with scheduled_date/scheduled_time >
+// untimed day-trip anchor > free day).
 // ═══════════════════════════════════════
 //
 // Shape:

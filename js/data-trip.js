@@ -23,10 +23,13 @@ const TRIP = {
     { date: '2026-06-26', city: 'Venice', day: 14 },
     { date: '2026-06-27', city: 'Venice', day: 15 },   // departure day
   ],
+  // `city` = which DEFAULT_PLACES city holds the trip's places (the Amalfi/
+  // Pompeii entries are filed under Rome). Today's headline fallback uses it
+  // to anchor untimed day-trip days.
   dayTrips: {
-    '2026-06-16': { label: 'Pompeii / Amalfi / Positano day trip', from: 'Rome', emoji: '🌊' },
-    '2026-06-19': { label: 'Bologna half-day', from: 'Florence', emoji: '🟥' },
-    '2026-06-20': { label: 'Tuscany / Chianti day trip', from: 'Florence', emoji: '🍷' },
+    '2026-06-16': { label: 'Pompeii / Amalfi / Positano day trip', from: 'Rome', city: 'Rome', emoji: '🌊' },
+    '2026-06-19': { label: 'Bologna half-day', from: 'Florence', city: 'Bologna', emoji: '🟥' },
+    '2026-06-20': { label: 'Tuscany / Chianti day trip', from: 'Florence', city: 'Tuscany', emoji: '🍷' },
   }
 };
 

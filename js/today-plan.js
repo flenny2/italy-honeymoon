@@ -5,9 +5,58 @@
 // GIFTED_EXPERIENCES + BOOKINGS + DEFAULT_PLACES.
 // ═══════════════════════════════════════
 
+// All time-anchored items for a date, soonest-first.
+// Sources, deduped by kind:id —
+//   (1) TODAY_PLAN[date] manual layer (headline + items, when timed)
+//   (2) scheduled gifts whose date matches
+//   (3) places date-anchored to this day (scheduled_date + scheduled_time)
+// A place's time is only ever surfaced when its scheduled_date matches `date`.
+function getTimedItemsForDate(date) {
+  var items = [];
+  var seen = {};
+  function push(it) {
+    var key = it.kind + ':' + it.id;
+    if (seen[key] || !it.time) return;
+    seen[key] = true;
+    items.push(it);
+  }
+
+  var plan = (typeof TODAY_PLAN !== 'undefined') ? TODAY_PLAN[date] : null;
+  if (plan && plan.headline && plan.headline.time) {
+    push({ kind: plan.headline.kind, id: plan.headline.id, time: plan.headline.time,
+           place: plan.headline.kind === 'place' ? _findPlace(plan.headline.id) : null });
+  }
+  if (plan && plan.items) {
+    plan.items.forEach(function(it) {
+      push({ kind: it.kind, id: it.id, time: it.time,
+             place: it.kind === 'place' ? _findPlace(it.id) : null });
+    });
+  }
+
+  var gifts = (typeof GIFTED_EXPERIENCES !== 'undefined') ? GIFTED_EXPERIENCES : [];
+  gifts.forEach(function(g) {
+    if (g.date === date && g.time && g.bookingStatus === 'scheduled') {
+      var firstLinked = g.linkedPlaces && g.linkedPlaces[0];
+      push({ kind: 'gift', id: g.id, time: g.time, gift: g,
+             place: firstLinked ? _findPlace(firstLinked) : null });
+    }
+  });
+
+  var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
+  places.forEach(function(p) {
+    if (p.scheduled_date === date && p.scheduled_time) {
+      push({ kind: 'place', id: p.id, time: p.scheduled_time, place: p });
+    }
+  });
+
+  // 'HH:MM' 24h strings sort correctly as plain strings.
+  items.sort(function(a, b) { return a.time.localeCompare(b.time); });
+  return items;
+}
+
 // Returns { kind, id, time, kicker, place } for the given date.
 // Hybrid: manual TODAY_PLAN[date] wins, else derive.
-// Returns null only if no headline can be resolved (shouldn't happen during trip).
+// Returns null on a genuinely free day — no phantom plan is invented.
 function getTodayHeadlinePlace(date) {
   // (1) manual override
   var manual = (typeof TODAY_PLAN !== 'undefined') && TODAY_PLAN[date] && TODAY_PLAN[date].headline;
@@ -15,84 +64,62 @@ function getTodayHeadlinePlace(date) {
     return Object.assign({}, manual, { place: _findPlace(manual.id) });
   }
 
-  // (2) derive: scheduled gift on this date
-  var gifts = (typeof GIFTED_EXPERIENCES !== 'undefined') ? GIFTED_EXPERIENCES : [];
-  for (var i = 0; i < gifts.length; i++) {
-    var g = gifts[i];
-    if (g.date === date && g.time && g.bookingStatus === 'scheduled') {
-      var firstLinked = g.linkedPlaces && g.linkedPlaces[0];
+  // (2) earliest time-anchored item of the day (gifts + anchored places)
+  var timed = getTimedItemsForDate(date);
+  if (timed.length) {
+    var t = timed[0];
+    if (t.kind === 'gift') {
       return {
-        kind: 'gift', id: g.id, time: g.time,
-        kicker: 'GIFT · ' + (g.duration || 'TODAY'),
-        place: firstLinked ? _findPlace(firstLinked) : null,
-        gift: g
+        kind: 'gift', id: t.id, time: t.time,
+        kicker: 'GIFT · ' + (t.gift.duration || 'TODAY'),
+        place: t.place, gift: t.gift
       };
+    }
+    return {
+      kind: 'place', id: t.id, time: t.time,
+      kicker: t.place ? _kickerFromCategory(t.place.category) : 'TODAY',
+      place: t.place
+    };
+  }
+
+  // (3) untimed day trip — anchor on the trip city's first essential place
+  var dayTrip = (typeof TRIP !== 'undefined' && TRIP.dayTrips) ? TRIP.dayTrips[date] : null;
+  if (dayTrip && dayTrip.city) {
+    var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
+    var anchor = places.find(function(p) {
+      return p.city === dayTrip.city && p.verdict === 'essential';
+    }) || places.find(function(p) { return p.city === dayTrip.city; });
+    if (anchor) {
+      return { kind: 'place', id: anchor.id, time: null, kicker: 'DAY TRIP', place: anchor };
     }
   }
 
-  // (3) derive: pre-booked venue with a scheduled time (we don't track times on venues yet
-  // beyond a 'when' string, so this branch effectively no-ops until BOOKINGS grows times).
-  // Kept as an explicit comment so future-you knows the slot exists.
-
-  // (4) fallback: first 'essential' place in today's city
-  var city = _cityForDate(date);
-  if (!city) return null;
-  var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
-  var essential = places.find(function(p) {
-    return p.city === city && p.verdict === 'essential' && p.category === 'landmark';
-  });
-  if (!essential) {
-    essential = places.find(function(p) { return p.city === city; });
-  }
-  if (!essential) return null;
-  return {
-    kind: 'place', id: essential.id,
-    time: essential.scheduled_time || null,
-    kicker: _kickerFromCategory(essential.category),
-    place: essential
-  };
+  // (4) nothing anchored — free day. (The old "first essential landmark in
+  // today's city" fallback is gone: it invented a plan, complete with a
+  // dateless scheduled_time, on every unplanned day.)
+  return null;
 }
 
 // Returns { kind, id, time, minutesUntil, place } for the next scheduled item
-// after `now` on `date`. Pulls from TODAY_PLAN[date].items + scheduled gifts.
-// Returns null if nothing's left for today.
+// after `now` on `date`. Soonest-first across the manual layer, gifts, and
+// date-anchored places. Returns null if nothing's left for today.
 function getUpNext(date, now) {
   now = now || new Date();
-  var candidates = [];
-
-  var plan = (typeof TODAY_PLAN !== 'undefined') ? TODAY_PLAN[date] : null;
-  if (plan && plan.headline && plan.headline.time) {
-    candidates.push({ kind: plan.headline.kind, id: plan.headline.id, time: plan.headline.time });
-  }
-  if (plan && plan.items) {
-    plan.items.forEach(function(it) { candidates.push(it); });
-  }
-
-  var gifts = (typeof GIFTED_EXPERIENCES !== 'undefined') ? GIFTED_EXPERIENCES : [];
-  gifts.forEach(function(g) {
-    if (g.date === date && g.time && g.bookingStatus === 'scheduled') {
-      candidates.push({ kind: 'gift', id: g.id, time: g.time });
-    }
-  });
-
+  var candidates = getTimedItemsForDate(date);
   if (!candidates.length) return null;
 
-  // Filter to those still in the future
+  // Filter to those still in the future (already sorted soonest-first)
   var future = candidates.filter(function(c) {
     var m = (typeof minutesUntil === 'function') ? minutesUntil(c.time, now) : null;
     return m !== null && m > 0;
   });
   if (!future.length) return null;
 
-  future.sort(function(a, b) {
-    return minutesUntil(a.time, now) - minutesUntil(b.time, now);
-  });
   var next = future[0];
-  var place = (next.kind === 'place') ? _findPlace(next.id) : null;
   return {
     kind: next.kind, id: next.id, time: next.time,
     minutesUntil: minutesUntil(next.time, now),
-    place: place
+    place: next.place || null
   };
 }
 
@@ -149,12 +176,6 @@ function getRealTalk(date, headline, city) {
 function _findPlace(id) {
   var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
   return places.find(function(p) { return p.id === id; }) || null;
-}
-
-function _cityForDate(date) {
-  if (typeof TRIP === 'undefined') return null;
-  var entry = TRIP.schedule.find(function(s) { return s.date === date; });
-  return entry ? entry.city : null;
 }
 
 function _kickerFromCategory(cat) {

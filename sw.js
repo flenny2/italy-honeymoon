@@ -3,7 +3,7 @@
 // Caches all app assets + map tiles
 // ═══════════════════════════════════════
 
-var CACHE_NAME = 'italy-honeymoon-v20';
+var CACHE_NAME = 'italy-honeymoon-v21';
 
 // All app files to pre-cache on install
 var APP_FILES = [

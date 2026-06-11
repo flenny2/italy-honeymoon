@@ -406,7 +406,12 @@ function renderTodayHeroDuring(phase, city, state, tonight) {
     case 'gift-tomorrow': hero = _heroGiftTomorrow(state.gift, city); break;
     case 'move-am':       hero = _heroMoveAM(state.from, state.to, state.transit); break;
     case 'move-pm':       hero = _heroMovePM(state.from, state.to, state.transit); break;
-    default:              hero = _heroNormal(state.headline, city);
+    default:
+      // Day-trip anchor places live in the trip city (Bologna/Tuscany) —
+      // the kicker should say so, not name the city we're sleeping in.
+      var heroCity = (state.headline && state.headline.kicker === 'DAY TRIP' && state.headline.place)
+        ? state.headline.place.city : city;
+      hero = _heroNormal(state.headline, heroCity, state.move);
   }
   return tonight ? _injectTonightPill(hero) : hero;
 }
@@ -450,9 +455,18 @@ function _pickHeroState(phase) {
   if (depart && arrive && depart !== arrive) {
     var rome = (typeof getRomeNow === 'function') ? getRomeNow() : { hour: 12 };
     var transit = (typeof TRANSITS !== 'undefined') ? TRANSITS[today] : null;
-    return rome.hour < 12
-      ? { kind: 'move-am', from: depart, to: arrive, transit: transit }
-      : { kind: 'move-pm', from: depart, to: arrive, transit: transit };
+    if (rome.hour < 12) {
+      // A timed morning item (e.g. the 8 AM Vatican slot on the Rome→Florence
+      // day) outranks move logistics until noon. The move rides along as
+      // `move` so the Plan tile can carry the train as the secondary surface.
+      var headline = (typeof getTodayHeadlinePlace === 'function') ? getTodayHeadlinePlace(today) : null;
+      if (headline && headline.time && headline.time < '12:00') {
+        return { kind: 'normal', headline: headline,
+                 move: { from: depart, to: arrive, transit: transit } };
+      }
+      return { kind: 'move-am', from: depart, to: arrive, transit: transit };
+    }
+    return { kind: 'move-pm', from: depart, to: arrive, transit: transit };
   }
 
   // 4. Normal — headline place via TODAY_PLAN > derived fallback chain.
@@ -488,14 +502,18 @@ function _cityLabelMixed(city) {
     : (city || '');
 }
 
-function _heroNormal(headline, city) {
+function _heroNormal(headline, city, move) {
   var bgState = headline && headline.place
     ? { kind: 'place', id: headline.id, city: city, category: headline.place.category }
     : { kind: 'place', id: '', city: city, category: 'landmark' };
   var title = (headline && headline.place) ? headline.place.name : 'Today in ' + city;
+  var kicker = 'TODAY · ' + _cityLabel(city);
+  // Move-day morning: surface the timed slot up top, since the Plan tile is
+  // busy carrying the train logistics.
+  if (move && headline && headline.time) kicker += ' · ' + headline.time;
   return '<div class="tile tile--image tile--hero" style="' + _heroBgStyle(bgState) + '">' +
            _heroPlaceholderIcon(bgState) +
-           '<div class="hero-kicker">TODAY · ' + _cityLabel(city) + '</div>' +
+           '<div class="hero-kicker">' + kicker + '</div>' +
            '<h1 class="hero-title">' + title + '</h1>' +
          '</div>';
 }
@@ -668,10 +686,13 @@ function _todayNow() {
 
 function renderTodayPlanTile(phase, city, heroState) {
   var isNormal = (heroState.kind === 'normal');
+  // Move-day morning with a timed item: the Hero shows the item, so the Plan
+  // tile carries the move logistics — the "train secondary" surface.
+  if (isNormal && heroState.move) return _planTileMove(heroState.move);
   var plan = isNormal
     ? (heroState.headline || (typeof getTodayHeadlinePlace === 'function' ? getTodayHeadlinePlace(phase.date) : null))
     : _planPlaceGiftMove(phase, heroState);
-  if (!plan || !plan.place) return '';
+  if (!plan || !plan.place) return isNormal ? _planTileFree(phase) : '';
 
   var p = plan.place;
   var kicker = _composePlanKicker(plan);
@@ -697,11 +718,51 @@ function renderTodayPlanTile(phase, city, heroState) {
          '</div>';
 }
 
-// On gift/move-Hero days, surface the day's first real place to visit, excluding
-// any place the gift Hero already represents (so the photos differ).
+// Move-day morning variant — the Hero is showing the timed item, so the move
+// logistics land here. Body comes from TRANSITS when filled in.
+function _planTileMove(move) {
+  var body = (move.transit && move.transit.train)
+    ? move.transit.train
+    : 'Check out of ' + move.from + ' · train to ' + move.to + ' this afternoon';
+  return '<div class="tile tile--flat tile--span-2 plan-tile plan-tile--flat">' +
+           '<div class="plan-eyebrow">TODAY’S PLAN</div>' +
+           '<div class="plan-headline-row"><h2 class="plan-name">' + move.from + ' → ' + move.to + '</h2></div>' +
+           '<div class="plan-kicker">MOVE DAY</div>' +
+           '<div class="plan-bestfor">' + body + '</div>' +
+         '</div>';
+}
+
+// Free day — nothing time-anchored. Up Next shows "Free time"; this tile makes
+// the empty state deliberate instead of a hole in the grid.
+function _planTileFree(phase) {
+  return '<div class="tile tile--flat tile--span-2 plan-tile plan-tile--flat">' +
+           '<div class="plan-eyebrow">TODAY’S PLAN</div>' +
+           '<div class="plan-headline-row"><h2 class="plan-name">Free day</h2></div>' +
+           '<div class="plan-kicker">NOTHING BOOKED · ' + _cityLabel(phase.city) + ' IS YOURS</div>' +
+         '</div>';
+}
+
+// On gift/move-Hero days, surface the day's earliest real timed item the Hero
+// doesn't already represent (so the photos differ); else fall back to an
+// essential in today's city — with no time attached unless it's genuinely
+// date-anchored to today.
 function _planPlaceGiftMove(phase, heroState) {
+  var giftId = heroState.gift ? heroState.gift.id : null;
   var exclude = (heroState.gift && heroState.gift.linkedPlaces)
     ? heroState.gift.linkedPlaces.slice() : [];
+
+  var timed = (typeof getTimedItemsForDate === 'function') ? getTimedItemsForDate(phase.date) : [];
+  for (var i = 0; i < timed.length; i++) {
+    var t = timed[i];
+    if (giftId && t.kind === 'gift' && t.id === giftId) continue;
+    if (!t.place) continue;
+    if (exclude.indexOf(t.place.id) !== -1) continue;
+    // Move-PM: don't resurface the departure city's morning item in the
+    // arrival city's evening.
+    if (t.place.city !== phase.city) continue;
+    return { kind: t.kind, id: t.id, time: t.time, kicker: null, place: t.place };
+  }
+
   var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
   var pick = places.find(function(p) {
     return p.city === phase.city && p.verdict === 'essential' && p.category === 'landmark'
@@ -710,7 +771,8 @@ function _planPlaceGiftMove(phase, heroState) {
     return p.city === phase.city && exclude.indexOf(p.id) === -1;
   });
   if (!pick) return null;
-  return { kind: 'place', id: pick.id, time: pick.scheduled_time || null, kicker: null, place: pick };
+  var time = (pick.scheduled_date === phase.date) ? (pick.scheduled_time || null) : null;
+  return { kind: 'place', id: pick.id, time: time, kicker: null, place: pick };
 }
 
 // 'OPEN · ENTRY · PRE-BOOKED' from hours + category + booking state.
