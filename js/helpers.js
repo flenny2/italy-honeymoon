@@ -28,7 +28,7 @@ var ROUTE_COORDS = {
     { city: 'Rome',      lat: 41.8975, lng: 12.4800, days: 'Days 1–5',  dates: 'Jun 13–18', emoji: '🏛️' },
     { city: 'Florence',  lat: 43.7710, lng: 11.2540, days: 'Days 6–9',  dates: 'Jun 18–22', emoji: '🌻' },
     { city: 'Lake Como', lat: 45.8100, lng: 9.0800,  days: 'Days 10–11',dates: 'Jun 22–24', emoji: '⛰️' },
-    { city: 'Venice',    lat: 45.4400, lng: 12.3350, days: 'Days 12–14',dates: 'Jun 24–27', emoji: '🚣' }
+    { city: 'Venice',    lat: 45.4400, lng: 12.3350, days: 'Days 12–15',dates: 'Jun 24–27', emoji: '🚣' }
   ],
   dayTrips: [
     { label: 'Tuscany',  lat: 43.55,   lng: 11.25,   emoji: '🍷' },
@@ -67,7 +67,24 @@ function addDaysISO(iso, n) {
   if (!iso) return '';
   var d = new Date(iso + 'T00:00:00');
   d.setDate(d.getDate() + n);
-  return d.toISOString().split('T')[0];
+  return localISODate(d);
+}
+
+// Local-calendar ISO date (YYYY-MM-DD). Never use toISOString() for "today" —
+// it converts to UTC, which shifts the calendar day in any non-UTC timezone.
+function localISODate(d) {
+  d = d || new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+// Calendar-day difference between two ISO dates (b minus a), TZ-independent.
+function daysBetweenISO(a, b) {
+  var pa = a.split('-'), pb = b.split('-');
+  return Math.round(
+    (Date.UTC(pb[0], pb[1] - 1, pb[2]) - Date.UTC(pa[0], pa[1] - 1, pa[2])) / 86400000
+  );
 }
 
 // ── Map tile layer helper ──

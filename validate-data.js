@@ -397,6 +397,43 @@ function check8_date_anchors() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// ERR 9 — TRIP schedule integrity (guards the Day X / N counter).
+//   schedule spans startDate..endDate with consecutive dates, day fields run
+//   1..N with no gaps, totalDays === schedule.length, and every dayTrips key
+//   is a schedule date.
+// ═══════════════════════════════════════════════════════════════════════════
+function check9_trip_integrity() {
+  const s = TRIP.schedule;
+  if (!Array.isArray(s) || !s.length) { err('trip', 'TRIP.schedule is empty'); return; }
+  if (s[0].date !== TRIP.startDate) {
+    err('trip', `schedule[0].date ${s[0].date} != TRIP.startDate ${TRIP.startDate}`);
+  }
+  if (s[s.length - 1].date !== TRIP.endDate) {
+    err('trip', `last schedule date ${s[s.length - 1].date} != TRIP.endDate ${TRIP.endDate} ` +
+      '(every trip date needs an entry or getTripPhase resolves a stale day)');
+  }
+  for (let i = 0; i < s.length; i++) {
+    if (s[i].day !== i + 1) err('trip', `schedule[${i}].day is ${s[i].day}, expected ${i + 1}`);
+    if (i > 0 && s[i].date !== nextISO(s[i - 1].date)) {
+      err('trip', `schedule dates not consecutive: ${s[i - 1].date} → ${s[i].date}`);
+    }
+  }
+  if (TRIP.totalDays !== s.length) {
+    err('trip', `TRIP.totalDays ${TRIP.totalDays} != schedule length ${s.length} (Day X / N denominator drift)`);
+  }
+  const scheduleDates = new Set(s.map(e => e.date));
+  for (const key of Object.keys(TRIP.dayTrips || {})) {
+    if (!scheduleDates.has(key)) err('trip', `TRIP.dayTrips key ${key} is not a schedule date`);
+  }
+}
+
+// ISO date + 1 day, via UTC arithmetic (TZ-independent).
+function nextISO(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // WARN 7 — editorial completeness + stale header count.
 //   - visible places (category not transit/pharmacy/restroom) missing a
 //     non-empty honest_summary | verdict | best_for | source.
@@ -433,6 +470,7 @@ check5_assets();
 check6_scheduled_times();
 check7_completeness();
 check8_date_anchors();
+check9_trip_integrity();
 
 // ── report ───────────────────────────────────────────────────────────────────
 console.log('\n══════════════════════════════════════════════════════');

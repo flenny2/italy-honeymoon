@@ -5,7 +5,7 @@
 const TRIP = {
   startDate: '2026-06-13',
   endDate: '2026-06-27',
-  totalDays: 14,
+  totalDays: 15,   // 15 calendar days (Jun 13–27) / 14 nights — Day 15 is departure day
   schedule: [
     { date: '2026-06-13', city: 'Rome', day: 1 },
     { date: '2026-06-14', city: 'Rome', day: 2 },
@@ -21,6 +21,7 @@ const TRIP = {
     { date: '2026-06-24', city: 'Venice', day: 12 },
     { date: '2026-06-25', city: 'Venice', day: 13 },
     { date: '2026-06-26', city: 'Venice', day: 14 },
+    { date: '2026-06-27', city: 'Venice', day: 15 },   // departure day
   ],
   dayTrips: {
     '2026-06-16': { label: 'Pompeii / Amalfi / Positano day trip', from: 'Rome', emoji: '🌊' },
@@ -205,30 +206,28 @@ function getTripPhase() {
   // Localhost ?date= override (see _readMockParams in helpers.js) lets QA jump to
   // any trip day; null/off-localhost falls back to the real clock.
   const mock = (typeof _readMockParams === 'function') ? _readMockParams() : null;
-  const now = (mock && mock.date) ? new Date(mock.date + 'T00:00:00') : new Date();
-  now.setHours(0, 0, 0, 0);
-  const start = new Date(TRIP.startDate);
-  const end = new Date(TRIP.endDate);
+  const todayISO = (mock && mock.date) ? mock.date : localISODate(new Date());
 
+  // ISO-string comparison throughout. Date-object math here was a TZ bug:
+  // new Date('YYYY-MM-DD') parses as UTC midnight while the mock/now parsed as
+  // LOCAL midnight, so in any UTC+ timezone — including Europe/Rome, where the
+  // phone will be during the trip — the day counter ran one day behind, and
+  // June 27 (departure day) flipped to the 'after' screen at local midnight.
   let result;
-  if (now < start) {
-    const diff = Math.ceil((start - now) / (1000 * 60 * 60 * 24));
-    result = { phase: 'before', daysUntil: diff };
-  } else if (now <= end) {
-    const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-    const today = TRIP.schedule[diff] || TRIP.schedule[TRIP.schedule.length - 1];
+  if (todayISO < TRIP.startDate) {
+    result = { phase: 'before', daysUntil: daysBetweenISO(todayISO, TRIP.startDate) };
+  } else if (todayISO <= TRIP.endDate) {
+    const today = TRIP.schedule.find(s => s.date === todayISO) || TRIP.schedule[TRIP.schedule.length - 1];
     const dayTrip = TRIP.dayTrips[today.date] || null;
     result = { phase: 'during', day: today.day, city: today.city, date: today.date, dayTrip: dayTrip };
   } else {
-    const diff = Math.ceil((now - end) / (1000 * 60 * 60 * 24));
-    result = { phase: 'after', daysSince: diff };
+    result = { phase: 'after', daysSince: daysBetweenISO(TRIP.endDate, todayISO) };
   }
 
   // Localhost ?phase=during override — force a DURING object even when the date
   // lands outside the trip window, for forward-mocking before the trip starts.
   if (mock && mock.forcePhase === 'during' && result.phase !== 'during') {
-    const iso = mock.date || TRIP.schedule[0].date;
-    const entry = TRIP.schedule.find(s => s.date === iso) || TRIP.schedule[0];
+    const entry = TRIP.schedule.find(s => s.date === todayISO) || TRIP.schedule[0];
     result = { phase: 'during', day: entry.day, city: entry.city, date: entry.date,
                dayTrip: TRIP.dayTrips[entry.date] || null };
   }
