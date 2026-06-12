@@ -536,10 +536,13 @@ function renderSourceFilterButtons() {
     grid.appendChild(btn);
   });
 
-  // Drop active source filters whose button no longer exists (e.g. after a data change)
+  // Drop active source filters whose button no longer exists (e.g. after a data
+  // change) — and re-apply, or the markers keep honoring the pruned token.
+  var before = mapActiveFilters.length;
   mapActiveFilters = mapActiveFilters.filter(function(f) {
     return f.indexOf('src:') !== 0 || sources.indexOf(f.slice(4)) !== -1;
   });
+  if (mapActiveFilters.length !== before) applyActiveFilters();
 }
 
 function openMapFilters() {

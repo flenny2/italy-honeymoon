@@ -461,6 +461,44 @@ function check7_completeness() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// CHECK 10 — free-text + manual-layer sanity.
+//   - WARN: a non-empty BOOKINGS.when with no recognizable "Month D" anywhere
+//     (typo'd month, missing date). Such a string silently escapes every
+//     date-consistency check above — flag it instead of trusting it.
+//   - ERR: TODAY_PLAN (the manual override layer) headline/items with a time
+//     that isn't 24h HH:MM (breaks Up Next sort + minutesUntil silently), or a
+//     place/gift id that doesn't resolve (same class as check4 dangling refs).
+// ═══════════════════════════════════════════════════════════════════════════
+function check10_freetext() {
+  const monthAlt = Object.keys(MONTHS).join('|');
+  const MONTH_DAY_RE = new RegExp(`\\b(${monthAlt})\\s+\\d{1,2}\\b`, 'i');
+  for (const b of BOOKINGS) {
+    if (!b.when || !String(b.when).trim()) continue;
+    if (!MONTH_DAY_RE.test(String(b.when))) {
+      warn('when-parse', `booking ${b.id} when ("${b.when}") has no recognizable "Month D" — date checks can't see it`);
+    }
+  }
+
+  const giftIds = new Set(GIFTED_EXPERIENCES.map(g => g.id));
+  for (const [date, plan] of Object.entries(TODAY_PLAN || {})) {
+    const entries = [];
+    if (plan && plan.headline) entries.push(['headline', plan.headline]);
+    for (const it of (plan && plan.items) || []) entries.push(['items[]', it]);
+    for (const [label, it] of entries) {
+      if (it.time != null && it.time !== '' && !TIME_RE.test(it.time)) {
+        err('today-plan', `TODAY_PLAN[${date}] ${label} time "${it.time}" is not 24h HH:MM`);
+      }
+      if (it.kind === 'place' && it.id && !placeById.has(it.id)) {
+        err('today-plan', `TODAY_PLAN[${date}] ${label} references unknown place id "${it.id}"`);
+      }
+      if (it.kind === 'gift' && it.id && !giftIds.has(it.id)) {
+        err('today-plan', `TODAY_PLAN[${date}] ${label} references unknown gift id "${it.id}"`);
+      }
+    }
+  }
+}
+
 // ── run all checks ───────────────────────────────────────────────────────────
 check1_verdicts();
 check2_dates();
@@ -471,6 +509,7 @@ check6_scheduled_times();
 check7_completeness();
 check8_date_anchors();
 check9_trip_integrity();
+check10_freetext();
 
 // ── report ───────────────────────────────────────────────────────────────────
 console.log('\n══════════════════════════════════════════════════════');
