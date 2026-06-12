@@ -221,20 +221,9 @@
       </div>
       <div class="mfm-section">
         <div class="mfm-section-title">By Source</div>
-        <div class="mfm-grid">
-          <button class="mfm-option" data-filter="nathan" onclick="toggleMapFilter('nathan')">
-            <span class="mfm-icon" style="background:#FFF8E1;color:#C9A028;">👨‍🍳</span>Nathan Recs
-          </button>
-          <button class="mfm-option" data-filter="goop" onclick="toggleMapFilter('goop')">
-            <span class="mfm-icon" style="background:#FCE7F3;color:#EC4899;">📖</span>Goop Guide
-          </button>
-          <button class="mfm-option" data-filter="jacqueline" onclick="toggleMapFilter('jacqueline')">
-            <span class="mfm-icon" style="background:#F3E8FF;color:#9333EA;">🍷</span>Jacqueline Recs
-          </button>
-          <button class="mfm-option" data-filter="xio" onclick="toggleMapFilter('xio')">
-            <span class="mfm-icon" style="background:#E0F2FE;color:#0EA5E9;">🧭</span>Xio Guide
-          </button>
-        </div>
+        <!-- Buttons generated from data by renderSourceFilterButtons() (app.js) —
+             a source button exists only if places actually carry that source -->
+        <div class="mfm-grid" id="mfm-source-grid"></div>
       </div>
       <div class="mfm-section">
         <div class="mfm-section-title">By Type</div>

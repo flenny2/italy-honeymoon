@@ -283,6 +283,9 @@ var mapActiveFilters = [];
 function renderFullMap() {
   var container = document.getElementById('full-map');
   if (!container) return;
+
+  // (Re)build the "By Source" filter buttons from whatever sources the data carries
+  renderSourceFilterButtons();
   if (typeof L === 'undefined') { container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--warm-gray);padding:24px;text-align:center;">Map requires an internet connection on first load.</div>'; return; }
 
   if (fullMap) {
@@ -479,10 +482,6 @@ var FILTER_TESTS = {
   'essential':  function(p) { return p.verdict === 'essential'; },
   'hidden-gem': function(p) { return p.verdict === 'hidden-gem'; },
   'worth-it':   function(p) { return p.verdict === 'worth-it'; },
-  'nathan':     function(p) { return p.source && p.source.toLowerCase().indexOf('nathan') !== -1; },
-  'goop':       function(p) { return p.source && p.source.toLowerCase().indexOf('goop') !== -1; },
-  'jacqueline': function(p) { return p.source && p.source.toLowerCase().indexOf('jacqueline') !== -1; },
-  'xio':        function(p) { return p.source && p.source.toLowerCase().indexOf('xio') !== -1; },
   'dining':     function(p) { return p.category === 'dining'; },
   'landmark':   function(p) { return p.category === 'landmark'; },
   'activity':   function(p) { return p.category === 'activity'; },
@@ -492,6 +491,56 @@ var FILTER_TESTS = {
   'budget':     function(p) { return autoTag(p).indexOf('budget') !== -1; },
   'foodie':     function(p) { return autoTag(p).indexOf('foodie') !== -1; }
 };
+
+// ── "By Source" buttons — generated from data, so a button can never match zero places ──
+// Known sources keep a curated look; anything new gets the 📌 default until added here.
+var SOURCE_FILTER_META = {
+  'Nathan rec':            { icon: '👨‍🍳', bg: '#FFF8E1', color: '#C9A028', label: 'Nathan Recs' },
+  'Goop guide':            { icon: '📖', bg: '#FCE7F3', color: '#EC4899', label: 'Goop Guide' },
+  'Jacqueline rec':        { icon: '🍷', bg: '#F3E8FF', color: '#9333EA', label: 'Jacqueline Recs' },
+  'Xio guide':             { icon: '🧭', bg: '#E0F2FE', color: '#0EA5E9', label: 'Xio Guide' },
+  'Must-see':              { icon: '⭐', bg: '#FEF3C7', color: '#D97706', label: 'Must-See' },
+  'Trip planning':         { icon: '🧳', bg: '#E0E7FF', color: '#4F46E5', label: 'Trip Planning' },
+  'Oltrarno Splendid rec': { icon: '🏨', bg: '#FFEDD5', color: '#EA580C', label: 'Oltrarno Splendid' }
+};
+
+function renderSourceFilterButtons() {
+  var grid = document.getElementById('mfm-source-grid');
+  if (!grid) return;
+
+  var counts = {};
+  Storage.getPlaces().forEach(function(p) {
+    if (!isVisiblePlace(p) || !p.source) return;
+    counts[p.source] = (counts[p.source] || 0) + 1;
+  });
+  var sources = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
+
+  grid.innerHTML = '';
+  sources.forEach(function(src) {
+    var key = 'src:' + src;
+    FILTER_TESTS[key] = function(p) { return (p.source || '') === src; };
+
+    var meta = SOURCE_FILTER_META[src] || { icon: '📌', bg: '#F3F4F6', color: '#6B7280', label: src };
+    var btn = document.createElement('button');
+    btn.className = 'mfm-option';
+    btn.dataset.filter = key;
+    var icon = document.createElement('span');
+    icon.className = 'mfm-icon';
+    icon.style.background = meta.bg;
+    icon.style.color = meta.color;
+    icon.textContent = meta.icon;
+    btn.appendChild(icon);
+    btn.appendChild(document.createTextNode(meta.label));
+    // Listener instead of inline onclick — source strings aren't attribute-safe
+    btn.addEventListener('click', function() { toggleMapFilter(key); });
+    grid.appendChild(btn);
+  });
+
+  // Drop active source filters whose button no longer exists (e.g. after a data change)
+  mapActiveFilters = mapActiveFilters.filter(function(f) {
+    return f.indexOf('src:') !== 0 || sources.indexOf(f.slice(4)) !== -1;
+  });
+}
 
 function openMapFilters() {
   var modal = document.getElementById('map-filter-modal');
