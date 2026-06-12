@@ -51,14 +51,31 @@ var Storage = (function() {
   }
 
   // ── Places ──
+  // Stored shape (same key): { starred: ['r1', ...] } — user state only.
+  // Content always merges fresh from DEFAULT_PLACES so edits reach devices
+  // that starred (the old full-snapshot froze all 89 places at star time).
+  // A legacy array snapshot migrates on first read; ids missing from
+  // DEFAULT_PLACES are dropped (removed-place residue, e.g. old Verona).
   function getPlaces() {
-    return read(KEYS.places) || DEFAULT_PLACES.map(function(p) {
-      return Object.assign({}, p, { saved: false });
+    var raw = read(KEYS.places);
+    if (Array.isArray(raw)) {
+      var ids = {};
+      DEFAULT_PLACES.forEach(function(p) { ids[p.id] = true; });
+      raw = { starred: raw.filter(function(p) { return p && p.saved && ids[p.id]; })
+                         .map(function(p) { return p.id; }) };
+      write(KEYS.places, raw);
+    }
+    var starred = (raw && raw.starred) || [];
+    return DEFAULT_PLACES.map(function(p) {
+      return Object.assign({}, p, { saved: starred.indexOf(p.id) !== -1 });
     });
   }
 
   function savePlaces(places) {
-    write(KEYS.places, places);
+    write(KEYS.places, {
+      starred: places.filter(function(p) { return p.saved; })
+                     .map(function(p) { return p.id; })
+    });
   }
 
   function resetPlaces() {

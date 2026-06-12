@@ -20,7 +20,7 @@ Editorial companion app to Wanderlog for a June 2026 Italy honeymoon. Wanderlog 
 - Map tiles require internet on first load; cached by service worker after that
 
 **localStorage keys** (all managed by `Storage` module in `js/storage.js`):
-- `italy-places-v3` — places with saved/starred status
+- `italy-places-v3` — starred place ids only (`{ starred: [...] }`); `getPlaces()` merges them over fresh `DEFAULT_PLACES` at read time, and a legacy full-snapshot array auto-migrates on first read
 - `italy-journal-v1`, `italy-letters-v1`, `italy-achievements-v1`, `italy-capsule-v1`, `italy-settings-v1`, `italy-counters-v1`, `italy-bookings-v1`
 
 **Adding a new JS file**: three places to update — (1) `<script>` tag in `index.html`, (2) path in `APP_FILES` array in `sw.js`, (3) bump `CACHE_NAME` in `sw.js` so the new SW installs.
