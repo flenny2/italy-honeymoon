@@ -71,7 +71,7 @@ function getTodayHeadlinePlace(date) {
     if (t.kind === 'gift') {
       return {
         kind: 'gift', id: t.id, time: t.time,
-        kicker: 'GIFT · ' + (t.gift.duration || 'TODAY'),
+        kicker: 'GIFT · ' + ((t.gift && t.gift.duration) || 'TODAY'),
         place: t.place, gift: t.gift
       };
     }
