@@ -85,10 +85,7 @@ function getTodayHeadlinePlace(date) {
   // (3) untimed day trip — anchor on the trip city's first essential place
   var dayTrip = (typeof TRIP !== 'undefined' && TRIP.dayTrips) ? TRIP.dayTrips[date] : null;
   if (dayTrip && dayTrip.city) {
-    var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
-    var anchor = places.find(function(p) {
-      return p.city === dayTrip.city && p.verdict === 'essential';
-    }) || places.find(function(p) { return p.city === dayTrip.city; });
+    var anchor = pickCityAnchor(dayTrip.city, [], date);
     if (anchor) {
       return { kind: 'place', id: anchor.id, time: null, kicker: 'DAY TRIP', place: anchor };
     }
@@ -170,6 +167,21 @@ function getRealTalk(date, headline, city) {
     return { source: 'city', text: CITY_REAL_TALK[city].body, headline: CITY_REAL_TALK[city].headline };
   }
   return null;
+}
+
+// Best fallback place in a city: essential landmark → any essential → anything.
+// Never borrows a place date-anchored to a different day (the Jun-18 Vatican
+// must not surface as a Jun-14 suggestion). Shared by the day-trip headline
+// anchor above and the gift/move Plan-tile fallback in today.js.
+function pickCityAnchor(city, excludeIds, date) {
+  var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
+  function ok(p) {
+    return p.city === city && excludeIds.indexOf(p.id) === -1 &&
+           (!p.scheduled_date || p.scheduled_date === date);
+  }
+  return places.find(function(p) { return ok(p) && p.verdict === 'essential' && p.category === 'landmark'; })
+      || places.find(function(p) { return ok(p) && p.verdict === 'essential'; })
+      || places.find(ok) || null;
 }
 
 // ── private ──

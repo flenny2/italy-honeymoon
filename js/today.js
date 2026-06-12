@@ -805,13 +805,8 @@ function _planPlaceGiftMove(phase, heroState) {
     return { kind: t.kind, id: t.id, time: t.time, kicker: null, place: t.place };
   }
 
-  var places = (typeof DEFAULT_PLACES !== 'undefined') ? DEFAULT_PLACES : [];
-  var pick = places.find(function(p) {
-    return p.city === phase.city && p.verdict === 'essential' && p.category === 'landmark'
-           && exclude.indexOf(p.id) === -1;
-  }) || places.find(function(p) {
-    return p.city === phase.city && exclude.indexOf(p.id) === -1;
-  });
+  var pick = (typeof pickCityAnchor === 'function')
+    ? pickCityAnchor(phase.city, exclude, phase.date) : null;
   if (!pick) return null;
   var time = (pick.scheduled_date === phase.date) ? (pick.scheduled_time || null) : null;
   return { kind: 'place', id: pick.id, time: time, kicker: null, place: pick };
