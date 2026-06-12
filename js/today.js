@@ -407,9 +407,10 @@ function renderTodayHeroDuring(phase, city, state, tonight) {
     case 'move-am':       hero = _heroMoveAM(state.from, state.to, state.transit); break;
     case 'move-pm':       hero = _heroMovePM(state.from, state.to, state.transit); break;
     default:
-      // Day-trip anchor places live in the trip city (Bologna/Tuscany) —
-      // the kicker should say so, not name the city we're sleeping in.
-      var heroCity = (state.headline && state.headline.kicker === 'DAY TRIP' && state.headline.place)
+      // A headline place outside the sleeping city (Vatican on the Jun 18 move
+      // morning, Chianti on Jun 20) drives the kicker city — name where the
+      // day actually happens, not where the suitcase is.
+      var heroCity = (state.headline && state.headline.place && state.headline.place.city !== city)
         ? state.headline.place.city : city;
       hero = _heroNormal(state.headline, heroCity, state.move);
   }

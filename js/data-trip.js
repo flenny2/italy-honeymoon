@@ -73,7 +73,8 @@ const CITY_COLORS = {
   'Florence':  { oklch: 'oklch(0.55 0.14 35)',  hex: '#A45B3D', label: 'Firenze' },
   'Venice':    { oklch: 'oklch(0.55 0.07 215)', hex: '#5A7B92', label: 'Venezia' },
   'Lake Como': { oklch: 'oklch(0.60 0.08 235)', hex: '#6585AB', label: 'Como' },
-  'Bologna':   { oklch: 'oklch(0.48 0.12 25)',  hex: '#92492A', label: 'Bologna' }
+  'Bologna':   { oklch: 'oklch(0.48 0.12 25)',  hex: '#92492A', label: 'Bologna' },
+  'Tuscany':   { oklch: 'oklch(0.52 0.09 130)', hex: '#5F7A4A', label: 'Toscana' }
 };
 
 // Typical-June climatology per city — an OFFLINE STUB for the Status strip
