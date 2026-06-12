@@ -5,11 +5,13 @@
 > below should always reflect the last touch.
 
 **Last updated:** 2026-06-11
-**Branch:** `pre-trip-polish` (cut from `main` at `31cfad5`). **Today-screen date-awareness batch shipped — 3 more commits (8 total unpushed).** Timed places are now date-anchored (`scheduled_date` + `scheduled_time` pair), `getTripPhase` is timezone-proof (was a day behind in Europe/Rome!), Jun 27 is Day 15/15, and Plan/Up Next derive from gifts + anchored places + day trips. CACHE v20 → v21. `validate-data.js`: 0 errors, 5 warnings. See the 2026-06-11 entry below.
-**⚠️ 8 commits live on `pre-trip-polish` only — do NOT push yet** (held by instruction; Dylan pushes/merges). `main` is even with `origin/main` at `31cfad5`.
+**Branch:** `pre-trip-polish` (cut from `main` at `31cfad5`). **Post-audit quick wins shipped — 2 more commits (10 total unpushed).** Map "By Source" filter buttons are now generated from data (the dead Xio button that blanked the map can't recur), a1's editorial copy matches the booked June 16 combined Pompeii tour, and the Jun 20 Chianti departure is anchored (t1, 08:30). CACHE v21 → v22. `validate-data.js`: 0 errors, 5 warnings. See the second 2026-06-11 entry below.
+**⚠️ 10 commits live on `pre-trip-polish` only — do NOT push yet** (held by instruction; Dylan pushes/merges). `main` is even with `origin/main` at `31cfad5`.
 
 ### Unpushed batch commits on `pre-trip-polish` (newest first)
-- `<this commit>` — Today plan/Up Next derivation + move-day rule + CACHE v20 → v21 + this HANDOFF entry
+- `<this commit>` — docs: HANDOFF corrections (DAY_TRIP_LINE_COORDS, HELD 3/4) + APP-ARCHITECTURE.md first commit
+- `153f60b` — data-driven map source filters + a1 combined-tour copy + Jun 20 t1 anchor + CACHE v21 → v22
+- `eebe3fc` — Today plan/Up Next derivation + move-day rule + CACHE v20 → v21 + HANDOFF entry
 - `5f0fcc3` — TZ-proof getTripPhase day math + June 27 as Day 15
 - `e275379` — date-anchor timed places (scheduled_date) + validator date-contradiction errors
 - `bc9c657` — CACHE v19 → v20 + HANDOFF entry for the polish batch
@@ -21,11 +23,28 @@
 ### HELD — next-session work (in rough priority)
 1. ~~**Move-day Today display / Up Next ignoring `place.scheduled_time`**~~ — ✅ **DONE 2026-06-11** (date-awareness batch below).
 2. **Bologna b1–b5 `source`** — missing while b6–b8 have `source:"Trip planning"` (needs real attribution values from Dylan).
-3. **Antinori tasting time** — `bk-antinori.when` is `'June 20'` with no slot. When Dylan books a time, add `scheduled_date:"2026-06-20"` + `scheduled_time` to **t3** so Jun 20's Up Next shows the departure the way Jun 16 shows 07:10 (the validator will WARN the moment `when` gains a time while t3 stays unanchored).
-4. **`a1` editorial copy contradiction** — honest_summary/best_for still say "Do NOT combine with Pompeii" (now-false; needs Dylan's voice pass).
+3. **Antinori tasting-slot anchor (t3) — narrowed 2026-06-11.** The Jun 20 *departure* (8:30 AM, booked per Dylan's itinerary) is now anchored on **t1** (`153f60b`), so Jun 20's Up Next shows 08:30 the way Jun 16 shows 07:10. The only remaining bit: if a specific Antinori tasting slot ever gets booked, add `scheduled_date:"2026-06-20"` + `scheduled_time` to **t3** and put the time in `bk-antinori.when` (the validator WARNs the moment `when` gains a time while t3 stays unanchored).
+4. ~~**`a1` editorial copy contradiction**~~ — ✅ **DONE 2026-06-11** (`153f60b`, post-audit quick wins below).
 5. **Florence hotel** still unbooked (HOTELS entry); **photos** per TODO-photos.md mostly unfilled.
 
 > `validate-data.js` (`node validate-data.js`) is the guardrail — run it after any data edit. Currently 0 errors, 5 warnings (all = b1–b5 missing `source`, HELD item 2). Date/time contradictions across places/bookings/gifts are now ERRORs, not warnings.
+
+---
+
+## 2026-06-11 — Post-audit quick wins (2 commits, branch `pre-trip-polish`)
+
+Audit follow-ups: dead Xio filter, stale a1 copy, unanchored Jun 20 departure, two HANDOFF corrections, APP-ARCHITECTURE.md reviewed + committed. CACHE v21 → v22 (commit 1; commit 2 is docs-only, no bump).
+
+1. **`153f60b` — data-driven source filters + a1 copy + t1 anchor.**
+   - **Map "By Source" buttons are now generated** — `renderSourceFilterButtons()` (`app.js`, called from `renderFullMap()`) builds one button per distinct `source` among visible places (count-desc) and registers exact-match `FILTER_TESTS['src:<source>']` entries at render. The static nathan/goop/jacqueline/xio buttons and their substring matchers are gone. A button exists ⇔ data backs it, so the Xio bug (tap → zero matches → blank map) can't recur; the Xio button reappears automatically when a place lands with `source:"Xio guide"` (`SOURCE_FILTER_META` keeps its 🧭 look ready; unknown sources get a 📌 default). Buttons wire clicks via `addEventListener`, not inline `onclick` — source strings aren't attribute-safe.
+   - **a1 honest_summary/best_for** rewritten for the booked June 16 combined Pompeii tour — keeps the ~13-hour honesty, drops "Do NOT combine with Pompeii" (closes HELD item 4).
+   - **t1 Chianti anchored** `scheduled_date:"2026-06-20"` + `scheduled_time:"08:30"` — the 8:30 departure is real and booked (Dylan's itinerary; corrects the earlier session's held framing that no time existed). Jun 20 Up Next/Plan now show 08:30, mirroring a1's Jun 16 07:10. `t1.notes` opener now carries "departs 8:30 AM".
+   - **`bk-antinori.when` stays `'June 20'` on purpose:** "June 20, 8:30 AM" parses cleanly, but 8:30 is the *tour departure*, not an Antinori tasting slot (the booking is the tasting+lunch), and check8 would add a WARN (explicit booking time + unanchored t3 — the exact scenario negative-tested in the date-awareness batch). HELD item 3 narrowed accordingly.
+2. **`<this commit>` — docs.** HANDOFF corrections + first commit of `APP-ARCHITECTURE.md`. Review fixes applied to the doc: stray `</content>`/`</invoke>` artifact lines at EOF deleted, v20 → v22 cache refs (header + PWA section), `scheduled_date` added to the place schema (pair rule), `getTimedItemsForDate` added to the today-plan.js entry, map-filter bullet updated for generated source buttons. Line/file counts spot-checked accurate (379 HTML / 3,842 CSS / 5,498 JS, 28 js files).
+
+- **Correction — `DAY_TRIP_LINE_COORDS` is NOT dead code.** Removed from the deferred-dead-code list below: it's defined at `map-shared.js:11` and consumed at `:43` (draws the day-trip route lines). The earlier audit note flagging it was wrong; only the "magic coords belong with `ROUTE_COORDS`" placement gripe stands, and that's a someday-refactor, not cleanup.
+- **Verification:** `node --check` clean (app.js, data-places.js); `node validate-data.js` → 0 errors, 5 warnings (unchanged baseline). Headless Chrome against `python3 -m http.server`: `?date=2026-06-20T07:00` → Up Next tile "08:30 / Chianti Wine Region / in 1h 30m" + Plan tile 08:30; `#map` DOM has exactly 6 generated source buttons (`src:` tokens, count-desc), zero "xio" anywhere. vm assert: every generated filter matches ≥1 visible place (29/23/12/7/5/3).
+- **iPhone PWA:** delete + re-add in Safari to pick up v21 → v22.
 
 ---
 
@@ -476,7 +495,6 @@ Dylan explicitly said leave these for a later cleanup pass:
 - `.card-featured` (`components.css`) — defined, never applied
 - `.achievement-grid` (`pages.css` media query) — referenced, no element has the class
 - `.anim-fade-in` (`components.css`) — defined, never applied
-- `DAY_TRIP_LINE_COORDS` (`map-shared.js:11-15`) — magic coords belong with `ROUTE_COORDS`
 - `// 83 curated places` comment (`data-places.js` header) — hand-maintained count
 - `--text-3xl` token (`variables.css`) — no current consumer after Stage 3 (was used by dual-countdown). Kept as available type tier; remove if still unused after Stage 5/6.
 
