@@ -170,7 +170,7 @@ function getEntryStatus(entry) {
   if (entry.source === 'registry-gift') {
     var stored = (s && s.status) || entry.bookingStatus || 'voucher-only';
     if (stored === 'scheduled' && entry.date) {
-      var todayISO = new Date().toISOString().split('T')[0];
+      var todayISO = localISODate();
       if (entry.date < todayISO) return 'completed';
     }
     return stored;

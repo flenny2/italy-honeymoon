@@ -126,7 +126,7 @@ function renderTodayLetter() {
   var letters = Storage.getLetters();
   if (!letters || letters.length === 0) return '';
 
-  var todayISO = new Date().toISOString().split('T')[0];
+  var todayISO = localISODate();
   var ready = letters.filter(function(l) {
     if (l.isRead) return false;
     if (!l.unlockDate) return false;
@@ -158,7 +158,7 @@ function renderTodayCapsuleNudge() {
   var capsule = Storage.getCapsule();
   if (capsule.locked) return '';
 
-  var todayISO = new Date().toISOString().split('T')[0];
+  var todayISO = localISODate();
   // Last night in Venice (Jun 26) + departure day (Jun 27)
   var isLastNight = (todayISO === '2026-06-26');
   var isDepartureDay = (todayISO === '2026-06-27');

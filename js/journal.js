@@ -129,7 +129,7 @@ function saveJournalFromInput() {
   var promptIndex = getDayOfYear() % JOURNAL_PROMPTS.length;
 
   var entry = {
-    date: new Date().toISOString().split('T')[0],
+    date: localISODate(),
     city: phase.phase === 'during' ? phase.city : '',
     day: phase.phase === 'during' ? phase.day : null,
     prompt: JOURNAL_PROMPTS[promptIndex],
