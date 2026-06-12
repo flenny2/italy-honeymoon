@@ -108,7 +108,7 @@ function getUpNext(date, now) {
   // Filter to those still in the future (already sorted soonest-first)
   var future = candidates.filter(function(c) {
     var m = (typeof minutesUntil === 'function') ? minutesUntil(c.time, now) : null;
-    return m !== null && m > 0;
+    return m !== null && m >= 0;
   });
   if (!future.length) return null;
 
