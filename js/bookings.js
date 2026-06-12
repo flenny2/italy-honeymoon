@@ -29,6 +29,14 @@ var BOOKINGS = [
     tip: 'Pompeii in the cooler morning, then a long terrace lunch on the coast. Bring water and comfortable shoes.',
     url: '' },
 
+  { id: 'bk-secretfood', placeId: 'f9', urgency: 'now',
+    title: 'Secret Food Tours (Florence)',
+    city: 'Florence', when: 'June 19, 10:00 AM',
+    what: 'Guided food tour — San Lorenzo / Mercato Centrale area',
+    why: 'Booked — 3.5 hours, replaces lunch. Meeting point is in the confirmation email.',
+    tip: 'Come hungry and skip breakfast beyond a coffee. Look for the orange umbrella.',
+    url: '' },
+
   { id: 'bk-uffizi', placeId: 'f2', urgency: 'now',
     title: 'Uffizi Gallery',
     city: 'Florence', when: 'June 18–21',
@@ -126,8 +134,10 @@ var BOOKINGS = [
 
 // Booking checklist state lives in Storage (key: italy-bookings-v1).
 // Mixed shape: state[venueId] = true; state[giftId] = { status: '...' }.
+// bk-secretfood was confirmed before the trip, so it ships pre-checked on
+// every device; an explicit user uncheck (stored false) still wins the merge.
 function getBookingState() {
-  return Storage.getBookings();
+  return Object.assign({ 'bk-secretfood': true }, Storage.getBookings());
 }
 
 function toggleBooking(id) {

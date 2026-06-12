@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════
-// PLACES DATA — 89 curated places
+// PLACES DATA — 90 curated places
 // ═══════════════════════════════════════
 
 const DEFAULT_PLACES = [
@@ -199,6 +199,9 @@ const DEFAULT_PLACES = [
   { id:"f8", name:"Mercato Centrale", city:"Florence", category:"activity", lat:43.7761, lng:11.2535,
     description:"Florence's grand food hall — ground floor is a traditional market with fresh produce, meat, and cheese. Upper floor is a modern food court with artisan vendors. Perfect for a casual lunch.",
     notes:"Try lampredotto (tripe sandwich) — a classic Florentine street food.", source:"Must-see", verdict:"worth-it",honest_summary:"Two markets in one. The ground floor is a traditional Italian market - produce, meat, cheese, the real deal. The upper floor is a modern food court with artisan vendors. The lampredotto (tripe sandwich) is a classic Florentine street food worth trying even if it sounds weird. Great for a casual lunch without a restaurant commitment.",best_for:"Foodies who want to try lampredotto and browse a real Italian market. Perfect casual lunch spot." },
+  { id:"f9", name:"Secret Food Tours: Florence", city:"Florence", category:"activity", lat:43.7710, lng:11.2530, scheduled_date:"2026-06-19", scheduled_time:"10:00",
+    description:"Guided 3.5-hour eat-through of the real Florence away from the tourist traps — local market visit, olive-oil tasting, traditional salamis and cheeses paired with local wines, breakfast at one of the city's most beautiful cafés, schiacciata from a bakery open since 1849, and gelato with a cacao seed to finish. Public tour capped at ten people, eight stops.",
+    notes:"Booked June 19, 10:00 AM. Meeting point is in the booking confirmation email (coords here are approximate — Mercato Centrale / San Lorenzo area). Look for the guide's orange umbrella.", source:"Trip planning", duration_min:"3.5 hrs (10:00–13:30)", verdict:"worth-it",honest_summary:"A guided eat-through of the San Lorenzo market orbit — salumi, pecorino, lampredotto if you're brave, wine, gelato. Florence's center is more tourist-trampled than most food cities, which makes a curator more useful, not less: they steer you past the trap menus. Come hungry — this replaces lunch.",best_for:"Your first real Florence food day, no trial-and-error." },
   // ── TUSCANY ──
   { id:"t1", name:"Chianti Wine Region", city:"Tuscany", category:"activity", lat:43.5500, lng:11.2500, scheduled_date:"2026-06-20", scheduled_time:"08:30",
     description:"Rolling hills covered in vineyards between Florence and Siena. The heart of Chianti Classico wine production. Dotted with medieval villages, olive groves, and cypress-lined roads. Pure Tuscan honeymoon magic.",
