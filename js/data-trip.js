@@ -163,7 +163,7 @@ const GIFTED_EXPERIENCES = [
     linkedPlaces: ['l1', 'l6'],
     date: '2026-06-14',
     time: '10:45',
-    duration: '3 hours',
+    duration: '3 hrs (10:45–13:45)',
     bookingStatus: 'scheduled',
     confirmationUrl: '',
     notes: 'Check voucher for date/time. Arrive 15 min early.'
@@ -179,7 +179,7 @@ const GIFTED_EXPERIENCES = [
     linkedPlaces: [],
     date: '2026-06-25',
     time: '17:50',
-    duration: '30 minutes',
+    duration: '30 min (17:50–18:20)',
     bookingStatus: 'scheduled',
     confirmationUrl: '',
     notes: 'Book specific date/time. Evening is most romantic.'
@@ -195,7 +195,7 @@ const GIFTED_EXPERIENCES = [
     linkedPlaces: [],
     date: '2026-06-15',
     time: '16:15',
-    duration: '3 hours',
+    duration: '3 hrs (16:15–19:15)',
     bookingStatus: 'scheduled',
     confirmationUrl: '',
     notes: 'Book specific date/time with provider. Likely includes dinner.'

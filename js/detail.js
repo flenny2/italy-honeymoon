@@ -141,7 +141,9 @@ function renderDetail(id) {
 function getVisitInfo(p) {
   var info = {};
 
-  if (p.duration_min) info.duration = p.duration_min + ' min';
+  // Values with units/end-times ("3 hrs (08:00–11:00)") render as-is; bare
+  // numeric ranges ("90–120") keep the legacy ' min' suffix.
+  if (p.duration_min) info.duration = /[a-z]/i.test(String(p.duration_min)) ? p.duration_min : p.duration_min + ' min';
   else if (p.category === 'dining') info.duration = '60–90 min';
   else if (p.category === 'landmark') info.duration = '1–2 hrs';
   else if (p.category === 'viewpoint') info.duration = '20–30 min';
