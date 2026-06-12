@@ -406,6 +406,7 @@ function renderTodayHeroDuring(phase, city, state, tonight) {
     case 'gift-tomorrow': hero = _heroGiftTomorrow(state.gift, city); break;
     case 'move-am':       hero = _heroMoveAM(state.from, state.to, state.transit); break;
     case 'move-pm':       hero = _heroMovePM(state.from, state.to, state.transit); break;
+    case 'depart':        hero = _heroDepart(state.from, state.transit); break;
     default:
       // A headline place outside the sleeping city (Vatican on the Jun 18 move
       // morning, Chianti on Jun 20) drives the kicker city — name where the
@@ -452,6 +453,13 @@ function _pickHeroState(phase) {
       if (h.checkOut === today) depart = cityName;
       if (h.checkIn === today) arrive = cityName;
     }
+  }
+  // Check-out with no next hotel = departure day (Jun 27: checkout + fly home).
+  // Without this it fell through to "Free day · VENEZIA IS YOURS".
+  // (Arrive-only — the Jun 13 Rome check-in — keeps falling through to normal.)
+  if (depart && !arrive) {
+    return { kind: 'depart', from: depart,
+             transit: (typeof TRANSITS !== 'undefined') ? TRANSITS[today] : null };
   }
   if (depart && arrive && depart !== arrive) {
     var rome = (typeof getRomeNow === 'function') ? getRomeNow() : { hour: 12 };
@@ -593,6 +601,25 @@ function _heroMovePM(from, to, transit) {
          '</div>';
 }
 
+// Departure day — checkout with no next Italian hotel (flying home).
+// English farewell, matching the move-AM convention.
+function _heroDepart(from, transit) {
+  var bgState = {
+    kind: 'move',
+    id: _moveSlug(from) + '-depart',
+    city: from,
+    category: 'landmark'
+  };
+  var kicker = 'DEPARTURE DAY · ' + _cityLabel(from);
+  var body = (transit && transit.train) ? transit.train : '';
+  return '<div class="tile tile--image tile--hero tile--hero-tall" style="' + _heroBgStyle(bgState) + '">' +
+           _heroPlaceholderIcon(bgState) +
+           '<div class="hero-kicker">' + kicker + '</div>' +
+           '<h1 class="hero-title">Last morning in ' + from + '</h1>' +
+           (body ? '<div class="hero-body">' + body + '</div>' : '') +
+         '</div>';
+}
+
 // ═══════════════════════════════════════
 // STATUS STRIP (v12) — Day · Weather · Up Next, 3 equal flat tiles.
 // ═══════════════════════════════════════
@@ -686,6 +713,7 @@ function _todayNow() {
 // ═══════════════════════════════════════
 
 function renderTodayPlanTile(phase, city, heroState) {
+  if (heroState.kind === 'depart') return _planTileDepart(heroState);
   var isNormal = (heroState.kind === 'normal');
   // Move-day morning with a timed item: the Hero shows the item, so the Plan
   // tile carries the move logistics — the "train secondary" surface.
@@ -729,6 +757,19 @@ function _planTileMove(move) {
            '<div class="plan-eyebrow">TODAY’S PLAN</div>' +
            '<div class="plan-headline-row"><h2 class="plan-name">' + move.from + ' → ' + move.to + '</h2></div>' +
            '<div class="plan-kicker">MOVE DAY</div>' +
+           '<div class="plan-bestfor">' + body + '</div>' +
+         '</div>';
+}
+
+// Departure day — the logistics surface for checkout + flight home.
+function _planTileDepart(heroState) {
+  var body = (heroState.transit && heroState.transit.train)
+    ? heroState.transit.train
+    : 'Check out of ' + heroState.from + ' · fly home today';
+  return '<div class="tile tile--flat tile--span-2 plan-tile plan-tile--flat">' +
+           '<div class="plan-eyebrow">TODAY’S PLAN</div>' +
+           '<div class="plan-headline-row"><h2 class="plan-name">' + heroState.from + ' → Home</h2></div>' +
+           '<div class="plan-kicker">DEPARTURE DAY</div>' +
            '<div class="plan-bestfor">' + body + '</div>' +
          '</div>';
 }
