@@ -4,30 +4,47 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-06-11
-**Branch:** `pre-trip-polish` (cut from `main` at `31cfad5`). **Post-audit quick wins shipped — 2 more commits (10 total unpushed).** Map "By Source" filter buttons are now generated from data (the dead Xio button that blanked the map can't recur), a1's editorial copy matches the booked June 16 combined Pompeii tour, and the Jun 20 Chianti departure is anchored (t1, 08:30). CACHE v21 → v22. `validate-data.js`: 0 errors, 5 warnings. See the second 2026-06-11 entry below.
-**⚠️ 10 commits live on `pre-trip-polish` only — do NOT push yet** (held by instruction; Dylan pushes/merges). `main` is even with `origin/main` at `31cfad5`.
+**Last updated:** 2026-06-12 (final pre-trip session — trip starts tomorrow)
+**Branch:** `main`. `pre-trip-polish` merged + pushed as the first action (insurance: the TZ fixes ship no matter what), then **13 more commits straight on `main`**, all pushed. Netlify live. CACHE v22 → **v23**. `validate-data.js`: **0 errors, 0 warnings.** See the 2026-06-12 entry below.
 
-### Unpushed batch commits on `pre-trip-polish` (newest first)
-- `<this commit>` — docs: HANDOFF corrections (DAY_TRIP_LINE_COORDS, HELD 3/4) + APP-ARCHITECTURE.md first commit
-- `153f60b` — data-driven map source filters + a1 combined-tour copy + Jun 20 t1 anchor + CACHE v21 → v22
-- `eebe3fc` — Today plan/Up Next derivation + move-day rule + CACHE v20 → v21 + HANDOFF entry
-- `5f0fcc3` — TZ-proof getTripPhase day math + June 27 as Day 15
-- `e275379` — date-anchor timed places (scheduled_date) + validator date-contradiction errors
-- `bc9c657` — CACHE v19 → v20 + HANDOFF entry for the polish batch
-- `83c0adf` — drop dead hero JPGs (palatine-hill, vatican-statue) from sw.js precache
-- `eb77255` — precache PWA icons (icon-192/512) in sw.js APP_FILES
-- `9b20b9d` — point Amalfi (a1) + Pompeii (a2) notes at the June 16 combined day trip
-- `8eee0d6` — add June 16 Pompeii/Amalfi/Positano day trip (TRIP.dayTrips + bk-amalfi booking)
+### HELD — during/post-trip work (in rough priority)
+1. ~~**Bologna b1–b5 `source`**~~ — ✅ **DONE 2026-06-12** (`source:"Trip planning"`, Dylan's call; validator now fully clean).
+2. **Antinori tasting-slot anchor (t3) — narrowed 2026-06-11.** The Jun 20 *departure* (8:30 AM, booked per Dylan's itinerary) is anchored on **t1**, so Jun 20's Up Next shows 08:30 the way Jun 16 shows 07:10. The only remaining bit: if a specific Antinori tasting slot ever gets booked, add `scheduled_date:"2026-06-20"` + `scheduled_time` to **t3** and put the time in `bk-antinori.when` (the validator WARNs the moment `when` gains a time while t3 stays unanchored).
+3. **Florence hotel** HOTELS entry / **photos** per TODO-photos.md mostly unfilled.
+4. **(observation, pre-existing — cosmetic)** Derived timed headlines carry a category kicker (`EXPERIENCE` etc.) which `_composePlanKicker` honors verbatim, so the Plan tile never appends `· PRE-BOOKED` for them (f9 on Jun 19, Pantheon on Jun 15). Revisit post-trip if it grates.
 
-### HELD — next-session work (in rough priority)
-1. ~~**Move-day Today display / Up Next ignoring `place.scheduled_time`**~~ — ✅ **DONE 2026-06-11** (date-awareness batch below).
-2. **Bologna b1–b5 `source`** — missing while b6–b8 have `source:"Trip planning"` (needs real attribution values from Dylan).
-3. **Antinori tasting-slot anchor (t3) — narrowed 2026-06-11.** The Jun 20 *departure* (8:30 AM, booked per Dylan's itinerary) is now anchored on **t1** (`153f60b`), so Jun 20's Up Next shows 08:30 the way Jun 16 shows 07:10. The only remaining bit: if a specific Antinori tasting slot ever gets booked, add `scheduled_date:"2026-06-20"` + `scheduled_time` to **t3** and put the time in `bk-antinori.when` (the validator WARNs the moment `when` gains a time while t3 stays unanchored).
-4. ~~**`a1` editorial copy contradiction**~~ — ✅ **DONE 2026-06-11** (`153f60b`, post-audit quick wins below).
-5. **Florence hotel** still unbooked (HOTELS entry); **photos** per TODO-photos.md mostly unfilled.
+> `validate-data.js` (`node validate-data.js`) is the guardrail — run it after any data edit. Currently **0 errors, 0 warnings**. Date/time contradictions across places/bookings/gifts are ERRORs; new check10 WARNs on a `BOOKINGS.when` with no recognizable "Month D" and ERRORs on malformed manual `TODAY_PLAN` times / dangling ids.
 
-> `validate-data.js` (`node validate-data.js`) is the guardrail — run it after any data edit. Currently 0 errors, 5 warnings (all = b1–b5 missing `source`, HELD item 2). Date/time contradictions across places/bookings/gifts are now ERRORs, not warnings.
+---
+
+## 2026-06-12 — Final pre-trip session: insurance merge + fix batch + Secret Food Tours + ship v23
+
+Trip starts tomorrow. Three phases, all pushed to `origin/main`: (1) insurance merge of `pre-trip-polish` (the 10-commit TZ batch went live immediately), (2) seven verified bug fixes P0-first + validator/filter guards, (3) content: the newly booked Secret Food Tours Florence, end-time duration strings, Jun 19 Bologna revocation, b1–b5 sources. One CACHE bump v22 → **v23** for the whole batch.
+
+### Commits (oldest first, after the merge)
+- `bb389cc` — **P0 storage refactor.** `italy-places-v3` now stores `{ starred: [ids] }` only; `getPlaces()` merges over fresh `DEFAULT_PLACES`; legacy full-snapshot arrays migrate on first read, dropping removed-place residue (old Verona `ver1–ver5` can't resurrect). All 16 call sites unchanged; only `toggleSave`/`removeFavorite` ever write. **Dylan-confirmed: starred-ids-only** (no custom-places pool — no add-place UI exists, so unknown legacy ids are deletions, not user data). 12/12 vm migration tests.
+- `1786124` — **P0 hero kicker city.** Keys on `headline.place.city !== phase.city` (was `kicker === 'DAY TRIP'`), fixing FIRENZE over the Jun 18 Vatican and Jun 20 Chianti. New `CITY_COLORS.Tuscany` (`#5F7A4A`, label `Toscana`) so the kicker reads TOSCANA.
+- `1bb1a18` — **P0 departure day.** checkOut-only in `_pickHeroState` → new `depart` state: hero "Last morning in Venice" (`DEPARTURE DAY · VENEZIA`), Plan tile "Venice → Home" logistics. `TRANSITS['2026-06-27']` guarded in both builders (absent → fallback line). Jun 13's arrive-only check-in still falls through to normal.
+- `fbc5d77` — **P1 unified pick chain.** New `pickCityAnchor(city, excludeIds, date)` in today-plan.js (essential landmark → essential → anything, never a place anchored to a different day) replaces both duplicated chains; Jun 14 no longer suggests the Jun-18 Vatican (picks St. Peter's).
+- `ff3162f` — **P1 gift guard.** `(t.gift && t.gift.duration)` — manual `TODAY_PLAN` gift items arrive without `t.gift` and TypeError'd Today blank.
+- `86fde2d` — **P1 TZ-safe "today".** `localISODate()` at bookings.js:173 (`getEntryStatus`), today.js letter alert + capsule nudge, journal.js entry date. Zero `toISOString` left in js/.
+- `178dbff` — **P1 Up Next boundary.** `m !== null && m >= 0` (null check kept per Dylan's rider) — the 17:50 gondola shows "now" at 17:50:00.
+- `c908686` — **guards.** validator check10 (WARN unparseable `when`; ERR bad `TODAY_PLAN` times/ids) + `renderSourceFilterButtons` re-runs `applyActiveFilters()` when it prunes a stale `src:` token.
+- `aba5df1` — **f9 Secret Food Tours: Florence** (activity, anchored `2026-06-19` `10:00`, `duration_min:"3.5 hrs (10:00–13:30)"`, coords APPROX Mercato Centrale/San Lorenzo — real meeting point in the confirmation email, orange umbrella note). `bk-secretfood` in BOOKINGS (`when:'June 19, 10:00 AM'`, agrees with the anchor). **Pre-checked via a seed in `getBookingState()`** (`Object.assign({'bk-secretfood': true}, stored)`) so the confirmed tour badges Booked everywhere instead of counting as "still need booking"; an explicit uncheck (stored `false`) wins the merge. Count 89 → 90.
+- `49139f1` — **end times in durations.** gift-1 `3 hrs (10:45–13:45)`, gift-3 `3 hrs (16:15–19:15)`, gift-2 `30 min (17:50–18:20)`; l2 `3 hrs (08:00–11:00)`; a1 + t1 gain `duration_min` (`~13 hrs (07:10–20:10)` / `9 hrs (08:30–17:30)` — neither had one). detail.js renders lettered `duration_min` values as-is; bare numeric ranges keep the `' min'` suffix.
+- `4522708` — **Jun 19 Bologna revoked.** `TRIP.dayTrips['2026-06-19']` deleted — that entry WAS the Sacrario special-case (the untimed day-trip anchor derived b2 from it); Jun 19 now headlines the 10:00 food tour. Bologna stays browsable (CITIES/theming/b1–b8 kept; the map never drew a Bologna line). CLAUDE.md + APP-ARCHITECTURE.md city lines updated.
+- `8807242` — **b1–b5 `source:"Trip planning"`** — validator to 0/0.
+- `<this commit>` — CACHE v22 → v23 + this HANDOFF entry.
+
+### Verification
+- `node validate-data.js` → **0 errors, 0 warnings**; `node --check` clean on every touched file.
+- Headless-Chrome acceptance vs `python3 -m http.server`, fresh profiles, all 7 mocks pass: Jun 18 T08:00 Vatican hero `TODAY · ROMA · 08:00` (zero FIRENZE); Jun 20 T09:00 `TODAY · TOSCANA`; Jun 27 `DEPARTURE DAY · VENEZIA` / "Last morning in Venice" / "Venice → Home" (zero "IS YOURS"); Jun 14 plan tile = St. Peter's, zero Vatican; Jun 19 T09:00 food-tour hero + Up Next 10:00, kicker FIRENZE; Jun 19 T15:00 zero Bologna/Sacrario; Jun 25 T17:50 gondola Up Next "now".
+- Storage migration: 12/12 vm assertions (star survives, ver1 residue dropped, fresh content wins, round-trip, fresh-device no-op).
+- Bookings page: bk-secretfood renders ✅ booked on a fresh device ("4 of 18 booked" = 3 gifts + seeded tour); f9 detail shows `3.5 hrs (10:00–13:30)` with no stray " min".
+- **Rider confirmed:** `SOURCE_FILTER_META` Xio icon is genuine 🧭 (bytes F0 9F A7 AD) — no mojibake, nothing fixed.
+
+### iPhone PWA
+Delete + re-add the home-screen app in Safari — **v19 → v23** (the phone was still on stale `main`).
 
 ---
 
