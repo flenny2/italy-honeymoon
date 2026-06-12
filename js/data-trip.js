@@ -27,14 +27,15 @@ const TRIP = {
   // Pompeii entries are filed under Rome). Today's headline fallback uses it
   // to anchor untimed day-trip days.
   dayTrips: {
+    // (Bologna was dropped from the schedule 2026-06-12 — Jun 19 is a plain
+    //  Florence day. Bologna stays browsable in CITIES as an unscheduled maybe.)
     '2026-06-16': { label: 'Pompeii / Amalfi / Positano day trip', from: 'Rome', city: 'Rome', emoji: '🌊' },
-    '2026-06-19': { label: 'Bologna half-day', from: 'Florence', city: 'Bologna', emoji: '🟥' },
     '2026-06-20': { label: 'Tuscany / Chianti day trip', from: 'Florence', city: 'Tuscany', emoji: '🍷' },
   }
 };
 
-// Cities in travel order (Bologna inserted as Florence day-trip — TRIP.schedule
-// for Jun 19 stays 'Florence'; dayTrips is additive).
+// Cities in travel order (Bologna is browsable but unscheduled — no dayTrips
+// date; it sits in CITIES so its places stay reachable from Explore/Map).
 const CITIES = ['Rome', 'Florence', 'Bologna', 'Tuscany', 'Lake Como', 'Venice'];
 
 const CITY_EMOJI = {

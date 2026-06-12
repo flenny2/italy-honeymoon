@@ -147,7 +147,7 @@ Each place has: `id`, `name`, `city`, `category`, `lat`, `lng`, `description`, `
 **Date anchors**: a place with a confirmed timed booking carries `scheduled_date` (ISO `YYYY-MM-DD`) **and** `scheduled_time` (24h `HH:MM`) — they travel together, both or neither (`validate-data.js` ERRORs on one without the other, and on any date/time conflict with the `BOOKINGS`/`GIFTED_EXPERIENCES` entry that references the place). Anchored places feed Today's Plan and Up Next on that date. An unbooked "aim for early morning" intention is NOT an anchor — leave both fields off until the slot is actually booked (the validator WARNs when a booking gains an explicit date+time but its place is still unanchored).
 
 Categories: dining, landmark, hotel, activity, viewpoint, transit, pharmacy, restroom.
-Cities: Rome, Florence, Bologna, Tuscany, Lake Como, Venice. (Bologna and Tuscany are day-trip cities — top-level entries in `CITIES` with `TRIP.dayTrips` mapping for the specific date. There is no `subCity` field.)
+Cities: Rome, Florence, Bologna, Tuscany, Lake Como, Venice. (Tuscany is a dated day-trip city — top-level entry in `CITIES` with a `TRIP.dayTrips` mapping for Jun 20. Bologna is a browsable unscheduled maybe: top-level `CITIES` entry, no `dayTrips` date. There is no `subCity` field.)
 
 ## Design Principles
 

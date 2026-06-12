@@ -8,8 +8,8 @@
 ## Overview / Purpose
 
 An editorial companion app to **Wanderlog** for a June 13–27, 2026 Italy
-honeymoon (Rome → Florence → Lake Como → Venice, with Bologna / Tuscany /
-Pompeii-Amalfi day trips). Wanderlog owns logistics — maps, itinerary,
+honeymoon (Rome → Florence → Lake Como → Venice, with Tuscany and
+Pompeii-Amalfi day trips; Bologna is browsable but unscheduled). Wanderlog owns logistics — maps, itinerary,
 reservations, GPS, turn-by-turn directions, reviews. This app deliberately does
 **not** duplicate that. It is the *content layer*: honest verdict badges,
 "Real Story" summaries, source attribution (who recommended a place and why),
@@ -277,9 +277,10 @@ not stored; `saved` is added at runtime by `Storage.getPlaces()`.
 
 - **Categories**: dining, landmark, hotel, activity, viewpoint, transit,
   pharmacy, restroom (last three are hidden).
-- **Cities**: Rome, Florence, Bologna, Tuscany, Lake Como, Venice. Bologna and
-  Tuscany are day-trip cities — top-level entries in `CITIES` with
-  `TRIP.dayTrips` mapping the specific ISO date. There is no `subCity` field.
+- **Cities**: Rome, Florence, Bologna, Tuscany, Lake Como, Venice. Tuscany is
+  a dated day-trip city — top-level entry in `CITIES` with a `TRIP.dayTrips`
+  mapping for the ISO date. Bologna is a browsable unscheduled maybe (top-level
+  `CITIES` entry, no `dayTrips` date). There is no `subCity` field.
 
 ## Storage / localStorage Model
 
