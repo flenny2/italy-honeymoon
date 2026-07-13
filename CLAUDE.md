@@ -1,3 +1,13 @@
+<!-- ===========================================================================
+doc:      CLAUDE.md — stable spec + intent for the Italy Honeymoon companion PWA
+peers:    HANDOFF.md = live session state · APP-ARCHITECTURE.md = code-mirror map
+stack:    vanilla HTML/CSS/JS PWA · no build tools · localStorage only
+trip:     June 13–27, 2026 (now past / imminent — app is in its shipped state)
+codebase: 28 JS files (js/ + js/components/) · 5 CSS files · hash-routed
+verify:   file map below reconciled against `ls js/ js/components/ css/`
+updated:  2026-07-13
+============================================================================ -->
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -33,7 +43,7 @@ Editorial companion app to Wanderlog for a June 2026 Italy honeymoon. Wanderlog 
 
 ## Architecture
 
-Multi-file PWA with hash-based routing. ~325 lines HTML, ~2,800 lines CSS (4 files), ~4,100 lines JS (24 files; one of those — `italy-border.js` — is an 80KB GeoJSON literal, not source).
+Multi-file PWA with hash-based routing. ~370 lines HTML, ~3,840 lines CSS (5 files), ~5,600 lines JS (28 files; one of those — `italy-border.js` — is an 80KB GeoJSON literal, not source).
 
 ### File map
 
@@ -42,26 +52,30 @@ index.html              Entry point — page shells, tab bar (map filter modal i
 manifest.json           PWA manifest
 sw.js                   Service worker — caches all assets + map tiles
 
-css/
+css/                    (5 files)
   variables.css         Italian flag theme (--rosso, --verde, --bianco, etc.)
   base.css              Reset, body, map, tab bar, shared utilities
   components.css        Cards, buttons, badges, modals, markers, popups
   pages.css             Page-specific styles (today, city, detail, phrasebook, settings, stats, etc.)
+  today.css             Today-screen "Hairline Editorial" tile system — hero, status strip, plan tile, verdict pill, .today-grid--tonight theme flip
 
-js/
+js/                     (27 files + js/components/, 28 total)
   data-places.js        DEFAULT_PLACES (90 entries), autoTag(), distanceKm(), walkMinutes(), getNearbyPairings()
   data-trip.js          TRIP schedule, CITIES, CITY_EMOJI, CITY_VIEWS, CAT_COLORS/ICONS, MOODS, VERDICTS, GIFTED_EXPERIENCES, getTripPhase()
   data-hotels.js        HOTELS object keyed by city name
   data-phrases.js       Italian phrasebook data + JOURNAL_PROMPTS
   data-achievements.js  ACHIEVEMENTS (34 incl. platinum), RARITY, COUNTER_TYPES, COUNTER_ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES
+  data-today-plan.js    TODAY_PLAN (sparse manual day overrides, currently empty) + TRANSITS (move-day train/arrival notes)
   italy-border.js       GeoJSON polygon for Italy map mask (~80KB) + addItalyMask(map)
   storage.js            Storage module — all localStorage read/write, keys defined here
-  helpers.js            CONFIG constants, ROUTE_COORDS, HIDDEN_CATEGORIES, isVisiblePlace(), date formatters, addTileLayer()
+  helpers.js            CONFIG constants, ROUTE_COORDS, HIDDEN_CATEGORIES, isVisiblePlace(), date formatters, addTileLayer(), getRomeNow()
+  hero-images.js        HERO_IMAGES registry + getHeroBackground() resolver + SVG-sprite placeholder fallback
+  today-plan.js         Today-screen derivation — getTimedItemsForDate (TODAY_PLAN + scheduled gifts + date-anchored places), getUpNext, getPhraseOfDay, getTonightMode
   router.js             Hash-based Router — maps #page/param to render functions
   map-shared.js         drawTravelRoute(map, opts), addHotelMarkers(map, opts) — shared between today's mini map and full map tab
   animations.js         showToast, openModal, closeModal, fireConfetti
-  app.js                Init (DOMContentLoaded → Router.init + SW registration), renderExplore(), renderMore(), renderCapsule(), full map tab logic
-  today.js              Today home screen — countdown, hotel, mini map, bookings, phrase, gifts, suggestions, picks, buildPlaceCard, toggleSave
+  app.js                Init (DOMContentLoaded → Router.init + SW registration), renderExplore(), renderMore(), renderCapsule(), renderFavorites(), full map tab logic
+  today.js              Today home screen — phase router, hero, status strip, plan tile, gifts, suggestions, favorites, buildPlaceCard, toggleSave, isPlaceBooked
   city.js               City detail page — mini map, hotel card, mood filter, place cards
   detail.js             Place detail — verdict, source, moods, honest summary, visit info, notes, nearby pairings
   suggestions.js        getSmartSuggestions() — time-of-day, booking reminders, balance tips
@@ -73,10 +87,12 @@ js/
   surprise.js           "Surprise Me" random place modal
   settings.js           Names, wedding date, hometown, photo
   counters.js           Tap counters (gelato/pasta/etc.) on Today + dedicated Stats page
+  components/
+    verdict-pill.js     renderVerdictPill() — maps verdict key to pill markup, normalizes nice→nice-if-nearby / overrated→overhyped at the display boundary (no data migration)
 
 lib/                    Self-hosted Leaflet 1.9.4 (CSS, JS, marker images)
 fonts/                  Self-hosted Playfair Display + DM Sans
-img/                    PWA icons (192px, 512px)
+img/                    PWA icons (192px, 512px) + img/heroes/ photos
 ```
 
 ### Navigation
