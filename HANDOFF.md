@@ -4,8 +4,9 @@
 > "what's the cursor on" doc. Update it after every session — header date
 > below should always reflect the last touch.
 
-**Last updated:** 2026-06-12 (final pre-trip session — trip starts tomorrow)
-**Branch:** `main`. `pre-trip-polish` merged + pushed as the first action (insurance: the TZ fixes ship no matter what), then **13 more commits straight on `main`**, all pushed. Netlify live. CACHE v22 → **v23**. `validate-data.js`: **0 errors, 0 warnings.** See the 2026-06-12 entry below.
+**Last updated:** 2026-10-09 (KEEP seat — the keepsakes Save a copy / Restore button, fleet audit FA-23 a)
+**Branch:** `keep/oct09` (worktree `../italy-keep-oct09`), cut from `main` @ `ce3c3ff`, **NOT pushed and NOT merged** — push = deploy, Dylan's hand. `main` and the live site are still v23 from 2026-06-12. On the branch: CACHE v23 → **v24**; `validate-data.js` **0 errors, 0 warnings**; new `node --test` **20/20**; new browser drive **PASS**. See the 2026-10-09 entry below.
+**⚠️ iPhone:** never delete and re-add the home-screen app — it holds the only copy of the journal, letters and time capsule (CLAUDE.md → Deployment).
 
 ### HELD — during/post-trip work (in rough priority)
 1. ~~**Bologna b1–b5 `source`**~~ — ✅ **DONE 2026-06-12** (`source:"Trip planning"`, Dylan's call; validator now fully clean).
@@ -14,6 +15,33 @@
 4. **(observation, pre-existing — cosmetic)** Derived timed headlines carry a category kicker (`EXPERIENCE` etc.) which `_composePlanKicker` honors verbatim, so the Plan tile never appends `· PRE-BOOKED` for them (f9 on Jun 19, Pantheon on Jun 15). Revisit post-trip if it grates.
 
 > `validate-data.js` (`node validate-data.js`) is the guardrail — run it after any data edit. Currently **0 errors, 0 warnings**. Date/time contradictions across places/bookings/gifts are ERRORs; new check10 WARNs on a `BOOKINGS.when` with no recognizable "Month D" and ERRORs on malformed manual `TODAY_PLAN` times / dangling ids.
+
+---
+
+## 2026-10-09 — Keepsakes: "Save a copy" + "Restore from a copy" (KEEP seat, branch `keep/oct09`)
+
+Why: the journal, sealed letters and time capsule (opens 2027-06-27) live only in the iPhone home-screen app's browser storage; clearing site data, losing the phone, or deleting the app loses them for good. Fleet audit FA-23, option a. Charter: meta `reports/friday-oct09/00-charter.md` §KEEP. Dylan was at work; nothing pushed.
+
+### What shipped (on the branch)
+- **`js/keepsakes.js`** (new; script tag after settings.js, in `APP_FILES`) — a `Keepsakes` module like `Storage`: builds the copy, checks a picked file, plans an add-only restore, renders the Settings card, runs the share-sheet / download save and the confirm → write restore. Design decisions and their rejected alternatives: CLAUDE.md → Key systems → **Keepsakes copy**.
+- **`js/storage.js`** — `Storage.KEYS` (read-only copy), `readAllKeys()` (every owned key, parsed; unparseable bytes kept raw), `writeKeys(values)` (all-or-nothing: on a quota error every key goes back and the error is rethrown — unlike `write()`, which swallows errors).
+- **`js/settings.js`** — the Keepsakes card under the settings form. **`css/pages.css`** — `.keepsakes-*` styles (card, confirm table).
+- **The file**: `italy-keepsakes-YYYY-MM-DD.json`, pretty-printed, ~31 KB for the test trip (photos dominate; a real trip with many journal photos could reach a few MB). Holds all 8 keys; the capsule is base64-sealed inside it.
+- **Tests (new `tests/`)**: `keepsakes.test.mjs` — 20 rules under `node --test` (every key covered; capsule sealed in the file; wiped phone restores byte for byte; newer phone + older copy changes nothing; two phones merge; refusals; the full-phone rollback). `keepsakes-drive.mjs` — headless Chrome at 390px, 12 steps / 75 checks: seed → Save (download) → wipe → Restore → byte-identical, the pages show it all again, newer-phone no-op, refused files, the iPhone share-sheet path under a WebKit-rules stand-in, the service worker precaching `keepsakes.js`. `keepsakes-fixture.mjs` — the shared made-up trip. Screenshots: `docs/keepsakes/`.
+- CACHE v23 → v24.
+
+### Verification
+- `node --test` → **20/20**. Deliberate breaks in scratch copies (capsule unsealed, copy wins, no rollback, settings overwritten, capsule replaced, no shape check, write-everything, counts drop, foreign keys written) → **all caught** (the foreign-key one only when both guards are removed — `parseCopy` and `planRestore` each block it alone).
+- `node tests/keepsakes-drive.mjs` → **PASS, 75 checks**. It caught two things on the way: buttons measured mid pop-in animation (a test bug, fixed by finishing animations first), and a real design flaw — the first version fell back to a download when the share sheet failed, which in a home-screen app opens a preview that can strand you; now it says "try again".
+- `node validate-data.js` → 0 errors, 0 warnings (before and after). `node --check` clean on every touched JS file.
+- **NOT verified on a real iPhone** (no device here). Emulated: WebKit's `canShare` (any non-empty file list — read from WebKit's Navigator.cpp) and `share()` (needs the tap's own activation; AbortError on dismiss). Real-device unknowns: the share sheet listing "Save to Files" for a .json file, and the Files picker letting the copy be chosen (no `accept=` filter, so it should). One tap on the phone settles both.
+
+### For the iPhone (after Dylan pushes)
+Open the app from the home-screen icon (not Safari — separate storage), with internet; wait ~10 s; close it from the app switcher; open it again → More → Settings → Keepsakes. The line "On this phone: N journal entries · N letters · capsule sealed" should show real numbers. Tap **Save a copy** → share sheet → **Save to Files** → **iCloud Drive** → Save. **Do not delete and re-add the app** to update it.
+
+### Notes for the next session
+- Security, known and accepted: a restored file's text lands in storage that the app renders with `innerHTML` (the existing pattern). Before this, only text typed on the phone got there; now a copy file can. The copy comes from his own phone; a crafted file would need him to restore it by hand.
+- FA-34 (archive this folder once FA-23 is done) is his call; the GitHub repo and the Netlify site must stay up until the capsule opens on 2027-06-27, and the copy's restore needs the site.
 
 ---
 

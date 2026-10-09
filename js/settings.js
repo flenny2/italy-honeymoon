@@ -69,6 +69,7 @@ function renderSettings() {
     '<button class="btn btn-primary btn-full" style="margin-top:20px;" onclick="saveSettingsFromForm()">💾 Save Settings</button>' +
 
     '</div>' +
+    Keepsakes.renderCard() +
     '</div>';
 
   content.innerHTML = headerHTML + bodyHTML;

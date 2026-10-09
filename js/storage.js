@@ -282,8 +282,46 @@ var Storage = (function() {
     });
   }
 
+  // ── Keepsake copies (save/restore in keepsakes.js) ──
+  // Every key this app owns → its parsed value, or null if never written.
+  // A value that won't parse is kept as its raw string: a copy never drops
+  // bytes just because it can't read them.
+  function readAllKeys() {
+    var values = {};
+    Object.values(KEYS).forEach(function(key) {
+      var raw = localStorage.getItem(key);
+      if (raw === null) { values[key] = null; return; }
+      try { values[key] = JSON.parse(raw); } catch (e) { values[key] = raw; }
+    });
+    return values;
+  }
+
+  // Write several keys as one unit. Unlike write() above, a failure is not
+  // swallowed: if any key won't fit (a full phone), every key goes back to
+  // what it held before and the error is rethrown, so a restore lands whole
+  // or not at all. Restores only add, so rolling back only shrinks — the
+  // put-back writes always fit.
+  function writeKeys(values) {
+    var before = {};
+    Object.keys(values).forEach(function(key) { before[key] = localStorage.getItem(key); });
+    try {
+      Object.keys(values).forEach(function(key) {
+        localStorage.setItem(key, JSON.stringify(values[key]));
+      });
+    } catch (e) {
+      Object.keys(before).forEach(function(key) {
+        if (before[key] === null) localStorage.removeItem(key);
+        else localStorage.setItem(key, before[key]);
+      });
+      throw e;
+    }
+  }
+
   // ── Public API ──
   return {
+    // Read-only copy of the key names (keepsakes.js labels each one)
+    KEYS: Object.freeze(Object.assign({}, KEYS)),
+
     getPlaces: getPlaces,
     savePlaces: savePlaces,
     resetPlaces: resetPlaces,
@@ -317,6 +355,9 @@ var Storage = (function() {
     getBookings: getBookings,
     saveBookings: saveBookings,
 
-    resetAll: resetAll
+    resetAll: resetAll,
+
+    readAllKeys: readAllKeys,
+    writeKeys: writeKeys
   };
 })();

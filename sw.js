@@ -3,7 +3,7 @@
 // Caches all app assets + map tiles
 // ═══════════════════════════════════════
 
-var CACHE_NAME = 'italy-honeymoon-v23';
+var CACHE_NAME = 'italy-honeymoon-v24';
 
 // All app files to pre-cache on install
 var APP_FILES = [
@@ -63,6 +63,7 @@ var APP_FILES = [
   '/js/suggestions.js',
   '/js/bookings.js',
   '/js/settings.js',
+  '/js/keepsakes.js',
   '/js/counters.js',
   '/js/app.js',
   // Hero photos (pre-cache so first DURING-phase render works offline).

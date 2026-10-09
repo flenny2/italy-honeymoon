@@ -968,6 +968,97 @@
   border: 2px dashed var(--light-gray);
 }
 
+/* ── Keepsakes card + restore confirm (keepsakes.js) ── */
+.keepsakes-card {
+  margin-top: var(--space-md);
+}
+
+.keepsakes-text {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--espresso);
+  margin-bottom: var(--space-sm);
+}
+
+.keepsakes-summary {
+  font-size: var(--text-xs);
+  color: var(--warm-gray);
+  margin-bottom: var(--space-md);
+}
+
+.keepsakes-summary span {
+  white-space: nowrap;
+}
+
+.keepsakes-restore-btn {
+  margin-top: var(--space-sm);
+}
+
+.keepsakes-modal-head {
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.keepsakes-modal-head .modal-icon-md {
+  margin-bottom: var(--space-sm);
+}
+
+.keepsakes-modal-head h2 {
+  margin-bottom: 4px;
+}
+
+.keepsakes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  color: var(--espresso);
+}
+
+.keepsakes-table td {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.keepsakes-table .keepsakes-head td {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  color: var(--warm-gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.keepsakes-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.keepsakes-arrow {
+  width: 28px;
+  text-align: center;
+  color: var(--warm-gray);
+}
+
+.keepsakes-row-changed td {
+  font-weight: 700;
+}
+
+.keepsakes-row-changed .keepsakes-num:last-child {
+  color: var(--verde);
+}
+
+.keepsakes-note {
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--warm-gray);
+  margin-top: var(--space-md);
+}
+
+.keepsakes-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
 /* ═══════════════════════════════════════ */
 /* HERO COMPOSITE on Today (Stage 3)       */
 /* Typography-led for BEFORE/AFTER, city   */
