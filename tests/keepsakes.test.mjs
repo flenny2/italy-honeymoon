@@ -162,15 +162,24 @@ test('wiped phone after first launch: the copy\'s own names, photo and pet name 
   assert.deepEqual(rowsOf(plan)['Names, dates & photo'], [5, 7]);
 });
 
-test('names, dates & photo: a field you filled is never changed; blank or seeded ones fill', () => {
+test('names, dates & photo: once Settings has been touched, only blank fields fill', () => {
   const p = seededPhone();
   p.Storage.saveSettings({ hometown: 'Anaheim, CA' });   // typed on this phone
   restore(p, savedCopy(SEED));
   const settings = stored(p, 'italy-settings-v1');
   assert.equal(settings.hometown, 'Anaheim, CA');
-  assert.equal(settings.userName, 'Dyl');                  // was the seed's 'Dylan'
+  assert.equal(settings.userName, 'Dylan');                // equals the seed, but Settings were touched
   assert.equal(settings.petName, 'amore');                 // was blank
   assert.equal(settings.couplePhoto, SEED['italy-settings-v1'].couplePhoto);
+});
+
+test('a name kept on purpose is never overwritten, even when it equals the seed', () => {
+  // The seed values are the real ones (Hope, the wedding date): matching the
+  // seed field by field must not make a field look blank.
+  const p = seededPhone();
+  p.Storage.saveSettings({ petName: 'tesoro' });          // he has used Settings
+  restore(p, savedCopy(SEED));                             // the copy says 'Hopie'
+  assert.equal(stored(p, 'italy-settings-v1').partnerName, 'Hope');
 });
 
 // ── Restoring: phones that already hold things ──
@@ -286,6 +295,13 @@ test('favorites: the old full-list shape on the phone still merges', () => {
   assert.deepEqual(stored(p, 'italy-places-v3'), { starred: ['l1', 'r1', 'f9'] });
 });
 
+test('trip stats: a count that isn\'t a whole number is left out', () => {
+  const p = phone();
+  const plan = restore(p, savedCopy({ 'italy-counters-v1': { ...SEED['italy-counters-v1'], pasta: 1.5 } }));
+  assert.deepEqual(plan.leftOut, ['Trip stats (1)']);
+  assert.ok(!('pasta' in stored(p, 'italy-counters-v1')));
+});
+
 test('the booking checklist counts ticked items, not unticked ones', () => {
   const p = phone();
   const plan = restore(p, savedCopy({ 'italy-bookings-v1': { 'bk-a': false, 'bk-b': false, 'bk-c': true } }));
@@ -368,6 +384,13 @@ test('"<3" and quotes come back exactly; "</3" and "<b>" come back looking the s
   assert.equal(journal[0].text, 'I <3 you, "amore" - 5 > 4 & always');
   assert.equal(journal[1].text, 'Last night in Venice &lt;/3 &lt;b>ciao&lt;/b>');   // innerHTML shows "</3 <b>ciao</b>"
   assert.equal(Buffer.from(stored(p, 'italy-letters-v1')[0].sealedText, 'base64').toString('utf8'), 'Ti amo <3 &lt;/3');
+});
+
+test('an absurdly deep file ends in a message, not a dead button', () => {
+  const copy = JSON.parse(savedCopy(SEED));
+  const deep = '['.repeat(200000) + ']'.repeat(200000);
+  const text = JSON.stringify(copy).replace('"text":"The Colosseum', `"extra":${deep},"text":"The Colosseum`);
+  assert.equal(phone().Keepsakes.parseCopy(text).error, 'unreadable');
 });
 
 test('a gift status the app doesn\'t know never reaches the page', () => {

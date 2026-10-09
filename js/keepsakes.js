@@ -216,7 +216,7 @@ var Keepsakes = (function() {
         var taps = cleanList(TAP_FIELDS)(value);
         if (taps.value) out.history = taps.value;
         left += taps.value ? taps.left : 1;
-      } else if (!isBuiltInName(key) && typeof value === 'number' && value >= 0) {
+      } else if (!isBuiltInName(key) && Number.isInteger(value) && value >= 0) {   // taps come in ones
         out[key] = value;
       } else {
         left++;
@@ -365,19 +365,31 @@ var Keepsakes = (function() {
     return tap ? tap.type + '|' + tap.ts + '|' + (tap.city || '') : String(tap);
   }
 
-  // Names, dates & photo: fill each field that is blank here or still holds
-  // its first-run seed (FIRST_RUN_SETTINGS in data-trip.js — app.js writes
-  // the seed on a wiped phone before a restore can run, and it isn't anything
-  // you wrote). A field you filled in yourself is never changed.
+  // Names, dates & photo: fill each field that is blank here. A filled field
+  // is never changed — except on a phone whose Settings are still exactly the
+  // first-run seed (FIRST_RUN_SETTINGS, data-trip.js): app.js writes that on a
+  // wiped phone before a restore can run, so there it isn't anything you
+  // wrote. The seed values are the real ones (Hope, the wedding date), so a
+  // single field matching is not enough; the whole of Settings must.
   function fillEmptyFields(phone, copy) {
+    var untouched = isFirstRunSettings(phone);
     var fields = Object.keys(copy).filter(function(field) {
-      var seeded = has(FIRST_RUN_SETTINGS, field) && phone[field] === FIRST_RUN_SETTINGS[field];
-      return (isBlank(phone[field]) || seeded) && !isBlank(copy[field]) && copy[field] !== phone[field];
+      var replaceable = isBlank(phone[field]) || (untouched && has(FIRST_RUN_SETTINGS, field));
+      return replaceable && !isBlank(copy[field]) && copy[field] !== phone[field];
     });
     if (!fields.length) return phone;
     var merged = Object.assign({}, phone);
     fields.forEach(function(field) { merged[field] = copy[field]; });
     return merged;
+  }
+
+  // Every seed field holds its seed value and every other field is blank.
+  function isFirstRunSettings(settings) {
+    return Object.keys(FIRST_RUN_SETTINGS).every(function(field) {
+      return settings[field] === FIRST_RUN_SETTINGS[field];
+    }) && Object.keys(settings).every(function(field) {
+      return has(FIRST_RUN_SETTINGS, field) || isBlank(settings[field]);
+    });
   }
 
   // ── The copy file ──
@@ -424,18 +436,24 @@ var Keepsakes = (function() {
 
     var values = {};
     var leftOut = [];
-    ownedKeys().forEach(function(key) {
-      var part = partFor(key);
-      var raw = has(copy.keys, key) ? copy.keys[key] : null;
-      if (raw === null) { values[key] = null; return; }
-      if (key === Storage.KEYS.capsule && typeof raw === 'string') {
-        var unsealed = unsealOrNull(raw);
-        try { raw = unsealed === null ? undefined : JSON.parse(unsealed); } catch (e) { raw = undefined; }
-      }
-      var cleaned = raw === undefined ? { value: null, left: 'all' } : part.clean(raw);
-      values[key] = cleaned.value;
-      if (cleaned.left) leftOut.push(cleaned.left === 'all' ? part.label : part.label + ' (' + cleaned.left + ')');
-    });
+    try {
+      ownedKeys().forEach(function(key) {
+        var part = partFor(key);
+        var raw = has(copy.keys, key) ? copy.keys[key] : null;
+        if (raw === null) { values[key] = null; return; }
+        if (key === Storage.KEYS.capsule && typeof raw === 'string') {
+          var unsealed = unsealOrNull(raw);
+          try { raw = unsealed === null ? undefined : JSON.parse(unsealed); } catch (e) { raw = undefined; }
+        }
+        var cleaned = raw === undefined ? { value: null, left: 'all' } : part.clean(raw);
+        values[key] = cleaned.value;
+        if (cleaned.left) leftOut.push(cleaned.left === 'all' ? part.label : part.label + ' (' + cleaned.left + ')');
+      });
+    } catch (e) {
+      // Cleaning recurses; an absurdly deep file can overflow the stack. Say
+      // so instead of leaving the button looking dead.
+      return { error: 'unreadable' };
+    }
     return { values: values, leftOut: leftOut, savedAt: copy.savedAt };
   }
 
