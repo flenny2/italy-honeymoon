@@ -35,11 +35,11 @@ function renderLetters() {
     '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
     '<div style="flex:1;">' +
     '<label class="settings-label">From</label>' +
-    '<input id="letter-from" class="settings-input" type="text" autocapitalize="words" placeholder="Your name" value="' + fromDefault + '">' +
+    '<input id="letter-from" class="settings-input" type="text" autocapitalize="words" placeholder="Your name" value="' + esc(fromDefault) + '">' +
     '</div>' +
     '<div style="flex:1;">' +
     '<label class="settings-label">To</label>' +
-    '<input id="letter-to" class="settings-input" type="text" autocapitalize="words" placeholder="Partner\'s name" value="' + toDefault + '">' +
+    '<input id="letter-to" class="settings-input" type="text" autocapitalize="words" placeholder="Partner\'s name" value="' + esc(toDefault) + '">' +
     '</div>' +
     '</div>' +
     '<div style="margin-bottom:12px;">' +

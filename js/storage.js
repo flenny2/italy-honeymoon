@@ -299,8 +299,9 @@ var Storage = (function() {
   // Write several keys as one unit. Unlike write() above, a failure is not
   // swallowed: if any key won't fit (a full phone), every key goes back to
   // what it held before and the error is rethrown, so a restore lands whole
-  // or not at all. Restores only add, so rolling back only shrinks — the
-  // put-back writes always fit.
+  // or not at all. The rollback removes every touched key first, then puts
+  // the old values back: they all fit before, so with the space freed they
+  // fit again (a write may have shrunk a key, so order matters).
   function writeKeys(values) {
     var before = {};
     Object.keys(values).forEach(function(key) { before[key] = localStorage.getItem(key); });
@@ -309,9 +310,9 @@ var Storage = (function() {
         localStorage.setItem(key, JSON.stringify(values[key]));
       });
     } catch (e) {
+      Object.keys(before).forEach(function(key) { localStorage.removeItem(key); });
       Object.keys(before).forEach(function(key) {
-        if (before[key] === null) localStorage.removeItem(key);
-        else localStorage.setItem(key, before[key]);
+        if (before[key] !== null) localStorage.setItem(key, before[key]);
       });
       throw e;
     }

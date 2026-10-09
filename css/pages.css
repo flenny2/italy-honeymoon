@@ -1053,6 +1053,11 @@
   margin-top: var(--space-md);
 }
 
+.keepsakes-leftout {
+  color: var(--rosso-dark);
+  margin-top: var(--space-sm);
+}
+
 .keepsakes-actions {
   display: flex;
   gap: var(--space-sm);

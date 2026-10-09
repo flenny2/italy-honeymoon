@@ -1,17 +1,18 @@
 // tests/keepsakes.test.mjs — the rules behind Settings → "Save a copy" and
 // "Restore from a copy" (js/keepsakes.js, Storage.readAllKeys/writeKeys).
 //
-// Run from the repo root:   node --test tests/
-// No installs. js/storage.js, js/helpers.js and js/keepsakes.js load into a
-// sandbox the way index.html runs them (plain scripts sharing one scope),
-// over an in-memory stand-in for the phone's localStorage.
+// Run from the repo root:   node --test
+// No installs. The app's own scripts load into a sandbox the way index.html
+// runs them (plain scripts sharing one scope), over an in-memory stand-in
+// for the phone's localStorage.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createContext, runInContext } from 'node:vm';
-import { keepsakeSeed, CAPSULE_SECRET, FIRST_RUN_SETTINGS } from './keepsakes-fixture.mjs';
+import { keepsakeSeed, CAPSULE_SECRET } from './keepsakes-fixture.mjs';
 
-const SCRIPTS = ['js/storage.js', 'js/helpers.js', 'js/keepsakes.js'];
+// index.html order: data before storage, helpers before bookings
+const SCRIPTS = ['js/data-trip.js', 'js/storage.js', 'js/helpers.js', 'js/bookings.js', 'js/keepsakes.js'];
 const SOURCES = SCRIPTS.map((file) => [file, readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')]);
 
 // localStorage in memory. With `quota` (characters) set, setItem throws the
@@ -41,7 +42,11 @@ function phone(values = {}, quota) {
   for (const [key, value] of Object.entries(values)) localStorage.setItem(key, JSON.stringify(value));
   const sandbox = createContext({ localStorage, btoa, atob, console });
   for (const [file, source] of SOURCES) runInContext(source, sandbox, { filename: file });
-  return { localStorage, Storage: sandbox.Storage, Keepsakes: sandbox.Keepsakes };
+  return {
+    localStorage, sandbox,
+    Storage: sandbox.Storage, Keepsakes: sandbox.Keepsakes,
+    get: (name) => runInContext(name, sandbox),   // a top-level const, e.g. FIRST_RUN_SETTINGS
+  };
 }
 
 // Sandbox objects carry the sandbox's prototypes, which deepStrictEqual
@@ -55,13 +60,19 @@ function savedCopy(values) {
   return JSON.stringify(Keepsakes.buildCopy(Storage.readAllKeys(), SAVED_AT), null, 2);
 }
 
-// Restore `fileText` onto phone `p` the way confirmRestore does: plan, then write.
+// Restore `fileText` onto phone `p` the way confirmRestore does.
 function restore(p, fileText) {
   const parsed = p.Keepsakes.parseCopy(fileText);
   assert.equal(parsed.error, undefined, `copy refused: ${parsed.error}`);
-  const plan = p.Keepsakes.planRestore(p.Storage.readAllKeys(), parsed.values);
-  p.Storage.writeKeys(plan.writes);
-  return plan;
+  const plan = p.Keepsakes.restoreValues(parsed.values);
+  return Object.assign(plan, { leftOut: plain(parsed.leftOut) });
+}
+
+// A wiped phone by the time Settings opens: app.js has written the seed.
+function seededPhone(quota) {
+  const p = phone({}, quota);
+  p.Storage.saveSettings(p.get('FIRST_RUN_SETTINGS'));
+  return p;
 }
 
 // The confirm step's table: label → [now, after]
@@ -69,8 +80,24 @@ const rowsOf = (plan) => Object.fromEntries(plan.rows.map((row) => [row.label, [
 const stored = (p, key) => JSON.parse(p.localStorage.getItem(key));
 const snapshot = (p) => new Map(p.localStorage.items);
 
+// Every stored string that would open an HTML tag once rendered (sealed
+// letters are checked unsealed).
+const TAG = /<[a-zA-Z\/!?]/;
+function tagsIn(value, field = '') {
+  if (typeof value === 'string') {
+    const text = field === 'sealedText' ? Buffer.from(value, 'base64').toString('utf8') : value;
+    return TAG.test(text) ? [text] : [];
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, v]) => tagsIn(v, Array.isArray(value) ? field : key));
+  }
+  return [];
+}
+
 const SEED = keepsakeSeed();
 const OWNED = Object.values(phone().Storage.KEYS).sort();
+
+// ── What a copy holds ──
 
 test('a copy holds every key the app owns, and nothing else', () => {
   const p = phone(SEED);
@@ -106,11 +133,14 @@ test('the time capsule stays sealed inside the file', () => {
   assert.deepEqual(plain(parsed.values['italy-capsule-v1']), SEED['italy-capsule-v1']);
 });
 
+// ── Restoring: wiped phones ──
+
 test('wiped phone: restore brings every key back byte for byte', () => {
   const original = phone(SEED);
   const wiped = phone();
   const plan = restore(wiped, savedCopy(SEED));
   for (const key of OWNED) assert.equal(wiped.localStorage.getItem(key), original.localStorage.getItem(key), key);
+  assert.deepEqual(plan.leftOut, []);
   assert.deepEqual(rowsOf(plan), {
     'Journal entries': [0, 3],
     'Letters': [0, 2],
@@ -123,13 +153,27 @@ test('wiped phone: restore brings every key back byte for byte', () => {
   });
 });
 
-test('wiped phone after first launch: the photo and pet name come back, seeded names stay', () => {
-  // app.js seeds settings on first launch, before Settings can be opened.
-  const p = phone({ 'italy-settings-v1': FIRST_RUN_SETTINGS });
+test('wiped phone after first launch: the copy\'s own names, photo and pet name come back', () => {
+  // app.js seeds Settings on first launch, before Settings can be opened, so
+  // a seeded field counts as blank (the fixture's names differ from the seed).
+  const p = seededPhone();
   const plan = restore(p, savedCopy(SEED));
-  assert.deepEqual(stored(p, 'italy-settings-v1'), SEED['italy-settings-v1']);
+  assert.equal(p.localStorage.getItem('italy-settings-v1'), phone(SEED).localStorage.getItem('italy-settings-v1'));
   assert.deepEqual(rowsOf(plan)['Names, dates & photo'], [5, 7]);
 });
+
+test('names, dates & photo: a field you filled is never changed; blank or seeded ones fill', () => {
+  const p = seededPhone();
+  p.Storage.saveSettings({ hometown: 'Anaheim, CA' });   // typed on this phone
+  restore(p, savedCopy(SEED));
+  const settings = stored(p, 'italy-settings-v1');
+  assert.equal(settings.hometown, 'Anaheim, CA');
+  assert.equal(settings.userName, 'Dyl');                  // was the seed's 'Dylan'
+  assert.equal(settings.petName, 'amore');                 // was blank
+  assert.equal(settings.couplePhoto, SEED['italy-settings-v1'].couplePhoto);
+});
+
+// ── Restoring: phones that already hold things ──
 
 test('newer phone, older copy: nothing on the phone changes', () => {
   const older = keepsakeSeed();
@@ -151,11 +195,22 @@ test('newer phone, older copy: nothing on the phone changes', () => {
 });
 
 test('restoring the same copy twice changes nothing the second time', () => {
-  const p = phone();
+  const p = seededPhone();
   restore(p, savedCopy(SEED));
   const before = snapshot(p);
   assert.equal(restore(p, savedCopy(SEED)).changed, false);
   assert.deepEqual(snapshot(p), before);
+});
+
+test('restore plans again at the moment it writes: an entry saved after the file was picked survives', () => {
+  // Two tabs: the confirm is open in one while the other saves an entry.
+  const p = phone();
+  const parsed = p.Keepsakes.parseCopy(savedCopy(SEED));
+  p.Storage.saveJournalEntry({ text: 'written in the other tab', id: 'j-other', timestamp: 1 });
+  p.Keepsakes.restoreValues(parsed.values);
+  const ids = stored(p, 'italy-journal-v1').map((e) => e.id);
+  assert.ok(ids.includes('j-other'), 'the newer entry was overwritten');
+  assert.equal(ids.length, 4);
 });
 
 test('two phones: restore adds the copy\'s extras and keeps everything here', () => {
@@ -208,15 +263,6 @@ test('time capsule: one sealed here is never replaced; an empty one takes the co
   assert.deepEqual(rowsOf(plan)['Time capsule'], ['not sealed', 'sealed']);
 });
 
-test('names, dates & photo: blank fields fill, filled fields never change', () => {
-  const p = phone({ 'italy-settings-v1': { ...FIRST_RUN_SETTINGS, hometown: 'Fullerton, CA' } });
-  restore(p, savedCopy(SEED));
-  const settings = stored(p, 'italy-settings-v1');
-  assert.equal(settings.hometown, 'Fullerton, CA');
-  assert.equal(settings.petName, 'amore');
-  assert.equal(settings.couplePhoto, SEED['italy-settings-v1'].couplePhoto);
-});
-
 test('trip stats: taps join up and no count ever goes down', () => {
   const p = phone({ 'italy-counters-v1': { gelato: 5, pasta: 0, pizza: 0, espresso: 0, cappuccino: 0, wine: 0, history: [] } });
   restore(p, savedCopy(SEED));
@@ -240,49 +286,96 @@ test('favorites: the old full-list shape on the phone still merges', () => {
   assert.deepEqual(stored(p, 'italy-places-v3'), { starred: ['l1', 'r1', 'f9'] });
 });
 
+test('the booking checklist counts ticked items, not unticked ones', () => {
+  const p = phone();
+  const plan = restore(p, savedCopy({ 'italy-bookings-v1': { 'bk-a': false, 'bk-b': false, 'bk-c': true } }));
+  assert.deepEqual(rowsOf(plan)['Booking checklist'], [0, 1]);
+});
+
+// ── Files that are not genuine copies ──
+
 test('files that are not keepsakes copies are refused', () => {
   const { Keepsakes } = phone();
   const good = JSON.parse(savedCopy(SEED));
-  const withKey = (key, value) => ({ ...good, keys: { ...good.keys, [key]: value } });
   const cases = [
     ['not JSON at all', 'hello', 'not-a-copy'],
     ['some other JSON file', '{"name":"Italy Honeymoon","display":"standalone"}', 'not-a-copy'],
     ['keys is a list', { ...good, keys: [] }, 'not-a-copy'],
     ['a future format', { ...good, version: 2 }, 'other-version'],
-    ['journal is not a list', withKey('italy-journal-v1', 'oops'), 'damaged'],
-    ['a letter is not an object', withKey('italy-letters-v1', [1, 2]), 'damaged'],
-    ['capsule is not sealed text', withKey('italy-capsule-v1', '%%%'), 'damaged'],
-    ['settings is a list', withKey('italy-settings-v1', []), 'damaged'],
   ];
   for (const [name, input, error] of cases) {
     assert.equal(Keepsakes.parseCopy(typeof input === 'string' ? input : JSON.stringify(input)).error, error, name);
   }
-  assert.equal(Keepsakes.parseCopy(JSON.stringify(good)).error, undefined);
 });
 
-test('a copy carrying markup is refused before anything is written', () => {
-  // The app renders stored text as HTML, so these would run as code once restored.
-  const { Keepsakes } = phone();
-  const crafted = (edit) => { const values = structuredClone(SEED); edit(values); return savedCopy(values); };
-  const cases = [
-    ['a tag in a journal entry', (v) => { v['italy-journal-v1'][0].text = 'hi <img src=x onerror=alert(1)>'; }],
-    ['a tag inside a sealed letter', (v) => { v['italy-letters-v1'][0].sealedText = Buffer.from('<script>alert(1)</script>').toString('base64'); }],
-    ['a tag inside the sealed capsule', (v) => { v['italy-capsule-v1'].bestMeal = '<svg onload=alert(1)>'; }],
-    ['a photo that breaks out of src=""', (v) => { v['italy-journal-v1'][1].photo = 'x" onerror="alert(1)'; }],
-    ['a letter id that breaks out of onclick', (v) => { v['italy-letters-v1'][0].id = "x');alert(1);('"; }],
-    ['a name that breaks out of value=""', (v) => { v['italy-settings-v1'].userName = 'D" autofocus onfocus="alert(1)'; }],
-    ['a tag in a trip-stats city', (v) => { v['italy-counters-v1'].history[0].city = '</div><b>'; }],
-    ['sealed text that is not base64', (v) => { v['italy-letters-v1'][0].sealedText = '%%%'; }],
-  ];
-  for (const [name, edit] of cases) assert.equal(Keepsakes.parseCopy(crafted(edit)).error, 'unsafe', name);
+test('a damaged part is left out and named; the rest still restores', () => {
+  const good = JSON.parse(savedCopy(SEED));
+  const letter = good.keys['italy-letters-v1'][0];
+  const damaged = { ...good, keys: { ...good.keys,
+    'italy-journal-v1': 'oops',
+    'italy-letters-v1': [1, letter],
+    'italy-capsule-v1': '%%%',
+    'italy-settings-v1': [] } };
+  const p = phone();
+  const plan = restore(p, JSON.stringify(damaged));
+  assert.deepEqual(plan.leftOut, ['Journal entries', 'Letters (1)', 'Time capsule', 'Names, dates & photo']);
+  assert.deepEqual(stored(p, 'italy-letters-v1'), [letter]);
+  assert.deepEqual(stored(p, 'italy-places-v3'), SEED['italy-places-v3']);
+  assert.equal(p.localStorage.getItem('italy-journal-v1'), null);
 });
 
-test('hearts and plain punctuation are not markup', () => {
+test('a copy carrying markup restores with it defused: nothing it holds can run', () => {
+  // Each line is an attack the 2026-10-09 cold read tried; the app renders
+  // stored text as HTML, so any of these, stored as-is, would run as code.
   const values = structuredClone(SEED);
-  values['italy-journal-v1'][0].text = 'I <3 you, "amore" - 5 > 4 & always <3';
-  values['italy-capsule-v1'].letter = 'Us <3';
-  values['italy-letters-v1'][0].sealedText = Buffer.from('Ti amo <3 "sempre"').toString('base64');
-  assert.equal(phone().Keepsakes.parseCopy(savedCopy(values)).error, undefined);
+  values['italy-journal-v1'][0].text = 'hi <img src=x onerror=alert(1)>';
+  values['italy-journal-v1'].push({ text: { toString: 1 }, id: 'j-crash', timestamp: 3 });       // crashes the page
+  values['italy-journal-v1'].push({ text: 'x', photo: 'x" onerror="alert(1)', id: 'j-src', timestamp: 4 });
+  values['italy-letters-v1'][0].sealedText = Buffer.from('<script>alert(1)</script>').toString('base64');
+  values['italy-letters-v1'].push({ ...SEED['italy-letters-v1'][1], id: "x');alert(1);('" });     // breaks onclick
+  values['italy-letters-v1'].push({ ...SEED['italy-letters-v1'][1], id: { toString: 'x' } });
+  values['italy-letters-v1'].push({ ...SEED['italy-letters-v1'][1], id: 'letter-bad', sealedText: '%%%' });
+  values['italy-capsule-v1'].bestMeal = '<svg onload=alert(1)>';
+  values['italy-counters-v1'].history[0].city = '</div><b>';
+  values['italy-bookings-v1']['gift-2'] = { status: 'x" onanimationstart="alert(1)' };             // class="…"
+  values['italy-settings-v1'].userName = 'D&lt;img src=x onerror=alert(1)&gt;';                    // value="…"
+  values['italy-settings-v1'].partnerName = 'H" autofocus onfocus="alert(1)';
+  const copy = JSON.parse(savedCopy(values));
+  copy.keys['italy-achievements-v1'] = JSON.parse('{"__proto__":{"unlocked":true,"unlockedAt":1},' +
+    JSON.stringify(SEED['italy-achievements-v1']).slice(1));
+
+  const p = phone();
+  const plan = restore(p, JSON.stringify(copy));
+  assert.deepEqual(plan.leftOut, ['Journal entries (2)', 'Letters (3)', 'Achievements (1)', 'Booking checklist (1)']);
+  const everything = Object.fromEntries(OWNED.map((key) => [key, stored(p, key)]));
+  assert.deepEqual(tagsIn(everything), [], 'a tag survived the restore');
+  assert.equal(stored(p, 'italy-journal-v1')[0].text, 'hi &lt;img src=x onerror=alert(1)>');
+  assert.ok(!('gift-2' in stored(p, 'italy-bookings-v1')));
+  assert.equal(Object.getPrototypeOf(stored(p, 'italy-achievements-v1')), Object.prototype);
+  // Names stay as written: they are escaped where they land in an attribute.
+  assert.equal(stored(p, 'italy-settings-v1').partnerName, 'H" autofocus onfocus="alert(1)');
+});
+
+test('"<3" and quotes come back exactly; "</3" and "<b>" come back looking the same', () => {
+  const values = structuredClone(SEED);
+  values['italy-journal-v1'][0].text = 'I <3 you, "amore" - 5 > 4 & always';
+  values['italy-journal-v1'][1].text = 'Last night in Venice </3 <b>ciao</b>';
+  values['italy-letters-v1'][0].sealedText = Buffer.from('Ti amo <3 </3').toString('base64');
+  const p = phone();
+  const plan = restore(p, savedCopy(values));
+  assert.deepEqual(plan.leftOut, []);
+  const journal = stored(p, 'italy-journal-v1');
+  assert.equal(journal[0].text, 'I <3 you, "amore" - 5 > 4 & always');
+  assert.equal(journal[1].text, 'Last night in Venice &lt;/3 &lt;b>ciao&lt;/b>');   // innerHTML shows "</3 <b>ciao</b>"
+  assert.equal(Buffer.from(stored(p, 'italy-letters-v1')[0].sealedText, 'base64').toString('utf8'), 'Ti amo <3 &lt;/3');
+});
+
+test('a gift status the app doesn\'t know never reaches the page', () => {
+  // Defence behind the restore: getEntryStatus only returns the known three.
+  const p = phone();
+  p.Storage.saveBookings({ 'gift-1': { status: 'x" onanimationstart="alert(1)' } });
+  const gift = p.sandbox.getAllEntries().find((entry) => entry.id === 'gift-1');
+  assert.ok(['voucher-only', 'scheduled', 'completed'].includes(p.sandbox.getEntryStatus(gift)));
 });
 
 test('a key the app does not own is never written', () => {
@@ -292,6 +385,8 @@ test('a key the app does not own is never written', () => {
   restore(p, JSON.stringify(copy));
   assert.equal(p.localStorage.getItem('someone-elses-key'), null);
 });
+
+// ── A full phone ──
 
 test('a full phone: the restore lands whole or not at all', () => {
   const start = { 'italy-journal-v1': [SEED['italy-journal-v1'][0]] };
@@ -310,11 +405,31 @@ test('a full phone: the restore lands whole or not at all', () => {
   const full = phone(start, quota);
   const before = snapshot(full);
   const parsed = full.Keepsakes.parseCopy(text);
-  const fullPlan = full.Keepsakes.planRestore(full.Storage.readAllKeys(), parsed.values);
-  assert.throws(() => full.Storage.writeKeys(fullPlan.writes), { name: 'QuotaExceededError' });
+  assert.throws(() => full.Keepsakes.restoreValues(parsed.values), { name: 'QuotaExceededError' });
   assert.deepEqual(snapshot(full), before);
   assert.ok(keys.length > 2, 'the test needs a write to fail after two succeed');
 });
+
+test('a full phone, even when a write shrank a key first: everything goes back', () => {
+  // The phone still holds the old full favorites list; the restore shrinks it
+  // to starred ids, adds achievements, then the big photo won't fit.
+  const legacy = Array.from({ length: 40 }, (_, i) => ({ id: `p${i}`, saved: i === 0, name: 'x'.repeat(120) }));
+  const start = { 'italy-places-v3': legacy };
+  const copyValues = {
+    'italy-places-v3': { starred: ['p1'] },
+    'italy-achievements-v1': SEED['italy-achievements-v1'],
+    'italy-settings-v1': { ...SEED['italy-settings-v1'], couplePhoto: 'data:image/jpeg;base64,' + 'A'.repeat(9000) },
+  };
+  const probe = phone(start);
+  const used = [...probe.localStorage.items].reduce((n, [k, v]) => n + k.length + v.length, 0);
+  const full = phone(start, used + 10);
+  const before = snapshot(full);
+  const parsed = full.Keepsakes.parseCopy(savedCopy(copyValues));
+  assert.throws(() => full.Keepsakes.restoreValues(parsed.values), { name: 'QuotaExceededError' });
+  assert.deepEqual(snapshot(full), before);
+});
+
+// ── Small things the card shows ──
 
 test('the line on Settings counts what is on this phone', () => {
   const { Keepsakes } = phone();

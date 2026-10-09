@@ -391,24 +391,16 @@ async function main() {
     step(9, 'newer phone + older copy: "Already on this phone", journal 4 → 4, storage untouched');
 
     // ── Files that are not copies: refused, nothing touched
-    const damaged = path.join(downloads, 'damaged-copy.json');
-    await writeFile(damaged, JSON.stringify({ ...copy, keys: { ...copy.keys, 'italy-journal-v1': 'oops' } }));
-    const crafted = path.join(downloads, 'crafted-copy.json');   // markup that would run once rendered
-    const craftedJournal = structuredClone(copy.keys['italy-journal-v1']);
-    craftedJournal[0].text = '<img src=x onerror="window.__pwned = 1">';
-    await writeFile(crafted, JSON.stringify({ ...copy, keys: { ...copy.keys, 'italy-journal-v1': craftedJournal } }));
-    for (const [file, words] of [[path.join(REPO, 'manifest.json'), "isn't a keepsakes copy"],
-                                 [damaged, 'looks damaged'], [crafted, "can't be loaded safely"]]) {
+    const tooBig = path.join(downloads, 'holiday-video.mov');   // picked by mistake
+    await writeFile(tooBig, Buffer.alloc(21 * 1024 * 1024, 'a'));
+    for (const [file, words] of [[path.join(REPO, 'manifest.json'), "isn't a keepsakes copy"], [tooBig, 'too big']]) {
       await clearToast(cdp);
       await pickFile(cdp, file);
       await waitToast(cdp, words);
       check(!(await cdp.page(`document.getElementById('surprise-modal').classList.contains('open')`)), `${path.basename(file)} opened the confirm`);
       check(JSON.stringify(await storageNow(cdp)) === JSON.stringify(newer), `${path.basename(file)} changed storage`);
     }
-    await openPage(cdp, '#journal', `document.querySelector('#page-journal.active .journal-entry')`);
-    check(await cdp.page('window.__pwned === undefined'), 'the crafted copy ran code');
-    await openPage(cdp, '#settings', SETTINGS_READY);
-    step(10, 'the app\'s manifest.json, a damaged copy and a copy carrying a script: all refused, storage untouched, nothing ran');
+    step(10, 'the app\'s manifest.json and a 21 MB video: both refused, storage untouched');
 
     // ── iPhone path: the share sheet, under WebKit's rules
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: WEBKIT_SHARE });
@@ -461,6 +453,83 @@ async function main() {
     check(JSON.stringify(await storageNow(cdp)) === JSON.stringify(beforeReset), 'cancelling the reset erased something');
     step(12, 'Reset All Data warns "…including the journal, letters and time capsule… Save a copy first"; Cancel erases nothing');
 
+    // ── Their own words come back looking right: "</3" and "<b>" typed in the journal
+    const tricky = 'Last night in Venice </3 <b>ciao</b> <3';
+    await openPage(cdp, '#journal', `document.querySelector('#page-journal.active #journal-input')`);
+    await cdp.page(`(() => { document.getElementById('journal-input').value = ${JSON.stringify(tricky)}; return 1; })()`);
+    await tap(cdp, 'button[onclick="saveJournalFromInput()"]');
+    await waitFor(cdp, `document.querySelectorAll('#journal-content .journal-entry').length === 5`, 'the typed entry');
+    await openPage(cdp, '#settings', SETTINGS_READY);
+    await cdp.page(`(() => { window.__shareMode = 'complete'; return 1; })()`);
+    const sharesBefore = await cdp.page('window.__shares.length');
+    await tap(cdp, '.keepsakes-save-btn');
+    await waitFor(cdp, `window.__shares.length === ${sharesBefore + 1}`, 'the share sheet');
+    const trickyCopy = path.join(downloads, 'tricky-copy.json');   // as saved to Files from the sheet
+    await writeFile(trickyCopy, await cdp.page(`window.__shares[${sharesBefore}].text`));
+    await cdp.page('(() => { localStorage.clear(); return 1; })()');
+    await reload(cdp, SETTINGS_READY);
+    await pickFile(cdp, trickyCopy);
+    await waitFor(cdp, `document.querySelector('#surprise-modal.open .keepsakes-table')`, 'the restore confirm');
+    check(!(await cdp.page(`!!document.querySelector('.keepsakes-leftout')`)), 'a genuine copy had something left out');
+    await tap(cdp, 'button[onclick="Keepsakes.confirmRestore()"]');
+    await waitToast(cdp, 'restored');
+    await openPage(cdp, '#journal', `document.querySelectorAll('#page-journal.active .journal-entry').length === 5`);
+    const shown = await cdp.page(`[...document.querySelectorAll('.journal-entry-text')].map((el) => el.innerText)`);
+    check(shown.includes(tricky), `the typed entry shows as ${JSON.stringify(shown.find((t) => t.startsWith('Last night')))}`);
+    const storedTricky = (await cdp.page(`JSON.parse(localStorage.getItem('italy-journal-v1'))`)).find((e) => e.text.startsWith('Last night'));
+    check(storedTricky.text === 'Last night in Venice &lt;/3 &lt;b>ciao&lt;/b> <3', `stored as ${storedTricky.text}`);
+    step(13, 'typed "</3 <b>ciao</b> <3" → saved through the share sheet → wiped → restored: shows exactly as typed (stored defused)');
+
+    // ── A crafted copy carrying every attack the 2026-10-09 cold read tried
+    const run = 'window.__pwned=(window.__pwned||0)+1';
+    const evil = JSON.parse(await readFile(trickyCopy, 'utf8'));
+    const seal = (text) => Buffer.from(text, 'utf8').toString('base64');
+    evil.keys['italy-journal-v1'].push(
+      { date: '2026-06-26', city: 'Venice', day: 14, prompt: 'x', text: `<img src=x onerror="${run}">`, id: 'j-crafted', timestamp: 1782500000000 },
+      { text: { toString: 1 }, id: 'j-crash', timestamp: 1 });
+    evil.keys['italy-letters-v1'].push(
+      { from: 'Hope', recipient: 'Dylan', unlockDate: '2026-06-26', id: `x');${run};('`, createdAt: 1, sealedText: seal('hi'), sealed: true },
+      { from: 'Hope', recipient: 'Dylan', unlockDate: '2026-06-26', id: 'letter-crafted', createdAt: 2, sealedText: seal(`<img src=x onerror="${run}">`), sealed: true });
+    evil.keys['italy-bookings-v1']['gift-2'] = { status: `x" style="animation:modalBounceIn 1ms" onanimationstart="${run}` };
+    evil.keys['italy-settings-v1'].userName = `Dylan&lt;img src=x onerror=${run}&gt;`;
+    const evilText = JSON.stringify(evil).replace('"italy-achievements-v1":{', '"italy-achievements-v1":{"__proto__":{"unlocked":true,"unlockedAt":1},');
+    const crafted = path.join(downloads, 'crafted-copy.json');
+    await writeFile(crafted, evilText);
+
+    await openPage(cdp, '#settings', SETTINGS_READY);
+    await cdp.page('(() => { localStorage.clear(); return 1; })()');
+    await reload(cdp, SETTINGS_READY);
+    await pickFile(cdp, crafted);
+    await waitFor(cdp, `document.querySelector('#surprise-modal.open .keepsakes-leftout')`, 'the confirm with a left-out line');
+    const leftOutLine = await cdp.page(`document.querySelector('.keepsakes-leftout').textContent`);
+    check(leftOutLine === "Left out, couldn't be read safely: Journal entries (1), Letters (1), Achievements (1), Booking checklist (1).",
+      `left-out line reads "${leftOutLine}"`);
+    await tap(cdp, 'button[onclick="Keepsakes.confirmRestore()"]');
+    await waitToast(cdp, 'restored');
+    const visit = async (hash, ready) => { await openPage(cdp, hash, ready); await sleep(600); };   // onerror fires late
+    await visit('#journal', `document.querySelector('#page-journal.active .journal-entry')`);
+    check((await cdp.page(`document.getElementById('journal-content').innerText`)).includes('<img src=x onerror='), 'the crafted journal text is not shown as text');
+    await visit('#bookings', `document.querySelector('#page-bookings.active .booking-card-gift')`);
+    await visit('#place/l1', `document.querySelector('#page-place.active')`);
+    await visit('#city/rome', `document.querySelector('#page-city.active')`);
+    await visit('#letters', `document.querySelector('#page-letters.active .letter-card')`);
+    await tap(cdp, '.letter-card[onclick*="letter-crafted"]');
+    await waitFor(cdp, `document.querySelector('#surprise-modal.open .letter-body')`, 'the crafted letter to open');
+    await sleep(600);
+    check((await cdp.page(`document.querySelector('.letter-body').innerText`)).includes('<img src=x'), 'the crafted letter is not shown as text');
+    await tap(cdp, '#surprise-content .btn-primary');
+    await visit('#letters', `document.querySelector('#page-letters.active #write-letter-btn')`);
+    await tap(cdp, '#write-letter-btn');
+    const fromField = await cdp.page(`document.getElementById('letter-from').value`);
+    check(fromField === `Dylan&lt;img src=x onerror=${run}&gt;`, `the From field decoded the name: ${fromField}`);
+    await cdp.page(`(() => { document.getElementById('letter-text').value = 'Ti amo'; document.getElementById('letter-date').value = '2026-12-25'; return 1; })()`);
+    await tap(cdp, 'button[onclick="sealLetter()"]');
+    await waitToast(cdp, 'letter sealed');
+    await sleep(600);
+    check(await cdp.page('window.__pwned === undefined'), `crafted code ran ${await cdp.page('window.__pwned')} time(s)`);
+    await openPage(cdp, '#settings', SETTINGS_READY);
+    step(14, 'crafted copy (script in a journal entry and a sealed letter, onclick-breaking id, class-breaking gift status, entity name, __proto__, a crash object): 4 left out and named, the rest defused; journal, bookings, place, city, letters, open letter, Write a Letter → Seal It visited: nothing ran');
+
     // ── New file, three places (CLAUDE.md): script tag, precache list, cache bump
     check(await cdp.page(`!!document.querySelector('script[src="js/keepsakes.js"]')`), 'index.html has no keepsakes.js script tag');
     check(SW_SOURCE.includes("'/js/keepsakes.js'"), 'sw.js APP_FILES lacks /js/keepsakes.js');
@@ -468,7 +537,7 @@ async function main() {
       .then((c) => c.match('/js/keepsakes.js')).then((r) => !!r)`, 'the service worker to precache keepsakes.js', 30000);
     const cachedBody = await cdp.page(`caches.open(${JSON.stringify(CACHE_NAME)}).then((c) => c.match('/js/keepsakes.js')).then((r) => r.text())`);
     check(cachedBody === readFileSync(path.join(REPO, 'js/keepsakes.js'), 'utf8'), 'the precached keepsakes.js differs from the file');
-    step(13, `service worker ${CACHE_NAME} installed and precached js/keepsakes.js`);
+    step(15, `service worker ${CACHE_NAME} installed and precached js/keepsakes.js`);
 
     console.log(`\nKEEPSAKES DRIVE PASS — ${checks} checks`);
   } catch (err) {

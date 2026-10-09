@@ -1,7 +1,9 @@
 // tests/keepsakes-fixture.mjs — one honeymoon's worth of keepsakes, shaped
 // exactly as the app writes them (field order included), shared by
-// keepsakes.test.mjs and keepsakes-drive.mjs. The content is made up; the
-// names and settings are the app's own first-run defaults (app.js).
+// keepsakes.test.mjs and keepsakes-drive.mjs. The content is made up. The
+// names and places in Settings deliberately differ from the app's first-run
+// seed (FIRST_RUN_SETTINGS, data-trip.js), so a restore onto a freshly
+// seeded phone has to bring them back rather than match by luck.
 
 const at = (iso) => Date.parse(iso);
 // Storage.saveLetter's "gentle seal": UTF-8 base64
@@ -10,13 +12,6 @@ const seal = (text) => Buffer.from(text, 'utf8').toString('base64');
 // Words that exist only inside the sealed time capsule. A saved file must
 // never show them in plain text.
 export const CAPSULE_SECRET = 'we never wanted to leave Positano';
-
-// The app's first-run settings seed (app.js seedSettingsIfEmpty), as stored:
-// what a wiped phone holds by the time Settings can be opened.
-export const FIRST_RUN_SETTINGS = {
-  userName: 'Dylan', partnerName: 'Hope', petName: '', weddingDate: '2026-06-06',
-  hometown: 'Brea, CA', departureAirport: 'LAX', couplePhoto: '',
-};
 
 // `photo` is a JPEG data URL, like the ones journal.js and settings.js make.
 export function keepsakeSeed(photo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP') {
@@ -59,7 +54,9 @@ export function keepsakeSeed(photo = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQA
       locked: true, lockUntil: '2027-06-27', sealedAt: at('2026-06-26T23:00:00+02:00'),
       snapshot: { journal, achievements },
     },
-    'italy-settings-v1': { ...FIRST_RUN_SETTINGS, petName: 'amore', couplePhoto: photo },
+    // Storage's DEFAULT_SETTINGS field order, as saveSettings writes it
+    'italy-settings-v1': { userName: 'Dyl', partnerName: 'Hopie', petName: 'amore', weddingDate: '2026-06-06',
+                           hometown: 'Fullerton, CA', departureAirport: 'SNA', couplePhoto: photo },
     'italy-counters-v1': {
       gelato: 2, pasta: 1, pizza: 0, espresso: 0, cappuccino: 0, wine: 1,
       history: [

@@ -155,7 +155,7 @@ function renderCapsule() {
       '<div class="capsule-form">' +
       '<div class="capsule-field">' +
       '<label class="capsule-label">💌 A letter to your future selves</label>' +
-      '<textarea id="capsule-letter" class="journal-textarea" style="min-height:120px;" autocapitalize="sentences" placeholder="' + salutation + '"></textarea>' +
+      '<textarea id="capsule-letter" class="journal-textarea" style="min-height:120px;" autocapitalize="sentences" placeholder="' + esc(salutation) + '"></textarea>' +
       '</div>' +
       '<div class="capsule-field">' +
       '<label class="capsule-label">📍 Favorite place from the trip</label>' +
@@ -624,13 +624,7 @@ function seedSettingsIfEmpty() {
   try {
     if (localStorage.getItem('italy-settings-v1') !== null) return;
   } catch (e) { return; }
-  Storage.saveSettings({
-    userName: 'Dylan',
-    partnerName: 'Hope',
-    weddingDate: '2026-06-06',
-    hometown: 'Brea, CA',
-    departureAirport: 'LAX'
-  });
+  Storage.saveSettings(FIRST_RUN_SETTINGS);   // data-trip.js
 }
 
 // ── Initialize ──

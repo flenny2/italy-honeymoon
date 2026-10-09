@@ -203,6 +203,17 @@ const GIFTED_EXPERIENCES = [
   }
 ];
 
+// First-launch Settings: seedSettingsIfEmpty() (app.js) writes these on a
+// fresh phone. keepsakes.js treats a field still holding its seed as blank,
+// so a restore onto a wiped phone brings back the copy's own values.
+const FIRST_RUN_SETTINGS = {
+  userName: 'Dylan',
+  partnerName: 'Hope',
+  weddingDate: '2026-06-06',
+  hometown: 'Brea, CA',
+  departureAirport: 'LAX'
+};
+
 // ═══════════════════════════════════════
 // TRIP DATE HELPERS
 // ═══════════════════════════════════════

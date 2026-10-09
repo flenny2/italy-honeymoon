@@ -174,11 +174,16 @@ function getAllEntries() {
 // Returns the effective status for an entry, reading user state and applying
 // the scheduled→completed auto-transition for gifts whose date has passed.
 // Returns: 'booked'|'pending' for venues; 'voucher-only'|'scheduled'|'completed' for gifts.
+var GIFT_STATUSES = ['voucher-only', 'scheduled', 'completed'];
+
 function getEntryStatus(entry) {
   var state = getBookingState();
   var s = state[entry.id];
   if (entry.source === 'registry-gift') {
     var stored = (s && s.status) || entry.bookingStatus || 'voucher-only';
+    // Stored state can come from a restored copy, and the status lands inside
+    // class="gift-status-…" on four screens: only the known three pass.
+    if (GIFT_STATUSES.indexOf(stored) === -1) stored = entry.bookingStatus || 'voucher-only';
     if (stored === 'scheduled' && entry.date) {
       var todayISO = localISODate();
       if (entry.date < todayISO) return 'completed';

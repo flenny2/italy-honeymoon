@@ -8,10 +8,10 @@
 // dated JSON file; "Restore from a copy" reads one back.
 //
 // Restore only ADDS what is missing. It never changes or removes anything
-// already on the phone, so an old copy can never overwrite newer entries,
+// you wrote on the phone, so an old copy can never overwrite newer entries,
 // and the confirm step shows every part's count before and after.
 //
-// Tests: tests/keepsakes.test.mjs (the rules; `node --test tests/`) and
+// Tests: tests/keepsakes.test.mjs (the rules; `node --test`) and
 // tests/keepsakes-drive.mjs (save → wipe → restore in headless Chrome).
 
 var Keepsakes = (function() {
@@ -24,22 +24,59 @@ var Keepsakes = (function() {
     'and the rest. To bring them back, open the app and go to More → Settings → Restore from a ' +
     'copy. The time capsule is sealed inside this file, like the letters.';
 
+  // ── Reading a copy safely ──
+  // A copy file is the one way outside data enters this app, and the app
+  // renders stored text as HTML (innerHTML throughout). So everything read
+  // from a copy is cleaned first — and a genuine copy is never refused:
+  //   - Text: a "<" that would open an HTML tag is stored as "&lt;". It shows
+  //     the same ("</3" is still "</3"); a typed "<b>" now shows as typed.
+  //   - Each field the app reads must have the type the app expects. Ids must
+  //     be plain (they land in onclick="…('id')"), photos must be image data
+  //     (img src), gift statuses must be known (class="…"). A record that
+  //     fails is left out and the confirm step says so; the rest restores.
+  //   - Keys that shadow built-ins (__proto__, toString…) are dropped.
+  // Sinks were hardened too: names are escaped where they land in an HTML
+  // attribute (letters.js, app.js), and getEntryStatus (bookings.js) only
+  // returns known statuses. Cases: tests/keepsakes.test.mjs.
+  var TAG_OPENER = /<(?=[a-zA-Z\/!?])/g;
+  var PLAIN_ID = /^[A-Za-z0-9_-]+$/;
+  var IMAGE_DATA_URL = /^data:image\/[a-z.+-]+;base64,[A-Za-z0-9+\/=]*$/;
+  var GIFT_STATUSES = ['voucher-only', 'scheduled', 'completed'];
+
+  // The fields the app reads from each record, and what each must be (a
+  // field may be absent). Lenient on purpose, so a genuine record is never
+  // left out — only what breaks the app or injects is refused:
+  //   'plain'  — not an object or list (those crash the pages that print it)
+  //   'id'     — a plain id (it lands in onclick="…('id')")
+  //   'image'  — a data:image URL or '' (it lands in img src)
+  //   'sealed' — base64 text that unseals (a sealed letter)
+  //   'string|null' — the capsule's letter and moment, which get .replace()
+  var JOURNAL_FIELDS = { id: 'id', timestamp: 'plain', date: 'plain', city: 'plain', day: 'plain',
+                         prompt: 'plain', text: 'plain', photo: 'image' };
+  var LETTER_FIELDS = { id: 'id', createdAt: 'plain', from: 'plain', recipient: 'plain', unlockDate: 'plain',
+                        sealedText: 'sealed', sealed: 'plain', text: 'plain', isRead: 'plain' };
+  var CAPSULE_FIELDS = { letter: 'string|null', favoritePlace: 'plain', bestMeal: 'plain', bestMoment: 'string|null',
+                         locked: 'plain', lockUntil: 'plain', sealedAt: 'plain', snapshot: 'object|null' };
+  var ACHIEVEMENT_FIELDS = { unlocked: 'plain', unlockedAt: 'plain' };
+  var TAP_FIELDS = { type: 'plain', ts: 'plain', city: 'plain' };
+
   // One row per key Storage owns, in the order the confirm step lists them.
-  //   shape — what a stored value must look like for a copy to be accepted
+  //   clean — copy value → { value, left }: the value made safe (null if the
+  //           part can't be read at all) and how many records were left out
   //   count — stored value → the figure Settings and the confirm step show
   //   merge — (phone, copy) → the combined value, add-only. Only called when
   //           both sides hold something (mergeValue covers the rest), and it
   //           returns `phone` itself when it adds nothing — planRestore uses
   //           that to skip keys with nothing to write.
   var PARTS = [
-    { key: Storage.KEYS.journal,      label: 'Journal entries',      shape: 'list',   count: countEntries,  merge: addMissingEntries },
-    { key: Storage.KEYS.letters,      label: 'Letters',              shape: 'list',   count: countEntries,  merge: addMissingEntries },
-    { key: Storage.KEYS.capsule,      label: 'Time capsule',         shape: 'object', count: capsuleState,  merge: keepSealedCapsule },
-    { key: Storage.KEYS.places,       label: 'Favorites',            shape: 'places', count: countStarred,  merge: addMissingStars },
-    { key: Storage.KEYS.achievements, label: 'Achievements',         shape: 'object', count: countUnlocked, merge: addMissingKeys },
-    { key: Storage.KEYS.counters,     label: 'Trip stats',           shape: 'object', count: countTaps,     merge: addMissingTaps },
-    { key: Storage.KEYS.bookings,     label: 'Booking checklist',    shape: 'object', count: countKeys,     merge: addMissingKeys },
-    { key: Storage.KEYS.settings,     label: 'Names, dates & photo', shape: 'object', count: countFilled,   merge: fillEmptyFields }
+    { key: Storage.KEYS.journal,      label: 'Journal entries',      clean: cleanList(JOURNAL_FIELDS), count: countEntries,  merge: addMissingEntries },
+    { key: Storage.KEYS.letters,      label: 'Letters',              clean: cleanList(LETTER_FIELDS),  count: countEntries,  merge: addMissingEntries },
+    { key: Storage.KEYS.capsule,      label: 'Time capsule',         clean: cleanCapsule,              count: capsuleState,  merge: keepSealedCapsule },
+    { key: Storage.KEYS.places,       label: 'Favorites',            clean: cleanPlaces,               count: countStarred,  merge: addMissingStars },
+    { key: Storage.KEYS.achievements, label: 'Achievements',         clean: cleanMap(cleanAchievement), count: countUnlocked, merge: addMissingKeys },
+    { key: Storage.KEYS.counters,     label: 'Trip stats',           clean: cleanCounters,             count: countTaps,     merge: addMissingTaps },
+    { key: Storage.KEYS.bookings,     label: 'Booking checklist',    clean: cleanMap(cleanBooking),    count: countTicked,   merge: addMissingKeys },
+    { key: Storage.KEYS.settings,     label: 'Names, dates & photo', clean: cleanSettings,             count: countFilled,   merge: fillEmptyFields }
   ];
 
   // A key Storage gains later without a row above is still saved, and is
@@ -49,7 +86,7 @@ var Keepsakes = (function() {
     for (var i = 0; i < PARTS.length; i++) {
       if (PARTS[i].key === key) return PARTS[i];
     }
-    return { key: key, label: key, shape: 'any', count: countPresent, merge: keepPhoneValue };
+    return { key: key, label: key, clean: cleanAny, count: countPresent, merge: keepPhoneValue };
   }
 
   // Every key Storage owns, in PARTS order (a key without a row goes last).
@@ -63,12 +100,151 @@ var Keepsakes = (function() {
 
   function has(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
   function isBlank(value) { return value === undefined || value === null || value === ''; }
+  function isPlainObject(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
+  function isBuiltInName(key) { return key in Object.prototype; }   // __proto__, constructor, toString…
+
+  // ── Cleaning (see "Reading a copy safely") ──
+  function defuse(value) {
+    if (typeof value === 'string') return value.replace(TAG_OPENER, '&lt;');
+    if (Array.isArray(value)) return value.map(defuse);
+    if (isPlainObject(value)) {
+      var out = {};
+      Object.keys(value).forEach(function(key) {
+        if (!isBuiltInName(key)) out[key] = defuse(value[key]);
+      });
+      return out;
+    }
+    return value;
+  }
+
+  function fieldOk(type, value) {
+    return type.split('|').some(function(t) {
+      if (t === 'plain') return value === null || typeof value !== 'object';
+      if (t === 'null') return value === null;
+      if (t === 'object') return isPlainObject(value);
+      if (t === 'id') return typeof value === 'string' && PLAIN_ID.test(value);
+      if (t === 'image') return typeof value === 'string' && (value === '' || IMAGE_DATA_URL.test(value));
+      if (t === 'sealed') return typeof value === 'string' && unsealOrNull(value) !== null;
+      return typeof value === t;
+    });
+  }
+
+  // One record made safe, or null when a field the app reads has the wrong
+  // type (the record is left out). Fields the app doesn't read are kept.
+  function cleanRecord(record, fields) {
+    if (!isPlainObject(record)) return null;
+    var out = {};
+    var keys = Object.keys(record);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      if (isBuiltInName(key)) continue;
+      var type = has(fields, key) ? fields[key] : null;
+      if (type && !fieldOk(type, record[key])) return null;
+      out[key] = type === 'sealed' ? resealDefused(record[key]) : defuse(record[key]);
+    }
+    return out;
+  }
+
+  // A sealed letter's text is checked unsealed: sealed again, defused.
+  function resealDefused(sealed) {
+    var text = unsealOrNull(sealed);
+    var safe = defuse(text);
+    return safe === text ? sealed : seal(safe);
+  }
+
+  function cleanList(fields) {
+    return function(list) {
+      if (!Array.isArray(list)) return { value: null, left: 'all' };
+      var kept = [];
+      list.forEach(function(entry) {
+        var safe = cleanRecord(entry, fields);
+        if (safe) kept.push(safe);
+      });
+      return { value: kept, left: list.length - kept.length };
+    };
+  }
+
+  // Maps keyed by id (achievements, bookings): an entry needs a plain id and
+  // a value cleanValue accepts (undefined = left out).
+  function cleanMap(cleanValue) {
+    return function(map) {
+      if (!isPlainObject(map)) return { value: null, left: 'all' };
+      var out = {};
+      var left = 0;
+      Object.keys(map).forEach(function(id) {
+        var safe = isBuiltInName(id) || !PLAIN_ID.test(id) ? undefined : cleanValue(map[id]);
+        if (safe === undefined) left++;
+        else out[id] = safe;
+      });
+      return { value: out, left: left };
+    };
+  }
+
+  function cleanAchievement(state) {
+    var safe = cleanRecord(state, ACHIEVEMENT_FIELDS);
+    return safe === null ? undefined : safe;
+  }
+
+  // A venue is ticked or not; a gift carries one of the three known statuses.
+  function cleanBooking(state) {
+    if (typeof state === 'boolean') return state;
+    return isPlainObject(state) && GIFT_STATUSES.indexOf(state.status) !== -1 ? defuse(state) : undefined;
+  }
+
+  // The capsule is one record: if it can't be read whole, it is left out whole.
+  function cleanCapsule(capsule) {
+    var safe = cleanRecord(capsule, CAPSULE_FIELDS);
+    return safe ? { value: safe, left: 0 } : { value: null, left: 'all' };
+  }
+
+  function cleanPlaces(places) {
+    var ids = Array.isArray(places)   // legacy full-snapshot shape
+      ? places.filter(function(p) { return isPlainObject(p) && p.saved === true; }).map(function(p) { return p.id; })
+      : (isPlainObject(places) && Array.isArray(places.starred) ? places.starred : null);
+    if (!ids) return { value: null, left: 'all' };
+    var kept = ids.filter(function(id) { return typeof id === 'string' && PLAIN_ID.test(id); });
+    return { value: { starred: kept }, left: ids.length - kept.length };
+  }
+
+  function cleanCounters(counters) {
+    if (!isPlainObject(counters)) return { value: null, left: 'all' };
+    var out = {};
+    var left = 0;
+    Object.keys(counters).forEach(function(key) {
+      var value = counters[key];
+      if (key === 'history') {
+        var taps = cleanList(TAP_FIELDS)(value);
+        if (taps.value) out.history = taps.value;
+        left += taps.value ? taps.left : 1;
+      } else if (!isBuiltInName(key) && typeof value === 'number' && value >= 0) {
+        out[key] = value;
+      } else {
+        left++;
+      }
+    });
+    return { value: out, left: left };
+  }
+
+  function cleanSettings(settings) {
+    if (!isPlainObject(settings)) return { value: null, left: 'all' };
+    var out = {};
+    var left = 0;
+    Object.keys(settings).forEach(function(field) {
+      var value = settings[field];
+      var ok = !isBuiltInName(field) && typeof value === 'string' &&
+        (field !== 'couplePhoto' || fieldOk('image', value));
+      if (ok) out[field] = defuse(value);
+      else left++;
+    });
+    return { value: out, left: left };
+  }
+
+  function cleanAny(value) { return { value: defuse(value), left: 0 }; }
 
   // ── Counting (what each part shows) ──
   function countEntries(list) { return Array.isArray(list) ? list.length : 0; }
   function capsuleState(capsule) { return capsule && capsule.locked ? 'sealed' : 'not sealed'; }
   function countStarred(places) { return starredIds(places).length; }
-  function countKeys(map) { return map ? Object.keys(map).length : 0; }
   function countPresent(value) { return value === null || value === undefined ? 0 : 1; }
 
   function countUnlocked(state) {
@@ -81,6 +257,14 @@ var Keepsakes = (function() {
     return Object.keys(counters).reduce(function(sum, type) {
       return sum + (type !== 'history' && typeof counters[type] === 'number' ? counters[type] : 0);
     }, 0);
+  }
+
+  // Ticked venues and tracked gifts; an unticked venue (false) doesn't count.
+  function countTicked(state) {
+    if (!state) return 0;
+    return Object.keys(state).filter(function(id) {
+      return state[id] === true || isPlainObject(state[id]);
+    }).length;
   }
 
   function countFilled(settings) {
@@ -99,7 +283,7 @@ var Keepsakes = (function() {
   function mergeValue(part, phone, copy) {
     if (copy === null || copy === undefined) return phone;   // the copy has nothing here
     if (phone === null || phone === undefined) return copy;  // the phone has nothing: take the copy whole
-    if (!shapeOk(part.shape, phone)) return phone;           // never touch bytes we can't read
+    if (part.clean(phone).value === null) return phone;      // never touch bytes we can't read
     return part.merge(phone, copy);
   }
 
@@ -127,7 +311,7 @@ var Keepsakes = (function() {
   }
 
   function entryIdentity(entry) {
-    return isBlank(entry.id) ? 'json:' + JSON.stringify(entry) : 'id:' + entry.id;
+    return entry && !isBlank(entry.id) ? 'id:' + entry.id : 'json:' + JSON.stringify(entry);
   }
 
   // The capsule is sealed once. A sealed capsule here is never replaced; an
@@ -181,62 +365,19 @@ var Keepsakes = (function() {
     return tap ? tap.type + '|' + tap.ts + '|' + (tap.city || '') : String(tap);
   }
 
-  // Names, dates & photo: fill the fields that are blank here; a filled field
-  // is never changed. (On a wiped phone the first-run seed in app.js fills
-  // names, wedding date, hometown and airport before a restore can run, so
-  // those keep the seed's values; the photo and pet name come back.)
+  // Names, dates & photo: fill each field that is blank here or still holds
+  // its first-run seed (FIRST_RUN_SETTINGS in data-trip.js — app.js writes
+  // the seed on a wiped phone before a restore can run, and it isn't anything
+  // you wrote). A field you filled in yourself is never changed.
   function fillEmptyFields(phone, copy) {
-    var blanks = Object.keys(copy).filter(function(field) {
-      return isBlank(phone[field]) && !isBlank(copy[field]);
+    var fields = Object.keys(copy).filter(function(field) {
+      var seeded = has(FIRST_RUN_SETTINGS, field) && phone[field] === FIRST_RUN_SETTINGS[field];
+      return (isBlank(phone[field]) || seeded) && !isBlank(copy[field]) && copy[field] !== phone[field];
     });
-    if (!blanks.length) return phone;
+    if (!fields.length) return phone;
     var merged = Object.assign({}, phone);
-    blanks.forEach(function(field) { merged[field] = copy[field]; });
+    fields.forEach(function(field) { merged[field] = copy[field]; });
     return merged;
-  }
-
-  function shapeOk(shape, value) {
-    if (value === null || value === undefined) return true;
-    var isObject = typeof value === 'object' && !Array.isArray(value);
-    if (shape === 'list') {
-      return Array.isArray(value) && value.every(function(entry) {
-        return entry !== null && typeof entry === 'object' && !Array.isArray(entry);
-      });
-    }
-    if (shape === 'object') return isObject;
-    if (shape === 'places') return isObject || Array.isArray(value);
-    return true;   // 'any'
-  }
-
-  // A copy file is the one way outside text enters this app, and the app
-  // renders stored text as HTML (innerHTML throughout). So a copy carrying
-  // markup is refused before anything is written: no HTML tag in any text
-  // ("<3" is fine — only "<" plus a letter, "/", "!" or "?" opens a tag), and
-  // plain values in the fields that land inside HTML attributes: ids (onclick),
-  // photos (img src) and names (input value / placeholder). Sealed letters
-  // are unsealed to check them. The app never writes any of this itself.
-  var TAG_OPENER = /<[a-zA-Z\/!?]/;
-  var PLAIN_ID = /^[A-Za-z0-9_-]+$/;
-  var IMAGE_DATA_URL = /^data:image\/[a-z.+-]+;base64,[A-Za-z0-9+\/=]*$/;
-  var NAME_FIELDS = ['userName', 'partnerName', 'petName'];
-
-  function markupFree(value, field) {
-    if (typeof value === 'string') {
-      if (TAG_OPENER.test(value)) return false;
-      if (field === 'id') return PLAIN_ID.test(value);
-      if (field === 'photo' || field === 'couplePhoto') return value === '' || IMAGE_DATA_URL.test(value);
-      if (NAME_FIELDS.indexOf(field) !== -1) return value.indexOf('"') === -1;
-      if (field === 'sealedText') {
-        try { return markupFree(unseal(value), 'text'); } catch (e) { return false; }
-      }
-      return true;
-    }
-    if (value && typeof value === 'object') {
-      return Object.keys(value).every(function(key) {
-        return markupFree(value[key], Array.isArray(value) ? field : key);
-      });
-    }
-    return true;
   }
 
   // ── The copy file ──
@@ -262,35 +403,40 @@ var Keepsakes = (function() {
 
   // UTF-8-safe base64, the same encoding Storage.saveLetter uses for sealedText.
   function seal(text) { return btoa(unescape(encodeURIComponent(text))); }
-  function unseal(text) { return decodeURIComponent(escape(atob(text))); }
+  function unsealOrNull(text) {
+    try { return decodeURIComponent(escape(atob(text))); } catch (e) { return null; }
+  }
 
   function fileName() { return 'italy-keepsakes-' + localISODate() + '.json'; }
 
-  // A copy file's text → { values, savedAt } (every owned key, null where the
-  // copy has none) or { error }. Reads only: nothing is written here. Keys the
-  // app doesn't own are ignored, so a restore never writes them.
+  // A copy file's text → { values, leftOut, savedAt } or { error }. Reads
+  // only: nothing is written here. `values` holds every owned key, cleaned
+  // (null where the copy has nothing usable); `leftOut` names the parts
+  // that couldn't be read safely ("Letters (1)"). Keys the app doesn't own
+  // are ignored, so a restore never writes them.
   function parseCopy(text) {
     var copy;
     try { copy = JSON.parse(text); } catch (e) { return { error: 'not-a-copy' }; }
-    if (!copy || copy.app !== FORMAT.app || copy.kind !== FORMAT.kind ||
-        !copy.keys || typeof copy.keys !== 'object' || Array.isArray(copy.keys)) {
+    if (!isPlainObject(copy) || copy.app !== FORMAT.app || copy.kind !== FORMAT.kind || !isPlainObject(copy.keys)) {
       return { error: 'not-a-copy' };
     }
     if (copy.version !== FORMAT.version) return { error: 'other-version' };
 
     var values = {};
-    var damaged = false;
+    var leftOut = [];
     ownedKeys().forEach(function(key) {
-      var value = has(copy.keys, key) ? copy.keys[key] : null;
-      if (key === Storage.KEYS.capsule && typeof value === 'string') {
-        try { value = JSON.parse(unseal(value)); } catch (e) { damaged = true; }
+      var part = partFor(key);
+      var raw = has(copy.keys, key) ? copy.keys[key] : null;
+      if (raw === null) { values[key] = null; return; }
+      if (key === Storage.KEYS.capsule && typeof raw === 'string') {
+        var unsealed = unsealOrNull(raw);
+        try { raw = unsealed === null ? undefined : JSON.parse(unsealed); } catch (e) { raw = undefined; }
       }
-      if (!shapeOk(partFor(key).shape, value)) damaged = true;
-      values[key] = value;
+      var cleaned = raw === undefined ? { value: null, left: 'all' } : part.clean(raw);
+      values[key] = cleaned.value;
+      if (cleaned.left) leftOut.push(cleaned.left === 'all' ? part.label : part.label + ' (' + cleaned.left + ')');
     });
-    if (damaged) return { error: 'damaged' };
-    if (!markupFree(values, '')) return { error: 'unsafe' };
-    return { values: values, savedAt: copy.savedAt };
+    return { values: values, leftOut: leftOut, savedAt: copy.savedAt };
   }
 
   // Work out a restore without writing anything: the values to write (only
@@ -305,6 +451,15 @@ var Keepsakes = (function() {
       return { label: part.label, before: part.count(phone), after: part.count(merged) };
     });
     return { writes: writes, rows: rows, changed: Object.keys(writes).length > 0 };
+  }
+
+  // Plan against the phone as it is NOW, then write. The confirm step's plan
+  // can be stale (another tab may have saved since), and re-planning keeps the
+  // add-only promise whatever happened in between.
+  function restoreValues(copyValues) {
+    var plan = planRestore(Storage.readAllKeys(), copyValues);
+    Storage.writeKeys(plan.writes);
+    return plan;
   }
 
   // ['3 journal entries', '2 letters', 'capsule sealed'] — what's on this phone.
@@ -381,13 +536,16 @@ var Keepsakes = (function() {
   }
 
   // ── Restore from a copy ──
-  var pending = null;   // the plan the confirm step showed; written on "Restore"
+  // localStorage holds a few MB at most, so a far bigger file isn't a copy
+  // (a video picked by mistake) — and reading it whole could stall the phone.
+  var MAX_COPY_BYTES = 20 * 1024 * 1024;
+
+  var pending = null;   // the parsed copy the confirm step showed
 
   var ERRORS = {
     'not-a-copy':    'That isn\'t a keepsakes copy',
     'other-version': 'That copy is from another app version',
-    'damaged':       'That copy looks damaged',
-    'unsafe':        'That copy can\'t be loaded safely',
+    'too-big':       'That file is too big to be a copy',
     'unreadable':    'Couldn\'t read that file'
   };
 
@@ -397,18 +555,20 @@ var Keepsakes = (function() {
 
   function handleFile(input) {
     var file = input.files && input.files[0];
-    input.value = '';   // so picking the same file again still fires onchange
     if (!file) return;
+    if (file.size > MAX_COPY_BYTES) { input.value = ''; showToast(ERRORS['too-big']); return; }
     var reader = new FileReader();
     reader.onload = function() { showRestore(parseCopy(String(reader.result))); };
     reader.onerror = function() { showToast(ERRORS.unreadable); };
+    // Cleared once read, so picking the same file again still fires onchange
+    reader.onloadend = function() { input.value = ''; };
     reader.readAsText(file);
   }
 
   function showRestore(parsed) {
     if (parsed.error) { showToast(ERRORS[parsed.error]); return; }
     var plan = planRestore(Storage.readAllKeys(), parsed.values);
-    pending = plan.changed ? plan : null;
+    pending = plan.changed ? parsed : null;
 
     var rows = plan.rows.map(function(row) {
       return '<tr' + (row.after !== row.before ? ' class="keepsakes-row-changed"' : '') + '>' +
@@ -422,6 +582,15 @@ var Keepsakes = (function() {
     var savedLine = typeof parsed.savedAt === 'number'
       ? 'Copy saved ' + formatDateFull(parsed.savedAt)
       : 'A keepsakes copy';
+    var title = plan.changed ? 'Restore from this copy?'
+      : (parsed.leftOut.length ? 'Nothing new to restore' : 'Already on this phone');
+    var note = plan.changed
+      ? 'Restoring only adds what\'s missing. Nothing you wrote on this phone is changed or removed.'
+      : 'Everything ' + (parsed.leftOut.length ? 'else ' : '') + 'in this copy is already here.';
+    // Labels and counts only: nothing from the file reaches this HTML
+    var leftOut = parsed.leftOut.length
+      ? '<p class="keepsakes-note keepsakes-leftout">Left out, couldn\'t be read safely: ' + parsed.leftOut.join(', ') + '.</p>'
+      : '';
     var buttons = plan.changed
       ? '<button class="btn btn-ghost btn-full" onclick="Keepsakes.cancelRestore()">Cancel</button>' +
         '<button class="btn btn-primary btn-full" onclick="Keepsakes.confirmRestore()">Restore</button>'
@@ -430,27 +599,26 @@ var Keepsakes = (function() {
     document.getElementById('surprise-content').innerHTML =
       '<div class="keepsakes-modal-head">' +
       '<div class="modal-icon-md">💝</div>' +
-      '<h2>' + (plan.changed ? 'Restore from this copy?' : 'Already on this phone') + '</h2>' +
+      '<h2>' + title + '</h2>' +
       '<div class="modal-meta">' + savedLine + '</div>' +
       '</div>' +
       '<table class="keepsakes-table">' +
       '<tr class="keepsakes-head"><td></td><td class="keepsakes-num">Now</td><td></td><td class="keepsakes-num">After</td></tr>' +
       rows +
       '</table>' +
-      '<p class="keepsakes-note">' + (plan.changed
-        ? 'Restoring only adds what\'s missing. Nothing on this phone is changed or removed.'
-        : 'Everything in this copy is already here. Nothing to restore.') + '</p>' +
+      '<p class="keepsakes-note">' + note + '</p>' +
+      leftOut +
       '<div class="keepsakes-actions">' + buttons + '</div>';
     openModal('surprise-modal');
   }
 
   function confirmRestore() {
-    var plan = pending;
+    var parsed = pending;
     pending = null;
     closeModal('surprise-modal');
-    if (!plan) return;
+    if (!parsed) return;
     try {
-      Storage.writeKeys(plan.writes);
+      restoreValues(parsed.values);
     } catch (e) {
       // writeKeys has already put every key back: nothing changed
       showToast(e && (e.name === 'QuotaExceededError' || e.code === 22)
@@ -481,6 +649,7 @@ var Keepsakes = (function() {
     buildCopy: buildCopy,
     parseCopy: parseCopy,
     planRestore: planRestore,
+    restoreValues: restoreValues,
     summary: summary,
     fileName: fileName
   };
