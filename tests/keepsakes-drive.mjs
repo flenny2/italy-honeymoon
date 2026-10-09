@@ -71,15 +71,17 @@ function serve() {
 
 class Cdp {
   constructor(ws) {
-    this.ws = ws; this.id = 0; this.pending = new Map();
+    this.ws = ws; this.id = 0; this.pending = new Map(); this.handlers = new Map();
     ws.addEventListener('message', (event) => {
       const msg = JSON.parse(event.data);
+      if (msg.method) { this.handlers.get(msg.method)?.(msg.params); return; }
       const slot = msg.id && this.pending.get(msg.id);
       if (!slot) return;
       this.pending.delete(msg.id);
       msg.error ? slot.reject(new Error(JSON.stringify(msg.error))) : slot.resolve(msg.result);
     });
   }
+  on(method, handler) { this.handlers.set(method, handler); }
   send(method, params = {}) {
     const id = ++this.id;
     this.ws.send(JSON.stringify({ id, method, params }));
@@ -435,6 +437,22 @@ async function main() {
     check(JSON.stringify(await jsonFiles(downloads)) === JSON.stringify(before), 'a dismissed sheet downloaded');
     step(11, 'iPhone path: tap → share sheet gets one .json file, no download; no tap → refused, "try again", no download; sheet dismissed → "No copy saved"');
 
+    // ── Reset All Data warns that it erases the keepsakes; Cancel keeps them
+    let warning = null;
+    cdp.on('Page.javascriptDialogOpening', ({ message }) => {
+      warning = message;
+      cdp.send('Page.handleJavaScriptDialog', { accept: false }).catch(() => {});   // tap Cancel
+    });
+    const resetButton = '#page-more button[onclick*="resetAll"]';
+    await openPage(cdp, '#more', `document.querySelector('#page-more.active') && document.querySelector('${resetButton}')`);
+    const beforeReset = await storageNow(cdp);
+    await tap(cdp, resetButton);
+    for (let i = 0; i < 50 && warning === null; i++) await sleep(100);
+    check(/journal, letters and time capsule/.test(warning ?? '') && /save a copy/i.test(warning ?? ''),
+      `the reset warning reads "${warning}"`);
+    check(JSON.stringify(await storageNow(cdp)) === JSON.stringify(beforeReset), 'cancelling the reset erased something');
+    step(12, 'Reset All Data warns "…including the journal, letters and time capsule… Save a copy first"; Cancel erases nothing');
+
     // ── New file, three places (CLAUDE.md): script tag, precache list, cache bump
     check(await cdp.page(`!!document.querySelector('script[src="js/keepsakes.js"]')`), 'index.html has no keepsakes.js script tag');
     check(SW_SOURCE.includes("'/js/keepsakes.js'"), 'sw.js APP_FILES lacks /js/keepsakes.js');
@@ -442,7 +460,7 @@ async function main() {
       .then((c) => c.match('/js/keepsakes.js')).then((r) => !!r)`, 'the service worker to precache keepsakes.js', 30000);
     const cachedBody = await cdp.page(`caches.open(${JSON.stringify(CACHE_NAME)}).then((c) => c.match('/js/keepsakes.js')).then((r) => r.text())`);
     check(cachedBody === readFileSync(path.join(REPO, 'js/keepsakes.js'), 'utf8'), 'the precached keepsakes.js differs from the file');
-    step(12, `service worker ${CACHE_NAME} installed and precached js/keepsakes.js`);
+    step(13, `service worker ${CACHE_NAME} installed and precached js/keepsakes.js`);
 
     console.log(`\nKEEPSAKES DRIVE PASS — ${checks} checks`);
   } catch (err) {

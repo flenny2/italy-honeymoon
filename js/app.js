@@ -63,7 +63,8 @@ function renderMore() {
     buildMoreLink('#capsule', '🔮', 'Time Capsule', 'Opens 1 year after Italy', '') +
     buildMoreLink('#settings', '⚙️', 'Settings', 'Names, wedding, photo', '') +
     '<div style="margin-top:24px;">' +
-    '<button class="btn btn-ghost btn-full btn-sm" onclick="if(confirm(\'Reset all saved data? Places will be restored to defaults.\')){Storage.resetAll();showToast(\'Data reset!\');Router.navigate(\'#today\');}">Reset All Data</button>' +
+    // resetAll() erases every key, keepsakes included, so the warning names them
+    '<button class="btn btn-ghost btn-full btn-sm" onclick="if(confirm(\'Erase everything on this phone, including the journal, letters and time capsule? This cannot be undone. Save a copy first: Settings → Keepsakes.\')){Storage.resetAll();showToast(\'Data reset!\');Router.navigate(\'#today\');}">Reset All Data</button>' +
     '</div>' +
     '</div>';
 
