@@ -260,6 +260,31 @@ test('files that are not keepsakes copies are refused', () => {
   assert.equal(Keepsakes.parseCopy(JSON.stringify(good)).error, undefined);
 });
 
+test('a copy carrying markup is refused before anything is written', () => {
+  // The app renders stored text as HTML, so these would run as code once restored.
+  const { Keepsakes } = phone();
+  const crafted = (edit) => { const values = structuredClone(SEED); edit(values); return savedCopy(values); };
+  const cases = [
+    ['a tag in a journal entry', (v) => { v['italy-journal-v1'][0].text = 'hi <img src=x onerror=alert(1)>'; }],
+    ['a tag inside a sealed letter', (v) => { v['italy-letters-v1'][0].sealedText = Buffer.from('<script>alert(1)</script>').toString('base64'); }],
+    ['a tag inside the sealed capsule', (v) => { v['italy-capsule-v1'].bestMeal = '<svg onload=alert(1)>'; }],
+    ['a photo that breaks out of src=""', (v) => { v['italy-journal-v1'][1].photo = 'x" onerror="alert(1)'; }],
+    ['a letter id that breaks out of onclick', (v) => { v['italy-letters-v1'][0].id = "x');alert(1);('"; }],
+    ['a name that breaks out of value=""', (v) => { v['italy-settings-v1'].userName = 'D" autofocus onfocus="alert(1)'; }],
+    ['a tag in a trip-stats city', (v) => { v['italy-counters-v1'].history[0].city = '</div><b>'; }],
+    ['sealed text that is not base64', (v) => { v['italy-letters-v1'][0].sealedText = '%%%'; }],
+  ];
+  for (const [name, edit] of cases) assert.equal(Keepsakes.parseCopy(crafted(edit)).error, 'unsafe', name);
+});
+
+test('hearts and plain punctuation are not markup', () => {
+  const values = structuredClone(SEED);
+  values['italy-journal-v1'][0].text = 'I <3 you, "amore" - 5 > 4 & always <3';
+  values['italy-capsule-v1'].letter = 'Us <3';
+  values['italy-letters-v1'][0].sealedText = Buffer.from('Ti amo <3 "sempre"').toString('base64');
+  assert.equal(phone().Keepsakes.parseCopy(savedCopy(values)).error, undefined);
+});
+
 test('a key the app does not own is never written', () => {
   const copy = JSON.parse(savedCopy(SEED));
   copy.keys['someone-elses-key'] = { hello: true };

@@ -393,14 +393,22 @@ async function main() {
     // ── Files that are not copies: refused, nothing touched
     const damaged = path.join(downloads, 'damaged-copy.json');
     await writeFile(damaged, JSON.stringify({ ...copy, keys: { ...copy.keys, 'italy-journal-v1': 'oops' } }));
-    for (const [file, words] of [[path.join(REPO, 'manifest.json'), "isn't a keepsakes copy"], [damaged, 'looks damaged']]) {
+    const crafted = path.join(downloads, 'crafted-copy.json');   // markup that would run once rendered
+    const craftedJournal = structuredClone(copy.keys['italy-journal-v1']);
+    craftedJournal[0].text = '<img src=x onerror="window.__pwned = 1">';
+    await writeFile(crafted, JSON.stringify({ ...copy, keys: { ...copy.keys, 'italy-journal-v1': craftedJournal } }));
+    for (const [file, words] of [[path.join(REPO, 'manifest.json'), "isn't a keepsakes copy"],
+                                 [damaged, 'looks damaged'], [crafted, "can't be loaded safely"]]) {
       await clearToast(cdp);
       await pickFile(cdp, file);
       await waitToast(cdp, words);
       check(!(await cdp.page(`document.getElementById('surprise-modal').classList.contains('open')`)), `${path.basename(file)} opened the confirm`);
       check(JSON.stringify(await storageNow(cdp)) === JSON.stringify(newer), `${path.basename(file)} changed storage`);
     }
-    step(10, 'the app\'s manifest.json and a damaged copy: both refused, storage untouched');
+    await openPage(cdp, '#journal', `document.querySelector('#page-journal.active .journal-entry')`);
+    check(await cdp.page('window.__pwned === undefined'), 'the crafted copy ran code');
+    await openPage(cdp, '#settings', SETTINGS_READY);
+    step(10, 'the app\'s manifest.json, a damaged copy and a copy carrying a script: all refused, storage untouched, nothing ran');
 
     // ── iPhone path: the share sheet, under WebKit's rules
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: WEBKIT_SHARE });

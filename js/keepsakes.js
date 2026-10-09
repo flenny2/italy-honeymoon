@@ -208,6 +208,37 @@ var Keepsakes = (function() {
     return true;   // 'any'
   }
 
+  // A copy file is the one way outside text enters this app, and the app
+  // renders stored text as HTML (innerHTML throughout). So a copy carrying
+  // markup is refused before anything is written: no HTML tag in any text
+  // ("<3" is fine — only "<" plus a letter, "/", "!" or "?" opens a tag), and
+  // plain values in the fields that land inside HTML attributes: ids (onclick),
+  // photos (img src) and names (input value / placeholder). Sealed letters
+  // are unsealed to check them. The app never writes any of this itself.
+  var TAG_OPENER = /<[a-zA-Z\/!?]/;
+  var PLAIN_ID = /^[A-Za-z0-9_-]+$/;
+  var IMAGE_DATA_URL = /^data:image\/[a-z.+-]+;base64,[A-Za-z0-9+\/=]*$/;
+  var NAME_FIELDS = ['userName', 'partnerName', 'petName'];
+
+  function markupFree(value, field) {
+    if (typeof value === 'string') {
+      if (TAG_OPENER.test(value)) return false;
+      if (field === 'id') return PLAIN_ID.test(value);
+      if (field === 'photo' || field === 'couplePhoto') return value === '' || IMAGE_DATA_URL.test(value);
+      if (NAME_FIELDS.indexOf(field) !== -1) return value.indexOf('"') === -1;
+      if (field === 'sealedText') {
+        try { return markupFree(unseal(value), 'text'); } catch (e) { return false; }
+      }
+      return true;
+    }
+    if (value && typeof value === 'object') {
+      return Object.keys(value).every(function(key) {
+        return markupFree(value[key], Array.isArray(value) ? field : key);
+      });
+    }
+    return true;
+  }
+
   // ── The copy file ──
   // `values` is Storage.readAllKeys(); `savedAt` epoch ms, like every other
   // timestamp the app stores.
@@ -257,7 +288,9 @@ var Keepsakes = (function() {
       if (!shapeOk(partFor(key).shape, value)) damaged = true;
       values[key] = value;
     });
-    return damaged ? { error: 'damaged' } : { values: values, savedAt: copy.savedAt };
+    if (damaged) return { error: 'damaged' };
+    if (!markupFree(values, '')) return { error: 'unsafe' };
+    return { values: values, savedAt: copy.savedAt };
   }
 
   // Work out a restore without writing anything: the values to write (only
@@ -354,6 +387,7 @@ var Keepsakes = (function() {
     'not-a-copy':    'That isn\'t a keepsakes copy',
     'other-version': 'That copy is from another app version',
     'damaged':       'That copy looks damaged',
+    'unsafe':        'That copy can\'t be loaded safely',
     'unreadable':    'Couldn\'t read that file'
   };
 
